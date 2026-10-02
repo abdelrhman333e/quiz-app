@@ -6,7 +6,7 @@ function types(){return[...new Set(Qs.map(q=>q.t))]}
 function render(){if(!G)return;const T=['الكل',...types()],list=Qs.filter(q=>G.f==='الكل'||q.t===G.f),q=cq(),cu=G.cur,hasO=q?.o?.length;
  $('app').innerHTML=`<div class="tb"><div class="card"><h3>نوع السؤال</h3>
  <div class="row">${T.map((t,i)=>`<button class="${G.f===t?'on':''}" onclick="setF(${i})">${esc(t)}</button>`).join('')}</div>
- <div class="row"><button onclick="rndT()">🎲 نوع عشوائي</button><button onclick="rndQ()">🎲 سؤال عشوائي</button><button onclick="form()">＋ سؤال جديد</button></div>
+ <div class="row"><button onclick="rndT()">🎲 نوع عشوائي</button><button onclick="rndQ()">🎲 سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button></div>
  <div class="qs">${list.map(x=>`<div class="qi ${x.id===cu.id?'sel':''}" onclick="sel('${x.id}')">${x.d==='h'?'🔴':'🟢'} ${esc(x.x)}</div>`).join('')||'<small>لا توجد أسئلة</small>'}</div>
  <h3 style="margin-top:14px">معاينة — لا تظهر على الشاشة</h3>
  ${q?`<div style="font-size:18px"><b>${esc(q.x)}</b> <small>(${esc(q.t)} · ${pts(q)} نقطة)</small></div>
@@ -16,10 +16,10 @@ function render(){if(!G)return;const T=['الكل',...types()],list=Qs.filter(q=
  <button class="big2 ${cu.a?'on':''}" onclick="tg('a')">${cu.a?'إخفاء':'عرض'} الإجابة</button></div>
  <h3>من جاوب؟</h3><div class="row">${G.cs.map((c,i)=>`<button class="${cu.buz===i?'on':''}" onclick="buz(${i})">${esc(c.n)}</button>`).join('')||'<small>أضف متسابقين</small>'}</div>
  ${cu.buz!=null?`<div class="row"><button class="big2 ok" onclick="grade(1)">✅ صح (+${pts(q)})</button><button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>`:''}
- <div class="row"><button onclick="form('${q.id}')">✏️ تعديل</button><button onclick="del('${q.id}')">🗑 حذف</button></div>`:'<small>اختر سؤالًا أو اضغط عشوائي</small>'}</div>
- <div class="card"><h3>المتسابقون</h3><div class="row"><input id="cn" placeholder="اسم المتسابق" style="flex:1;width:auto"><button onclick="addC()">＋</button></div>
+ <div class="row"><button onclick="openForm('${q.id}')">✏️ تعديل</button><button onclick="del('${q.id}')">🗑 حذف</button></div>`:'<small>اختر سؤالًا أو اضغط عشوائي</small>'}</div>
+ <div class="card"><h3>المتسابقون · ${esc(ME.u)}</h3><div class="row"><input id="cn" placeholder="اسم المتسابق" style="flex:1;width:auto"><button onclick="addC()">＋</button></div>
  ${G.cs.map((c,i)=>`<div class="ct"><b>${esc(c.n)}</b> — ${c.s}<div class="row"><button onclick="ch(${i},'s',1)">＋</button><button onclick="ch(${i},'s',-1)">−</button><button onclick="ch(${i},'y',1)">🟨 ${c.y}</button><button onclick="ch(${i},'r',1)">🟥 ${c.r}</button><button onclick="ch(${i},'x')">🗑</button></div></div>`).join('')}
- <div class="row"><button onclick="if(confirm('تصفير كل النقاط؟')){G.cs.forEach(c=>c.s=c.y=c.r=0);save()}">تصفير النقاط</button><button onclick="api('/api/reload')">🔄 تحديث الأسئلة</button></div></div></div>`}
+ <div class="row"><button onclick="if(confirm('تصفير كل النقاط؟')){G.cs.forEach(c=>c.s=c.y=c.r=0);save()}">تصفير النقاط</button><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="logout()">🚪 خروج</button></div></div></div>`}
 function save(){G.v=Date.now();render();api('/api/game','POST',G).catch(()=>toast('تعذر الاتصال بالسيرفر',1))}
 function toast(m,bad){const d=document.createElement('div');d.className='toast';if(bad)d.style.background='var(--no)';d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2000)}
 function setF(i){G.f=['الكل',...types()][i];save()}
@@ -33,7 +33,7 @@ function grade(ok){if(G.cur.res)return;G.cs[G.cur.buz].s+=ok?pts(cq()):-1;G.cur.
 function addC(){const n=$('cn').value.trim();if(n){G.cs.push({n,s:0,y:0,r:0});save()}}
 function ch(i,k,d){const c=G.cs[i];if(k==='x'){if(!confirm('حذف '+c.n+'؟'))return;G.cs.splice(i,1);G.cur.buz=null}else if(k==='s')c.s+=d;else{c[k]++;c.s-=k==='y'?1:3}save()}
 async function del(id){if(!confirm('حذف السؤال نهائيًا؟'))return;try{await api('/api/questions/'+id,'DELETE');G.cur={id:null,q:0,o:0,a:0,buz:null,res:null};save();toast('تم الحذف')}catch(e){toast(e.message,1)}}
-function form(id){const e=Qs.find(x=>x.id===id)||{o:[],d:'e',t:G.f!=='الكل'?G.f:''};
+function openForm(id){const e=Qs.find(x=>x.id===id)||{o:[],d:'e',t:G.f!=='الكل'?G.f:''};
  $('form').innerHTML=`<div class="modal"><div class="card"><h3>${id?'تعديل سؤال':'سؤال جديد'}</h3>
  <input id="ft" placeholder="النوع (ديني، ثقافة عامة...)" list="tl" value="${esc(e.t)}"><datalist id="tl">${types().map(t=>`<option value="${esc(t)}">`).join('')}</datalist>
  <select id="fd"><option value="e" ${e.d==='e'?'selected':''}>سهل (نقطة)</option><option value="h" ${e.d==='h'?'selected':''}>صعب (نقطتان)</option></select>
@@ -46,5 +46,8 @@ function form(id){const e=Qs.find(x=>x.id===id)||{o:[],d:'e',t:G.f!=='الكل'?
 async function saveQ(id){const g=k=>$(k).value.trim(),o=[0,1,2,3].map(i=>g('fo'+i)).filter(Boolean);
  if(!g('fx')||!g('ft'))return toast('اكتب النوع والسؤال',1);if(o.length?o.length<4:!g('fa'))return toast('أكمل 4 اختيارات أو اكتب إجابة نصية',1);
  try{await api('/api/questions','POST',{id:id||undefined,t:g('ft'),d:g('fd'),x:g('fx'),o,c:o.length?+g('fc'):-1,a:g('fa')});$('form').innerHTML='';toast('✔ اتحفظ في قاعدة البيانات')}catch(e){toast(e.message,1)}}
-connect(render);
+let ME=null;
+function copyLink(){const l=location.origin+'/screen/'+ME.room;(navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(()=>toast('اتنسخ الرابط')).catch(()=>prompt('انسخ الرابط:',l))}
+async function logout(){await api('/api/logout','POST');location='/'}
+api('/api/me').then(m=>{ME=m;connect(render);setInterval(()=>api('/api/ping').catch(()=>{}),240000)}).catch(()=>location='/');
 </script></body></html>

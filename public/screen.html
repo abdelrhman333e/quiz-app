@@ -1,11 +1,12 @@
 <!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css"><title>شاشة العرض</title></head>
 <body><div id="app"></div><script src="/common.js"></script><script>
-function render(){if(!G)return;const q=cq(),cu=G.cur,b=cu.buz!=null?G.cs[cu.buz]:null,show=q&&cu.q;
+const room=location.pathname.split('/')[2];
+function render(){if(!V)return;const b=V.buz!=null?V.cs[V.buz]:null,cu=V;
  document.getElementById('app').innerHTML=`<div class="scr"><div class="stage">
- ${show?`<div class="tag">${esc(q.t)} · ${q.d==='h'?'صعب — نقطتان':'سهل — نقطة'}</div><div class="card qbox">${esc(q.x)}</div>
- ${cu.o&&q.o?.length?`<div class="opts">${q.o.map((o,i)=>`<div class="opt ${cu.a&&q.c===i?'ok':''}"><b>${LB[i]}</b>${esc(o)}</div>`).join('')}</div>`:''}
- ${cu.a?`<div class="ans">✔ ${esc(q.o?.length?q.o[q.c]:q.a)}</div>`:''}`:'<div class="wait">في انتظار السؤال...</div>'}
- ${b?`<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${cu.res==='ok'?'✅':cu.res==='no'?'❌':''}</div>`:''}</div>
- <div class="card" style="align-self:start"><h3>🏆 الترتيب</h3><div class="board">${board()}</div></div></div>`}
-connect(render);
+ ${V.shown?`<div class="tag">${esc(V.t)} · ${V.d==='h'?'صعب — نقطتان':'سهل — نقطة'}</div><div class="card qbox">${esc(V.x)}</div>
+ ${V.o?`<div class="opts">${V.o.map((o,i)=>`<div class="opt ${V.c===i?'ok':''}"><b>${LB[i]}</b>${esc(o)}</div>`).join('')}</div>`:''}
+ ${V.ans?`<div class="ans">✔ ${esc(V.ans)}</div>`:''}`:'<div class="wait">في انتظار السؤال...</div>'}
+ ${b?`<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res==='ok'?'✅':V.res==='no'?'❌':''}</div>`:''}</div>
+ <div class="card" style="align-self:start"><h3>🏆 الترتيب</h3><div class="board">${board(V.cs)}</div></div></div>`}
+if(room)connectView(room,render);else document.getElementById('app').innerHTML='<div class="home"><h1>افتح رابط الشاشة من التابلت</h1></div>';
 </script></body></html>
