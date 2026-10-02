@@ -27,9 +27,11 @@ const fail=k=>{const f=fails.get(k);fails.set(k,{n:(f&&Date.now()-f.t<6e5?f.n:0)
 // ---- بيانات
 const getQs=async u=>(await q('SELECT data FROM questions WHERE user_id=$1 ORDER BY n',[u])).map(r=>r.data);
 const getGame=async u=>(await q('SELECT data FROM games WHERE user_id=$1',[u]))[0]?.data||NEWGAME();
-function view(g,qs){const c=g.cur,x=qs.find(a=>a.id===c.id),sh=!!(x&&c.q);
+function view(g,qs){const c=g.cur,x=qs.find(a=>a.id===c.id),sh=!!(x&&c.q),top=x?.kind==='top5';
  const v={cs:(g.cs||[]).map(({n,s,y,r})=>({n,s,y,r})),shown:sh,buz:c.buz,res:c.res};
- if(sh)Object.assign(v,{t:x.t,d:x.d,x:x.x,o:c.o&&x.o?.length?x.o:null,c:c.a&&x.o?.length?x.c:null,ans:c.a?(x.o?.length?x.o[x.c]:x.a):null});
+ if(sh){Object.assign(v,{t:x.t,d:x.d,x:x.x,kind:top?'top5':'normal'});
+    if(top)v.revealed=(c.revealed||[]).filter(i=>Number.isInteger(i)&&i>=0&&i<5).map(i=>({rank:i+1,a:x.r?.[i]})).filter(a=>a.a);
+    else Object.assign(v,{o:c.o&&x.o?.length?x.o:null,c:c.a&&x.o?.length?x.c:null,ans:c.a?(x.o?.length?x.o[x.c]:x.a):null});}
  return v}
 // ---- بث لحظي
 const rooms=new Map();
@@ -43,9 +45,9 @@ const body=req=>new Promise(ok=>{let b='';req.on('data',c=>{b+=c;if(b.length>2e5
 const json=(res,o,c=200,h={})=>{res.writeHead(c,{'Content-Type':'application/json',...h});res.end(JSON.stringify(o))};
 const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml'};
 const str=(v,n)=>typeof v==='string'?v.trim().slice(0,n):'';
-function cleanQ(b){const o=Array.isArray(b.o)?b.o.map(s=>str(s,200)).filter(Boolean).slice(0,4):[];
- const x={id:str(b.id,40)||'q'+Date.now(),t:str(b.t,40),d:b.d==='h'?'h':'e',x:str(b.x,500),o,c:o.length?Math.min(3,Math.max(0,+b.c||0)):-1,a:str(b.a,300)};
- return x.t&&x.x&&(o.length===4||(!o.length&&x.a))?x:null}
+function cleanQ(b){const kind=b.kind==='top5'?'top5':'normal',r=kind==='top5'&&Array.isArray(b.r)?b.r.map(s=>str(s,200)).slice(0,5):[],o=kind==='normal'&&Array.isArray(b.o)?b.o.map(s=>str(s,200)).filter(Boolean).slice(0,4):[];
+ const x={id:str(b.id,40)||'q'+Date.now(),t:str(b.t,40),d:b.d==='h'?'h':'e',x:str(b.x,500),kind,r,o,c:o.length?Math.min(3,Math.max(0,+b.c||0)):-1,a:str(b.a,300)};
+ return x.t&&x.x&&(kind==='top5'?r.length===5&&r.every(Boolean):o.length===4||(!o.length&&x.a))?x:null}
 http.createServer(async(req,res)=>{try{
  const url=new URL(req.url,'http://x'),u=url.pathname,ip=req.headers['x-forwarded-for']||req.socket.remoteAddress;
  const secure=req.headers['x-forwarded-proto']==='https'?'; Secure':'';

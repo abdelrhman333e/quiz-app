@@ -3,7 +3,8 @@
 const room=location.pathname.split('/')[2];
 function render(){if(!V)return;const b=V.buz!=null?V.cs[V.buz]:null,cu=V;
  document.getElementById('app').innerHTML=`<div class="scr"><div class="stage">
- ${V.shown?`<div class="tag">${esc(V.t)} · ${V.d==='h'?'صعب — نقطتان':'سهل — نقطة'}</div><div class="card qbox">${esc(V.x)}</div>
+ ${V.shown?`<div class="tag">${esc(V.t)} · ${V.kind==='top5'?'النقاط حسب الترتيب':V.d==='h'?'صعب — نقطتان':'سهل — نقطة'}</div><div class="card qbox">${esc(V.x)}</div>
+ ${V.kind==='top5'&&V.revealed?.length?`<div class="opts">${V.revealed.map(a=>`<div class="opt ok"><b>${a.rank}</b>${esc(a.a)}</div>`).join('')}</div>`:''}
  ${V.o?`<div class="opts">${V.o.map((o,i)=>`<div class="opt ${V.c===i?'ok':''}"><b>${LB[i]}</b>${esc(o)}</div>`).join('')}</div>`:''}
  ${V.ans?`<div class="ans">✔ ${esc(V.ans)}</div>`:''}`:'<div class="wait">في انتظار السؤال...</div>'}
  ${b?`<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res==='ok'?'✅':V.res==='no'?'❌':''}</div>`:''}</div>

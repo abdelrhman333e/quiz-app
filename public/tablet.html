@@ -3,19 +3,20 @@
 const $=id=>document.getElementById(id);
 const pts=q=>PT[q.d];
 function types(){return[...new Set(Qs.map(q=>q.t))]}
-function render(){if(!G)return;const T=['الكل',...types()],list=Qs.filter(q=>G.f==='الكل'||q.t===G.f),q=cq(),cu=G.cur,hasO=q?.o?.length;
+function render(){if(!G)return;const T=['الكل',...types()],list=Qs.filter(q=>G.f==='الكل'||q.t===G.f),q=cq(),cu=G.cur,hasO=q?.o?.length,top=q?.kind==='top5';
  $('app').innerHTML=`<div class="tb"><div class="card"><h3>نوع السؤال</h3>
  <div class="row">${T.map((t,i)=>`<button class="${G.f===t?'on':''}" onclick="setF(${i})">${esc(t)}</button>`).join('')}</div>
  <div class="row"><button onclick="rndT()">🎲 نوع عشوائي</button><button onclick="rndQ()">🎲 سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button></div>
  <div class="qs">${list.map(x=>`<div class="qi ${x.id===cu.id?'sel':''}" onclick="sel('${x.id}')">${x.d==='h'?'🔴':'🟢'} ${esc(x.x)}</div>`).join('')||'<small>لا توجد أسئلة</small>'}</div>
  <h3 style="margin-top:14px">معاينة — لا تظهر على الشاشة</h3>
  ${q?`<div style="font-size:18px"><b>${esc(q.x)}</b> <small>(${esc(q.t)} · ${pts(q)} نقطة)</small></div>
- ${hasO?q.o.map((o,i)=>`<div style="${q.c===i?'color:var(--ok);font-weight:700':''}">${LB[i]}) ${esc(o)}</div>`).join(''):`<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div>`}
+ ${top?q.r.map((a,i)=>`<div style="${cu.revealed?.includes(i)?'color:var(--ok);font-weight:700':''}">${i+1}. ${esc(a)}</div>`).join(''):hasO?q.o.map((o,i)=>`<div style="${q.c===i?'color:var(--ok);font-weight:700':''}">${LB[i]}) ${esc(o)}</div>`).join(''):`<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div>`}
  <div class="row"><button class="big2 ${cu.q?'on':''}" onclick="tg('q')">${cu.q?'إخفاء':'عرض'} السؤال</button>
+ ${top?q.r.map((a,i)=>`<button class="big2 ${cu.revealed?.includes(i)?'on':''}" onclick="revealRank(${i})">${cu.revealed?.includes(i)?'تم كشف':'كشف'} رقم ${i+1}</button>`).join(''):''}
  ${hasO?`<button class="big2 ${cu.o?'on':''}" onclick="tg('o')">${cu.o?'إخفاء':'عرض'} الاختيارات</button>`:''}
- <button class="big2 ${cu.a?'on':''}" onclick="tg('a')">${cu.a?'إخفاء':'عرض'} الإجابة</button></div>
+ ${top?'':`<button class="big2 ${cu.a?'on':''}" onclick="tg('a')">${cu.a?'إخفاء':'عرض'} الإجابة</button>`}</div>
  <h3>من جاوب؟</h3><div class="row">${G.cs.map((c,i)=>`<button class="${cu.buz===i?'on':''}" onclick="buz(${i})">${esc(c.n)}</button>`).join('')||'<small>أضف متسابقين</small>'}</div>
- ${cu.buz!=null?`<div class="row"><button class="big2 ok" onclick="grade(1)">✅ صح (+${pts(q)})</button><button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>`:''}
+ ${cu.buz!=null?`<div class="row">${top&&cu.rank==null?'<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>':`<button class="big2 ok" onclick="grade(1${top?`,${cu.rank}`:''})">✅ صح (+${top?cu.rank+1:pts(q)})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>`:''}
  <div class="row"><button onclick="openForm('${q.id}')">✏️ تعديل</button><button onclick="del('${q.id}')">🗑 حذف</button></div>`:'<small>اختر سؤالًا أو اضغط عشوائي</small>'}</div>
  <div class="card"><h3>المتسابقون · ${esc(ME.u)}</h3><div class="row"><input id="cn" placeholder="اسم المتسابق" style="flex:1;width:auto"><button onclick="addC()">＋</button></div>
  ${G.cs.map((c,i)=>`<div class="ct"><b>${esc(c.n)}</b> — ${c.s}<div class="row"><button onclick="ch(${i},'s',1)">＋</button><button onclick="ch(${i},'s',-1)">−</button><button onclick="ch(${i},'y',1)">🟨 ${c.y}</button><button onclick="ch(${i},'r',1)">🟥 ${c.r}</button><button onclick="ch(${i},'x')">🗑</button></div></div>`).join('')}
@@ -26,26 +27,31 @@ function setF(i){G.f=['الكل',...types()][i];save()}
 function rndT(){const t=types();G.f=t[Math.floor(Math.random()*t.length)];rndQ()}
 function rndQ(){const l=Qs.filter(q=>G.f==='الكل'||q.t===G.f);if(!l.length)return;let f=l.filter(q=>!G.used.includes(q.id));
  if(!f.length){G.used=G.used.filter(id=>!l.some(q=>q.id===id));f=l}sel(f[Math.floor(Math.random()*f.length)].id)}
-function sel(id){G.cur={id,q:0,o:0,a:0,buz:null,res:null};if(!G.used.includes(id))G.used.push(id);save()}
+function sel(id){G.cur={id,q:0,o:0,a:0,buz:null,res:null,revealed:[],rank:null,awards:[]};if(!G.used.includes(id))G.used.push(id);save()}
 function tg(k){G.cur[k]=+!G.cur[k];if(k==='q'&&!G.cur.q)G.cur.o=G.cur.a=0;save()}
+function revealRank(i){if(!G.cur.revealed)G.cur.revealed=[];if(!G.cur.revealed.includes(i))G.cur.revealed.push(i);G.cur.rank=i;save()}
 function buz(i){G.cur.buz=G.cur.buz===i?null:i;G.cur.res=null;save()}
-function grade(ok){if(G.cur.res)return;G.cs[G.cur.buz].s+=ok?pts(cq()):-1;G.cur.res=ok?'ok':'no';if(ok)G.cur.a=1;save()}
+function grade(ok,rank=null){if(G.cur.res)return;const q=cq(),top=q?.kind==='top5';if(top&&ok&&rank==null)return toast('اكشف ترتيب الإجابة أولًا',1);const key=top&&ok?`${G.cur.buz}:${rank}`:null;if(key&&G.cur.awards?.includes(key))return toast('تم احتساب نقاط هذا الترتيب للاعب',1);G.cs[G.cur.buz].s+=ok?(top?rank+1:pts(q)):-1;if(key){if(!G.cur.awards)G.cur.awards=[];G.cur.awards.push(key)}G.cur.res=ok?'ok':'no';if(ok)G.cur.a=1;save()}
 function addC(){const n=$('cn').value.trim();if(n){G.cs.push({n,s:0,y:0,r:0});save()}}
 function ch(i,k,d){const c=G.cs[i];if(k==='x'){if(!confirm('حذف '+c.n+'؟'))return;G.cs.splice(i,1);G.cur.buz=null}else if(k==='s')c.s+=d;else{c[k]++;c.s-=k==='y'?1:3}save()}
 async function del(id){if(!confirm('حذف السؤال نهائيًا؟'))return;try{await api('/api/questions/'+id,'DELETE');G.cur={id:null,q:0,o:0,a:0,buz:null,res:null};save();toast('تم الحذف')}catch(e){toast(e.message,1)}}
-function openForm(id){const e=Qs.find(x=>x.id===id)||{o:[],d:'e',t:G.f!=='الكل'?G.f:''};
+function openForm(id){const e=Qs.find(x=>x.id===id)||{o:[],r:[],kind:'normal',d:'e',t:G.f!=='الكل'?G.f:''};
  $('form').innerHTML=`<div class="modal"><div class="card"><h3>${id?'تعديل سؤال':'سؤال جديد'}</h3>
  <input id="ft" placeholder="النوع (ديني، ثقافة عامة...)" list="tl" value="${esc(e.t)}"><datalist id="tl">${types().map(t=>`<option value="${esc(t)}">`).join('')}</datalist>
- <select id="fd"><option value="e" ${e.d==='e'?'selected':''}>سهل (نقطة)</option><option value="h" ${e.d==='h'?'selected':''}>صعب (نقطتان)</option></select>
+ <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind==='top5'?'':'selected'}>سؤال عادي</option><option value="top5" ${e.kind==='top5'?'selected':''}>توب 5 — إجابات مرتبة</option></select>
  <input id="fx" placeholder="نص السؤال" value="${esc(e.x)}">
+ <div id="normalFields">
+ <select id="fd"><option value="e" ${e.d==='e'?'selected':''}>سهل (نقطة)</option><option value="h" ${e.d==='h'?'selected':''}>صعب (نقطتان)</option></select>
  <small>الاختيارات — اتركها فارغة لو السؤال بدون اختيارات</small>
  ${[0,1,2,3].map(i=>`<input id="fo${i}" placeholder="الاختيار ${LB[i]}" value="${esc(e.o?.[i])}">`).join('')}
  <select id="fc">${LB.map((l,i)=>`<option value="${i}" ${e.c===i?'selected':''}>الصحيح: ${l}</option>`).join('')}</select>
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
- <div class="row"><button class="on big2" onclick="saveQ('${id||''}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`}
-async function saveQ(id){const g=k=>$(k).value.trim(),o=[0,1,2,3].map(i=>g('fo'+i)).filter(Boolean);
- if(!g('fx')||!g('ft'))return toast('اكتب النوع والسؤال',1);if(o.length?o.length<4:!g('fa'))return toast('أكمل 4 اختيارات أو اكتب إجابة نصية',1);
- try{await api('/api/questions','POST',{id:id||undefined,t:g('ft'),d:g('fd'),x:g('fx'),o,c:o.length?+g('fc'):-1,a:g('fa')});$('form').innerHTML='';toast('✔ اتحفظ في قاعدة البيانات')}catch(e){toast(e.message,1)}}
+ </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى الخامس</small>${[0,1,2,3,4].map(i=>`<input id="fr${i}" placeholder="الإجابة رقم ${i+1}" value="${esc(e.r?.[i])}">`).join('')}</div>
+ <div class="row"><button class="on big2" onclick="saveQ('${id||''}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;toggleQuestionKind()}
+function toggleQuestionKind(){$('normalFields').hidden=$('fk').value==='top5';$('topFields').hidden=$('fk').value!=='top5'}
+async function saveQ(id){const g=k=>$(k).value.trim(),kind=$('fk').value,o=kind==='normal'?[0,1,2,3].map(i=>g('fo'+i)).filter(Boolean):[],r=kind==='top5'?[0,1,2,3,4].map(i=>g('fr'+i)):[];
+ if(!g('fx')||!g('ft'))return toast('اكتب النوع والسؤال',1);if(kind==='top5'?r.some(a=>!a):o.length?o.length<4:!g('fa'))return toast(kind==='top5'?'اكتب الإجابات الخمس بالترتيب':'أكمل 4 اختيارات أو اكتب إجابة نصية',1);
+ try{await api('/api/questions','POST',{id:id||undefined,t:g('ft'),d:g('fd'),x:g('fx'),kind,r,o,c:o.length?+g('fc'):-1,a:g('fa')});$('form').innerHTML='';toast('✔ اتحفظ في قاعدة البيانات')}catch(e){toast(e.message,1)}}
 let ME=null;
 function copyLink(){const l=location.origin+'/screen/'+ME.room;(navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(()=>toast('اتنسخ الرابط')).catch(()=>prompt('انسخ الرابط:',l))}
 async function logout(){await api('/api/logout','POST');location='/'}
