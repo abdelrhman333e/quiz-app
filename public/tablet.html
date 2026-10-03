@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1425"><link rel="manifest" href="/manifest.json"><link rel="stylesheet" href="/style.css?v=5"><title>تابلت التحكم</title></head>
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1425"><link rel="manifest" href="/manifest.json"><link rel="stylesheet" href="/style.css?v=6"><title>تابلت التحكم</title></head>
 <body><div id="app"></div><div id="form"></div><div id="videoModal"></div><script src="/common.js"></script><script>
 const $=id=>document.getElementById(id);
 const pts=q=>PT[q.d];
@@ -17,7 +17,7 @@ function render(){if(!G)return;const T=['الكل',...types()],list=Qs.filter(q=
  ${top?'':`<button class="big2 ${cu.a?'on':''}" onclick="tg('a')">${cu.a?'إخفاء':'عرض'} الإجابة</button>`}`}</div>
  <h3>من جاوب؟</h3><div class="row">${G.cs.map((c,i)=>`<button class="${cu.buz===i?'on':''}" onclick="buz(${i})">${esc(c.n)}</button>`).join('')||'<small>أضف متسابقين</small>'}</div>
  ${cu.buz!=null?`<div class="row">${top&&cu.rank==null?'<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>':`<button class="big2 ok" onclick="grade(1${top?`,${cu.rank}`:''})">✅ صح (+${top?cu.rank+1:pts(q)})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>`:''}
- <div class="row"><button onclick="openForm('${q.id}')">✏️ تعديل</button><button onclick="del('${q.id}')">🗑 حذف</button></div>`:'<small>اختر سؤالًا أو اضغط عشوائي</small>'}</div>
+ <div class="row"><button class="action-btn" onclick="openForm('${q.id}')"><span class="action-icon">✏️</span> تعديل</button><button class="action-btn" onclick="del('${q.id}')"><span class="action-icon">🗑️</span> حذف</button></div>`:'<small>اختر سؤالًا أو اضغط عشوائي</small>'}</div>
  <div class="card"><h3>المتسابقون · ${esc(ME.u)}</h3><div class="row"><input id="cn" placeholder="اسم المتسابق" style="flex:1;width:auto"><button onclick="addC()">＋</button></div>
  ${G.cs.map((c,i)=>`<div class="ct"><b>${esc(c.n)}</b> — ${c.s}<div class="row"><button onclick="ch(${i},'s',1)">＋</button><button onclick="ch(${i},'s',-1)">−</button><button onclick="ch(${i},'y',1)">🟨 ${c.y}</button><button onclick="ch(${i},'r',1)">🟥 ${c.r}</button><button onclick="ch(${i},'x')">🗑</button></div></div>`).join('')}
  <div class="row"><button onclick="if(confirm('تصفير كل النقاط؟')){G.cs.forEach(c=>c.s=c.y=c.r=0);save()}">تصفير النقاط</button><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="logout()">🚪 خروج</button></div></div></div>`}
