@@ -6,7 +6,7 @@ const SECRET=process.env.SESSION_SECRET||crypto.createHash('sha256').update(DBU|
 const db=new Pool({connectionString:DBU,max:5,ssl:DBU&&!/localhost|127\.0\.0\.1/.test(DBU)?{rejectUnauthorized:false}:undefined});
 const q=(s,p)=>db.query(s,p).then(r=>r.rows);
 const SEED=JSON.parse(fs.readFileSync(path.join(__dirname,'seed.json'),'utf8'));
-const NEWGAME=()=>({cs:[],cur:{id:null,q:0,o:0,a:0,buz:null,res:null},f:'الكل',used:[],v:0});
+const NEWGAME=()=>({cs:[],cur:{id:null,q:0,o:0,a:0,buz:null,res:null},f:'الكل',used:[],mode:'quiz',rev:{word:'',started:0},v:0});
 async function init(){
  await q(`CREATE TABLE IF NOT EXISTS users(id SERIAL PRIMARY KEY,username TEXT UNIQUE NOT NULL,pass TEXT NOT NULL,room TEXT UNIQUE NOT NULL)`);
  await q(`CREATE TABLE IF NOT EXISTS questions(n SERIAL,user_id INT NOT NULL,id TEXT NOT NULL,data JSONB NOT NULL,PRIMARY KEY(user_id,id))`);
@@ -28,7 +28,8 @@ const fail=k=>{const f=fails.get(k);fails.set(k,{n:(f&&Date.now()-f.t<6e5?f.n:0)
 const getQs=async u=>(await q('SELECT data FROM questions WHERE user_id=$1 ORDER BY n',[u])).map(r=>r.data);
 const getGame=async u=>(await q('SELECT data FROM games WHERE user_id=$1',[u]))[0]?.data||NEWGAME();
 function view(g,qs){const c=g.cur,x=qs.find(a=>a.id===c.id),sh=!!(x&&c.q),top=x?.kind==='top5';
- const v={cs:(g.cs||[]).map(({n,s,y,r})=>({n,s,y,r})),shown:sh,buz:c.buz,res:c.res};
+ const v={cs:(g.cs||[]).map(({n,s,y,r})=>({n,s,y,r})),shown:sh,buz:c.buz,res:c.res,mode:g.mode||'quiz'};
+ if(v.mode==='reverse')return {...v,reverse:g.rev||{word:'',started:0}};
  if(sh){Object.assign(v,{t:x.t,d:x.d,x:x.x,kind:top?'top5':'normal'});
     if(top)v.revealed=(c.revealed||[]).filter(i=>Number.isInteger(i)&&i>=0&&i<5).map(i=>({rank:i+1,a:x.r?.[i]})).filter(a=>a.a);
     else Object.assign(v,{o:c.o&&x.o?.length?x.o:null,c:c.a&&x.o?.length?x.c:null,ans:c.a?(x.o?.length?x.o[x.c]:x.a):null});}
