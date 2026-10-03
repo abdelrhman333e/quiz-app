@@ -27,9 +27,10 @@ const fail=k=>{const f=fails.get(k);fails.set(k,{n:(f&&Date.now()-f.t<6e5?f.n:0)
 // ---- بيانات
 const getQs=async u=>(await q('SELECT data FROM questions WHERE user_id=$1 ORDER BY n',[u])).map(r=>r.data);
 const getGame=async u=>(await q('SELECT data FROM games WHERE user_id=$1',[u]))[0]?.data||NEWGAME();
-function view(g,qs){const c=g.cur,x=qs.find(a=>a.id===c.id),sh=!!(x&&c.q),top=x?.kind==='top5',reverse=x?.kind==='reverse';
- const v={cs:(g.cs||[]).map(({n,s,y,r})=>({n,s,y,r})),shown:sh,buz:c.buz,res:c.res,mode:reverse?'reverse':'quiz',tutorialPlaying:!!g.tutorialPlaying,tutorialStarted:g.tutorialStarted||0};
+function view(g,qs){const c=g.cur,x=qs.find(a=>a.id===c.id),sh=!!(x&&c.q),top=x?.kind==='top5',reverse=x?.kind==='reverse',visual=x?.kind==='visual';
+ const v={cs:(g.cs||[]).map(({n,s,y,r})=>({n,s,y,r})),shown:sh,buz:c.buz,res:c.res,mode:reverse?'reverse':visual?'visual':'quiz',tutorialPlaying:!!g.tutorialPlaying,tutorialStarted:g.tutorialStarted||0};
  if(reverse)return {...v,reverse:{letter:c.rev?.letter||'',started:c.rev?.started||0}};
+ if(visual)return sh?{...v,t:x.t,image:x.image,emoji:x.emoji,ans:c.a?x.a:null}:v;
  if(sh){Object.assign(v,{t:x.t,d:x.d,x:x.x,kind:top?'top5':'normal'});
     if(top)v.revealed=(c.revealed||[]).filter(i=>Number.isInteger(i)&&i>=0&&i<5).map(i=>({rank:i+1,a:x.r?.[i]})).filter(a=>a.a);
     else Object.assign(v,{o:c.o&&x.o?.length?x.o:null,c:c.a&&x.o?.length?x.c:null,ans:c.a?(x.o?.length?x.o[x.c]:x.a):null});}
@@ -46,9 +47,10 @@ const body=req=>new Promise(ok=>{let b='';req.on('data',c=>{b+=c;if(b.length>2e5
 const json=(res,o,c=200,h={})=>{res.writeHead(c,{'Content-Type':'application/json',...h});res.end(JSON.stringify(o))};
 const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.mp4':'video/mp4'};
 const str=(v,n)=>typeof v==='string'?v.trim().slice(0,n):'';
-function cleanQ(b){const kind=b.kind==='top5'||b.kind==='reverse'?b.kind:'normal',r=kind==='top5'&&Array.isArray(b.r)?b.r.map(s=>str(s,200)).slice(0,5):[],o=kind==='normal'&&Array.isArray(b.o)?b.o.map(s=>str(s,200)).filter(Boolean).slice(0,4):[];
- const a=str(b.a,300),x={id:str(b.id,40)||'q'+Date.now(),t:str(b.t,40),d:b.d==='h'?'h':'e',x:kind==='reverse'?a:str(b.x,500),kind,r,o,c:o.length?Math.min(3,Math.max(0,+b.c||0)):-1,a};
- return x.t&&x.x&&(kind==='reverse'?!!a:kind==='top5'?r.length===5&&r.every(Boolean):o.length===4||(!o.length&&x.a))?x:null}
+function cleanImage(v){const image=str(v,1000);if(image.startsWith('/')&&!image.startsWith('//'))return image;try{return ['http:','https:'].includes(new URL(image).protocol)?image:''}catch{return ''}}
+function cleanQ(b){const kind=['top5','reverse','visual'].includes(b.kind)?b.kind:'normal',r=kind==='top5'&&Array.isArray(b.r)?b.r.map(s=>str(s,200)).slice(0,5):[],o=kind==='normal'&&Array.isArray(b.o)?b.o.map(s=>str(s,200)).filter(Boolean).slice(0,4):[];
+ const a=str(b.a,300),x={id:str(b.id,40)||'q'+Date.now(),t:str(b.t,40),d:b.d==='h'?'h':'e',x:kind==='reverse'?a:str(b.x,500),kind,r,o,c:o.length?Math.min(3,Math.max(0,+b.c||0)):-1,a,image:kind==='visual'?cleanImage(b.image):'',emoji:kind==='visual'?str(b.emoji,20):''};
+ return x.t&&x.x&&(kind==='reverse'?!!a:kind==='visual'?!!a&&!!(x.image||x.emoji):kind==='top5'?r.length===5&&r.every(Boolean):o.length===4||(!o.length&&x.a))?x:null}
 http.createServer(async(req,res)=>{try{
  const url=new URL(req.url,'http://x'),u=url.pathname,ip=req.headers['x-forwarded-for']||req.socket.remoteAddress;
  const secure=req.headers['x-forwarded-proto']==='https'?'; Secure':'';
