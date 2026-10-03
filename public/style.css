@@ -24,13 +24,22 @@ small{color:var(--mut)}
 .stage{display:flex;flex-direction:column;gap:18px;justify-content:center}
 .tag{align-self:center;background:rgba(7,139,255,.24);border:1px solid var(--p);border-radius:30px;padding:6px 22px;font-size:clamp(14px,2vw,24px)}
 .qbox{text-align:center;font-size:clamp(28px,5vw,64px);font-weight:700;line-height:1.5;padding:30px}
+.qbox.animate-in,.ans.animate-in{animation:stageEnter .48s cubic-bezier(.2,.7,.2,1) both}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opts.animate-options>.opt,.visual-clues.animate-options>*{animation:stageEnter .45s ease both}
+.opt.animate-in{animation:stageEnter .45s ease both}
+.opts.animate-options>.opt:nth-child(1),.visual-clues.animate-options>*:nth-child(1){animation-delay:0s}
+.opts.animate-options>.opt:nth-child(2),.visual-clues.animate-options>*:nth-child(2){animation-delay:.12s}
+.opts.animate-options>.opt:nth-child(3){animation-delay:.24s}
+.opts.animate-options>.opt:nth-child(4){animation-delay:.36s}
 .opt{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:20px;font-size:clamp(20px,3vw,40px);display:flex;gap:14px;align-items:center}
 .opt b{width:1.6em;height:1.6em;border-radius:50%;background:var(--p);display:grid;place-items:center;flex:none;font-size:.8em}
 .opt.ok{background:var(--ok);border-color:#86efac;animation:pop .4s}
 .ans{text-align:center;font-size:clamp(22px,3.5vw,44px);color:var(--ok);font-weight:700}
 .buz{align-self:center;background:linear-gradient(135deg,#079cff,#0662ed);border-radius:24px;padding:16px 40px;font-size:clamp(22px,4vw,48px);font-weight:800;animation:pop .35s}
 @keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes stageEnter{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.animate-in,.opts.animate-options>.opt,.visual-clues.animate-options>*{animation:none!important}}
 .wait{text-align:center;color:var(--mut);font-size:clamp(24px,4vw,48px)}
 .reverse-letter{display:grid;place-items:center;align-self:stretch;width:100%;min-height:230px;text-align:center;font-size:clamp(96px,18vw,220px);font-weight:800;line-height:1.1}
 .visual-clues{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;min-height:220px}

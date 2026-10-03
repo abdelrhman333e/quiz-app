@@ -1,19 +1,23 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css?v=6"><title>شاشة العرض</title></head>
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css?v=10"><title>شاشة العرض</title></head>
 <body><div id="app"></div><script src="/common.js"></script><script>
 const room=location.pathname.split('/')[2];
 let reverseTimer;
+let lastQuestionKey='',lastOptionsKey='',lastAnswerKey='',lastTop5Key='',lastRevealedRanks=[];
 function reverseStage(){const letter=V.reverse?.letter,elapsed=Date.now()-(V.reverse?.started||0),visible=!!letter&&elapsed<900;
  if(visible)reverseTimer=setTimeout(render,905-elapsed);
  return `<div class="tag">الكلمات المعكوسة</div>${visible?`<div class="reverse-letter" dir="rtl">${esc(letter)}</div>`:'<div class="wait">اضغط عرض الحرف التالي من التابلت</div>'}`}
-function visualStage(){if(!V.shown)return '<div class="wait">في انتظار السؤال...</div>';return `<div class="tag">${esc(V.t)}</div><div class="visual-clues">${V.image?`<img class="visual-clue" src="${esc(V.image)}" alt="قرينة بصرية">`:''}${V.emoji?`<div class="visual-emoji">${esc(V.emoji)}</div>`:''}</div>${V.ans?`<div class="ans">✔ ${esc(V.ans)}</div>`:''}`}
+function visualStage(animateQuestion,animateAnswer){if(!V.shown)return '<div class="wait">في انتظار السؤال...</div>';return `<div class="tag">${esc(V.t)}</div><div class="visual-clues ${animateQuestion?'animate-options':''}">${V.image?`<img class="visual-clue" src="${esc(V.image)}" alt="قرينة بصرية">`:''}${V.emoji?`<div class="visual-emoji">${esc(V.emoji)}</div>`:''}</div>${V.ans?`<div class="ans ${animateAnswer?'animate-in':''}">✔ ${esc(V.ans)}</div>`:''}`}
 function render(){if(!V)return;const activeVideo=document.getElementById('screenTutorial');if(V.tutorialPlaying&&activeVideo){document.querySelector('.board').innerHTML=board(V.cs);return}clearTimeout(reverseTimer);const b=V.buz!=null?V.cs[V.buz]:null,cu=V;
+ const questionContent=V.mode==='visual'?`${V.image||''}|${V.emoji||''}`:V.x||'',questionKey=V.shown&&(V.mode==='quiz'||V.mode==='visual')?`${V.mode}|${V.t}|${questionContent}`:'',animateQuestion=!!questionKey&&questionKey!==lastQuestionKey;
+ const optionsKey=V.o?`${questionKey}|${V.o.join('|')}`:'',animateOptions=!!optionsKey&&optionsKey!==lastOptionsKey,answerKey=V.ans?`${questionKey}|${V.ans}`:'',animateAnswer=!!answerKey&&answerKey!==lastAnswerKey,revealedRanks=lastTop5Key===questionKey?lastRevealedRanks:[];
  document.getElementById('app').innerHTML=`<div class="scr"><div class="stage">
- ${V.tutorialPlaying?`<div class="tag">الفيديو التوضيحي</div><video id="screenTutorial" class="screen-tutorial" controls autoplay muted playsinline><source src="/tutorial.mp4?v=3" type="video/mp4"></video>`:V.mode==='reverse'?reverseStage():V.mode==='visual'?visualStage():V.shown?`<div class="tag">${esc(V.t)} · ${V.kind==='top5'?'النقاط حسب الترتيب':V.d==='h'?'صعب — نقطتان':'سهل — نقطة'}</div><div class="card qbox">${esc(V.x)}</div>
- ${V.kind==='top5'&&V.revealed?.length?`<div class="opts">${V.revealed.map(a=>`<div class="opt ok"><b>${a.rank}</b>${esc(a.a)}</div>`).join('')}</div>`:''}
- ${V.o?`<div class="opts">${V.o.map((o,i)=>`<div class="opt ${V.c===i?'ok':''}"><b>${LB[i]}</b>${esc(o)}</div>`).join('')}</div>`:''}
- ${V.ans?`<div class="ans">✔ ${esc(V.ans)}</div>`:''}`:'<div class="wait">في انتظار السؤال...</div>'}
+${V.tutorialPlaying?`<div class="tag">الفيديو التوضيحي</div><video id="screenTutorial" class="screen-tutorial" controls autoplay muted playsinline><source src="/tutorial.mp4?v=3" type="video/mp4"></video>`:V.mode==='reverse'?reverseStage():V.mode==='visual'?visualStage(animateQuestion,animateAnswer):V.shown?`<div class="tag">${esc(V.t)} · ${V.kind==='top5'?'النقاط حسب الترتيب':V.d==='h'?'صعب — نقطتان':'سهل — نقطة'}</div><div class="card qbox ${animateQuestion?'animate-in':''}">${esc(V.x)}</div>
+ ${V.kind==='top5'&&V.revealed?.length?`<div class="opts">${V.revealed.map(a=>`<div class="opt ok ${revealedRanks.includes(a.rank)?'':'animate-in'}"><b>${a.rank}</b>${esc(a.a)}</div>`).join('')}</div>`:''}
+ ${V.o?`<div class="opts ${animateOptions?'animate-options':''}">${V.o.map((o,i)=>`<div class="opt ${V.c===i?'ok':''}"><b>${LB[i]}</b>${esc(o)}</div>`).join('')}</div>`:''}
+ ${V.ans?`<div class="ans ${animateAnswer?'animate-in':''}">✔ ${esc(V.ans)}</div>`:''}`:'<div class="wait">في انتظار السؤال...</div>'}
  ${V.mode!=='reverse'&&b?`<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res==='ok'?'✅':V.res==='no'?'❌':''}</div>`:''}</div>
  <div class="card" style="align-self:start"><h3>🏆 الترتيب</h3><div class="board">${board(V.cs)}</div></div></div>`;
+ lastQuestionKey=questionKey;lastOptionsKey=optionsKey;lastAnswerKey=answerKey;lastTop5Key=questionKey;lastRevealedRanks=V.mode==='quiz'&&V.kind==='top5'?(V.revealed||[]).map(a=>a.rank):[];
  if(V.tutorialPlaying){const video=document.getElementById('screenTutorial');video.addEventListener('loadedmetadata',()=>{const elapsed=Math.max(0,(Date.now()-(V.tutorialStarted||Date.now()))/1000);if(elapsed<video.duration)video.currentTime=elapsed;video.play().catch(()=>{})},{once:true})}}
 if(room)connectView(room,render);else document.getElementById('app').innerHTML='<div class="home"><h1>افتح رابط الشاشة من التابلت</h1></div>';
 </script></body></html>
