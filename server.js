@@ -44,7 +44,7 @@ setInterval(()=>rooms.forEach(s=>s.forEach(c=>c.res.write(': ka\n\n'))),25000);
 // ---- مساعدات HTTP
 const body=req=>new Promise(ok=>{let b='';req.on('data',c=>{b+=c;if(b.length>2e5)req.destroy()});req.on('end',()=>{try{ok(JSON.parse(b))}catch{ok(null)}})});
 const json=(res,o,c=200,h={})=>{res.writeHead(c,{'Content-Type':'application/json',...h});res.end(JSON.stringify(o))};
-const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml'};
+const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.mp4':'video/mp4'};
 const str=(v,n)=>typeof v==='string'?v.trim().slice(0,n):'';
 function cleanQ(b){const kind=b.kind==='top5'||b.kind==='reverse'?b.kind:'normal',r=kind==='top5'&&Array.isArray(b.r)?b.r.map(s=>str(s,200)).slice(0,5):[],o=kind==='normal'&&Array.isArray(b.o)?b.o.map(s=>str(s,200)).filter(Boolean).slice(0,4):[];
  const a=str(b.a,300),x={id:str(b.id,40)||'q'+Date.now(),t:str(b.t,40),d:b.d==='h'?'h':'e',x:kind==='reverse'?a:str(b.x,500),kind,r,o,c:o.length?Math.min(3,Math.max(0,+b.c||0)):-1,a};
