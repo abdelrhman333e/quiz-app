@@ -5,13 +5,14 @@ let reverseTimer;
 function reverseStage(){const letter=V.reverse?.letter,elapsed=Date.now()-(V.reverse?.started||0),visible=!!letter&&elapsed<900;
  if(visible)reverseTimer=setTimeout(render,905-elapsed);
  return `<div class="tag">الكلمات المعكوسة</div>${visible?`<div class="reverse-letter" dir="rtl">${esc(letter)}</div>`:'<div class="wait">اضغط عرض الحرف التالي من التابلت</div>'}`}
-function render(){if(!V)return;clearTimeout(reverseTimer);const b=V.buz!=null?V.cs[V.buz]:null,cu=V;
+function render(){if(!V)return;const activeVideo=document.getElementById('screenTutorial');if(V.tutorialPlaying&&activeVideo){document.querySelector('.board').innerHTML=board(V.cs);return}clearTimeout(reverseTimer);const b=V.buz!=null?V.cs[V.buz]:null,cu=V;
  document.getElementById('app').innerHTML=`<div class="scr"><div class="stage">
- ${V.mode==='reverse'?reverseStage():V.shown?`<div class="tag">${esc(V.t)} · ${V.kind==='top5'?'النقاط حسب الترتيب':V.d==='h'?'صعب — نقطتان':'سهل — نقطة'}</div><div class="card qbox">${esc(V.x)}</div>
+ ${V.tutorialPlaying?`<div class="tag">الفيديو التوضيحي</div><video id="screenTutorial" class="screen-tutorial" controls autoplay muted playsinline><source src="/tutorial.mp4?v=3" type="video/mp4"></video>`:V.mode==='reverse'?reverseStage():V.shown?`<div class="tag">${esc(V.t)} · ${V.kind==='top5'?'النقاط حسب الترتيب':V.d==='h'?'صعب — نقطتان':'سهل — نقطة'}</div><div class="card qbox">${esc(V.x)}</div>
  ${V.kind==='top5'&&V.revealed?.length?`<div class="opts">${V.revealed.map(a=>`<div class="opt ok"><b>${a.rank}</b>${esc(a.a)}</div>`).join('')}</div>`:''}
  ${V.o?`<div class="opts">${V.o.map((o,i)=>`<div class="opt ${V.c===i?'ok':''}"><b>${LB[i]}</b>${esc(o)}</div>`).join('')}</div>`:''}
  ${V.ans?`<div class="ans">✔ ${esc(V.ans)}</div>`:''}`:'<div class="wait">في انتظار السؤال...</div>'}
  ${V.mode!=='reverse'&&b?`<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res==='ok'?'✅':V.res==='no'?'❌':''}</div>`:''}</div>
- <div class="card" style="align-self:start"><h3>🏆 الترتيب</h3><div class="board">${board(V.cs)}</div></div></div>`}
+ <div class="card" style="align-self:start"><h3>🏆 الترتيب</h3><div class="board">${board(V.cs)}</div></div></div>`;
+ if(V.tutorialPlaying){const video=document.getElementById('screenTutorial');video.addEventListener('loadedmetadata',()=>{const elapsed=Math.max(0,(Date.now()-(V.tutorialStarted||Date.now()))/1000);if(elapsed<video.duration)video.currentTime=elapsed;video.play().catch(()=>{})},{once:true})}}
 if(room)connectView(room,render);else document.getElementById('app').innerHTML='<div class="home"><h1>افتح رابط الشاشة من التابلت</h1></div>';
 </script></body></html>
