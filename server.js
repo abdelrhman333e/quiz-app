@@ -91,6 +91,17 @@ http.createServer(async(req,res)=>{try{
  let f=u==='/tablet'?'tablet.html':u.startsWith('/screen')?'screen.html':u==='/'?'index.html':u.slice(1);
  f=path.join(P,path.normalize(f));
  if(!f.startsWith(P)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){res.writeHead(404);return res.end('404')}
- res.writeHead(200,{'Content-Type':(T[path.extname(f)]||'text/plain')+'; charset=utf-8'});fs.createReadStream(f).pipe(res);
+ const ext=path.extname(f);
+ if(ext==='.mp4'){
+  const size=fs.statSync(f).size,headers={'Content-Type':'video/mp4','Accept-Ranges':'bytes','Cache-Control':'no-store'},range=req.headers.range;
+  if(range){const m=/^bytes=(\d*)-(\d*)$/.exec(range);let start,end;
+   if(m&&m[1]===''){const suffix=Number(m[2]);if(Number.isSafeInteger(suffix)&&suffix>0){start=Math.max(size-suffix,0);end=size-1}}
+   else if(m){start=Number(m[1]);end=m[2]?Number(m[2]):size-1}
+   if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||start>=size||end<start){res.writeHead(416,{...headers,'Content-Range':`bytes */${size}`});return res.end()}
+   end=Math.min(end,size-1);res.writeHead(206,{...headers,'Content-Length':end-start+1,'Content-Range':`bytes ${start}-${end}/${size}`});
+   if(req.method==='HEAD')return res.end();return fs.createReadStream(f,{start,end}).pipe(res)}
+  res.writeHead(200,{...headers,'Content-Length':size});if(req.method==='HEAD')return res.end();return fs.createReadStream(f).pipe(res)
+ }
+ res.writeHead(200,{'Content-Type':(T[ext]||'text/plain')+'; charset=utf-8'});fs.createReadStream(f).pipe(res);
 }catch(e){console.error(e);if(!res.headersSent)json(res,{error:'خطأ في السيرفر'},500);else res.end()}})
 .listen(PORT,'0.0.0.0',async()=>{try{await init();console.log('✅ شغال على المنفذ',PORT)}catch(e){console.error('❌ فشل الاتصال بقاعدة البيانات:',e.message)}});
