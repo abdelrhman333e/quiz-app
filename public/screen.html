@@ -2,10 +2,9 @@
 <body><div id="app"></div><script src="/common.js"></script><script>
 const room=location.pathname.split('/')[2];
 let reverseTimer;
-function reverseStage(){const word=Array.from(V.reverse?.word||'').reverse(),elapsed=Date.now()-(V.reverse?.started||0),shown=word.length*800;
- if(elapsed<shown){const count=Math.min(word.length,Math.floor(elapsed/800)+1);reverseTimer=setTimeout(render,(count*800-elapsed)+5);return `<div class="tag">الكلمات المعكوسة</div><div class="reverse-word" dir="rtl">${word.slice(0,count).map(c=>`<span>${esc(c)}</span>`).join('')}</div>`}
- if(elapsed<shown+1000){reverseTimer=setTimeout(render,shown+1005-elapsed);return `<div class="tag">الكلمات المعكوسة</div><div class="reverse-word" aria-hidden="true"></div>`}
- return `<div class="tag">الكلمات المعكوسة</div><div class="reverse-word" aria-hidden="true"></div>`}
+function reverseStage(){const letter=V.reverse?.letter,elapsed=Date.now()-(V.reverse?.started||0),visible=!!letter&&elapsed<900;
+ if(visible)reverseTimer=setTimeout(render,905-elapsed);
+ return `<div class="tag">الكلمات المعكوسة</div>${visible?`<div class="reverse-letter" dir="rtl">${esc(letter)}</div>`:'<div class="wait">اضغط عرض الحرف التالي من التابلت</div>'}`}
 function render(){if(!V)return;clearTimeout(reverseTimer);const b=V.buz!=null?V.cs[V.buz]:null,cu=V;
  document.getElementById('app').innerHTML=`<div class="scr"><div class="stage">
  ${V.mode==='reverse'?reverseStage():V.shown?`<div class="tag">${esc(V.t)} · ${V.kind==='top5'?'النقاط حسب الترتيب':V.d==='h'?'صعب — نقطتان':'سهل — نقطة'}</div><div class="card qbox">${esc(V.x)}</div>
