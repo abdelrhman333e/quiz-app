@@ -67,8 +67,6 @@ img.action-icon{width:16px;height:16px;object-fit:contain;vertical-align:middle}
 .confirm-actions{justify-content:flex-start}
 .confirm-delete{display:inline-flex;align-items:center;gap:7px;background:rgba(239,68,68,.18);border-color:var(--no)}
 .confirm-delete img{width:16px;height:16px}
-.modal .video-card{width:min(900px,calc(100vw - 32px));max-height:calc(100vh - 28px);overflow:auto}
-.tutorial-video{display:block;width:100%;height:min(70vh,520px);object-fit:contain;background:#000}
-.screen-tutorial{display:block;width:100%;height:min(75vh,720px);object-fit:contain;background:#000}
-.tutorial-audio{display:none}
+.modal .audio-card{width:min(560px,100%);max-height:94vh;overflow:auto}
+.tutorial-audio-player{display:block;width:100%;margin:16px auto 8px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ok);color:#000;padding:10px 22px;border-radius:30px;font-weight:700;z-index:10}
