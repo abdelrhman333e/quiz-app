@@ -28,7 +28,7 @@ const fail=k=>{const f=fails.get(k);fails.set(k,{n:(f&&Date.now()-f.t<6e5?f.n:0)
 const getQs=async u=>(await q('SELECT data FROM questions WHERE user_id=$1 ORDER BY n',[u])).map(r=>r.data);
 const getGame=async u=>(await q('SELECT data FROM games WHERE user_id=$1',[u]))[0]?.data||NEWGAME();
 function view(g,qs){const c=g.cur,x=qs.find(a=>a.id===c.id),sh=!!(x&&c.q),top=x?.kind==='top5',reverse=x?.kind==='reverse',visual=x?.kind==='visual';
- const v={cs:(g.cs||[]).map(({n,s,y,r})=>({n,s,y,r})),shown:sh,buz:c.buz,res:c.res,mode:reverse?'reverse':visual?'visual':'quiz',tutorialPlaying:!!g.tutorialPlaying,tutorialStarted:g.tutorialStarted||0};
+ const v={cs:(g.cs||[]).map(({n,s,y,r})=>({n,s,y,r})),shown:sh,buz:c.buz,res:c.res,mode:reverse?'reverse':visual?'visual':'quiz',tutorialPlaying:!!g.tutorialPlaying,tutorialStarted:g.tutorialStarted||0,tutorialAudio:g.tutorialAudio||{playing:false,muted:false,volume:1,currentTime:0}};
  if(reverse)return {...v,reverse:{letter:c.rev?.letter||'',started:c.rev?.started||0}};
  if(visual)return sh?{...v,t:x.t,image:x.image,emoji:x.emoji,ans:c.a?x.a:null}:v;
  if(sh){Object.assign(v,{t:x.t,d:x.d,x:x.x,kind:top?'top5':'normal'});
