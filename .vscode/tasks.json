@@ -1,0 +1,25 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Format project sources",
+			"type": "shell",
+			"command": "npx.cmd",
+			"args": [
+				"--yes",
+				"prettier@3.5.3",
+				"--write",
+				"server.js",
+				"package.json",
+				"package-lock.json",
+				"seed.json",
+				"public/**/*.js",
+				"public/**/*.html",
+				"public/**/*.css",
+				"public/**/*.json"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

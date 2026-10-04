@@ -1,70 +1,409 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1425"><link rel="manifest" href="/manifest.json"><link rel="stylesheet" href="/style.css?v=13"><title>تابلت التحكم</title></head>
-<body><div id="app"></div><div id="form"></div><div id="videoModal"></div><div id="confirmModal"></div><script src="/common.js"></script><script>
-const $=id=>document.getElementById(id);
-const pts=q=>PT[q.d];
-function types(){return[...new Set(Qs.map(q=>q.t))]}
-function render(){if(!G)return;const T=['الكل',...types()],list=Qs.filter(q=>G.f==='الكل'||q.t===G.f),q=cq(),cu=G.cur,hasO=q?.o?.length,top=q?.kind==='top5',reverse=q?.kind==='reverse',visual=q?.kind==='visual',reverseCount=reverse?Array.from(q.a||'').length:0,reverseIndex=cu.rev?.index||0;
- $('app').innerHTML=`<div class="tb"><div class="card"><h3>نوع السؤال</h3>
- <div class="row">${T.map((t,i)=>`<button class="${G.f===t?'on':''}" onclick="setF(${i})">${esc(t)}</button>`).join('')}</div>
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0b1425" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="stylesheet" href="/style.css?v=13" />
+    <title>تابلت التحكم</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="form"></div>
+    <div id="videoModal"></div>
+    <div id="confirmModal"></div>
+    <script src="/common.js"></script>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const pts = (q) => PT[q.d];
+      function types() {
+        return [...new Set(Qs.map((q) => q.t))];
+      }
+      function render() {
+        if (!G) return;
+        const T = ["الكل", ...types()],
+          list = Qs.filter((q) => G.f === "الكل" || q.t === G.f),
+          q = cq(),
+          cu = G.cur,
+          hasO = q?.o?.length,
+          top = q?.kind === "top5",
+          reverse = q?.kind === "reverse",
+          visual = q?.kind === "visual",
+          reverseCount = reverse ? Array.from(q.a || "").length : 0,
+          reverseIndex = cu.rev?.index || 0;
+        $("app").innerHTML =
+          `<div class="tb"><div class="card"><h3>نوع السؤال</h3>
+ <div class="row">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}</button>`).join("")}</div>
  <div class="row"><button onclick="rndT()">🎲 نوع عشوائي</button><button onclick="rndQ()">🎲 سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button></div>
- <div class="qs">${list.map(x=>`<div class="qi ${x.id===cu.id?'sel':''}" onclick="sel('${x.id}')">${x.kind==='reverse'?'🔁':x.d==='h'?'🔴':'🟢'} ${esc(x.x)}</div>`).join('')||'<small>لا توجد أسئلة</small>'}</div>
+ <div class="qs">${list.map((x) => `<div class="qi ${x.id === cu.id ? "sel" : ""}" onclick="sel('${x.id}')">${x.kind === "reverse" ? "🔁" : x.d === "h" ? "🔴" : "🟢"} ${esc(x.x)}</div>`).join("") || "<small>لا توجد أسئلة</small>"}</div>
  <h3 style="margin-top:14px">معاينة — لا تظهر على الشاشة</h3>
- ${q?`<div style="font-size:18px"><b>${esc(q.x)}</b> <small>(${esc(q.t)} · ${pts(q)} نقطة)</small></div>
- ${visual?`<div class="visual-preview">${q.image?`<img src="${esc(q.image)}" alt="قرينة الصورة">`:''}${q.emoji?`<span>${esc(q.emoji)}</span>`:''}<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div></div>`:reverse?`<div style="color:var(--ok)">الكلمة: ${esc(q.a)}</div>`:top?q.r.map((a,i)=>`<div style="${cu.revealed?.includes(i)?'color:var(--ok);font-weight:700':''}">${i+1}. ${esc(a)}</div>`).join(''):hasO?q.o.map((o,i)=>`<div style="${q.c===i?'color:var(--ok);font-weight:700':''}">${LB[i]}) ${esc(o)}</div>`).join(''):`<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div>`}
- <div class="row">${reverse?`<button class="big2 on" onclick="nextReverseLetter()" ${reverseIndex>=reverseCount?'disabled':''}>${reverseIndex>=reverseCount?'اكتملت الحروف':`إظهار الحرف التالي (${reverseIndex+1}/${reverseCount})`}</button><button class="big2" onclick="resetReverse()">ابدأ من جديد</button>`:`<button class="big2 ${cu.q?'on':''}" onclick="tg('q')">${cu.q?'إخفاء':'عرض'} السؤال</button>
- ${top?q.r.map((a,i)=>`<button class="big2 ${cu.revealed?.includes(i)?'on':''}" onclick="revealRank(${i})">${cu.revealed?.includes(i)?'تم كشف':'كشف'} رقم ${i+1}</button>`).join(''):''}
- ${hasO?`<button class="big2 ${cu.o?'on':''}" onclick="tg('o')">${cu.o?'إخفاء':'عرض'} الاختيارات</button>`:''}
- ${top?'':`<button class="big2 ${cu.a?'on':''}" onclick="tg('a')">${cu.a?'إخفاء':'عرض'} الإجابة</button>`}`}</div>
- <h3>من جاوب؟</h3><div class="row">${G.cs.map((c,i)=>`<button class="${cu.buz===i?'on':''}" onclick="buz(${i})">${esc(c.n)}</button>`).join('')||'<small>أضف متسابقين</small>'}</div>
- ${cu.buz!=null?`<div class="row">${top&&cu.rank==null?'<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>':`<button class="big2 ok" onclick="grade(1${top?`,${cu.rank}`:''})">✅ صح (+${top?cu.rank+1:pts(q)})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>`:''}
- <div class="row"><button class="action-btn" onclick="openForm('${q.id}')"><img class="action-icon" src="/edit-svgrepo-com.svg" alt=""> تعديل</button><button class="action-btn" onclick="del('${q.id}')"><img class="action-icon" src="/icons8-trash.svg" alt=""> حذف</button></div>`:'<small>اختر سؤالًا أو اضغط عشوائي</small>'}</div>
+ ${
+   q
+     ? `<div style="font-size:18px"><b>${esc(q.x)}</b> <small>(${esc(q.t)} · ${pts(q)} نقطة)</small></div>
+ ${visual ? `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div></div>` : reverse ? `<div style="color:var(--ok)">الكلمة: ${esc(q.a)}</div>` : top ? q.r.map((a, i) => `<div style="${cu.revealed?.includes(i) ? "color:var(--ok);font-weight:700" : ""}">${i + 1}. ${esc(a)}</div>`).join("") : hasO ? q.o.map((o, i) => `<div style="${q.c === i ? "color:var(--ok);font-weight:700" : ""}">${LB[i]}) ${esc(o)}</div>`).join("") : `<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div>`}
+ <div class="row">${
+   reverse
+     ? `<button class="big2 on" onclick="nextReverseLetter()" ${reverseIndex >= reverseCount ? "disabled" : ""}>${reverseIndex >= reverseCount ? "اكتملت الحروف" : `إظهار الحرف التالي (${reverseIndex + 1}/${reverseCount})`}</button><button class="big2" onclick="resetReverse()">ابدأ من جديد</button>`
+     : `<button class="big2 ${cu.q ? "on" : ""}" onclick="tg('q')">${cu.q ? "إخفاء" : "عرض"} السؤال</button>
+ ${top ? q.r.map((a, i) => `<button class="big2 ${cu.revealed?.includes(i) ? "on" : ""}" onclick="revealRank(${i})">${cu.revealed?.includes(i) ? "تم كشف" : "كشف"} رقم ${i + 1}</button>`).join("") : ""}
+ ${hasO ? `<button class="big2 ${cu.o ? "on" : ""}" onclick="tg('o')">${cu.o ? "إخفاء" : "عرض"} الاختيارات</button>` : ""}
+ ${top ? "" : `<button class="big2 ${cu.a ? "on" : ""}" onclick="tg('a')">${cu.a ? "إخفاء" : "عرض"} الإجابة</button>`}`
+ }</div>
+ <h3>من جاوب؟</h3><div class="row">${G.cs.map((c, i) => `<button class="${cu.buz === i ? "on" : ""}" onclick="buz(${i})">${esc(c.n)}</button>`).join("") || "<small>أضف متسابقين</small>"}</div>
+ ${cu.buz != null ? `<div class="row">${top && cu.rank == null ? "<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>" : `<button class="big2 ok" onclick="grade(1${top ? `,${cu.rank}` : ""})">✅ صح (+${top ? cu.rank + 1 : pts(q)})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>` : ""}
+ <div class="row"><button class="action-btn" onclick="openForm('${q.id}')"><img class="action-icon" src="/edit-svgrepo-com.svg" alt=""> تعديل</button><button class="action-btn" onclick="del('${q.id}')"><img class="action-icon" src="/icons8-trash.svg" alt=""> حذف</button></div>`
+     : "<small>اختر سؤالًا أو اضغط عشوائي</small>"
+ }</div>
  <div class="card"><h3>المتسابقون · ${esc(ME.u)}</h3><div class="row"><input id="cn" placeholder="اسم المتسابق" style="flex:1;width:auto"><button onclick="addC()">＋</button></div>
- ${G.cs.map((c,i)=>`<div class="ct"><b>${esc(c.n)}</b> — ${c.s}<div class="row"><button onclick="ch(${i},'s',1)">＋</button><button onclick="ch(${i},'s',-1)">−</button><button onclick="ch(${i},'y',1)">🟨 ${c.y}</button><button onclick="ch(${i},'r',1)">🟥 ${c.r}</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/icons8-trash.svg" alt=""></button></div></div>`).join('')}
- <div class="row"><button onclick="resetScores()">تصفير النقاط</button><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="logout()">🚪 خروج</button></div></div></div>`}
-function save(){G.v=Date.now();render();api('/api/game','POST',G).catch(()=>toast('تعذر الاتصال بالسيرفر',1))}
-function toast(m,bad){const d=document.createElement('div');d.className='toast';if(bad)d.style.background='var(--no)';d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2000)}
-let tutorialAudioSyncAt=0;
-function publishTutorialAudioState(force=false){const audio=$('videoModal').querySelector('audio');if(!audio||!G.tutorialPlaying)return;const now=Date.now();if(!force&&now-tutorialAudioSyncAt<600)return;tutorialAudioSyncAt=now;G.tutorialAudio={playing:!audio.paused&&!audio.ended,muted:audio.muted||audio.volume===0,volume:audio.volume,currentTime:audio.currentTime};G.v=now;api('/api/game','POST',G).catch(()=>toast('تعذر إرسال حالة الصوت للشاشة',1))}
-function openTutorialAudio(){G.tutorialPlaying=true;G.tutorialStarted=Date.now();G.tutorialAudio={playing:false,muted:false,volume:1,currentTime:0};save();$('videoModal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeTutorialAudio()"><div class="card audio-card"><div class="row" style="justify-content:space-between"><h3>الصوت التوضيحي</h3><button onclick="closeTutorialAudio()">إغلاق</button></div><audio id="tutorialAudioPlayer" class="tutorial-audio-player" controls preload="auto" onerror="$('audioMissing').hidden=false"><source src="/tutorial.wav" type="audio/wav"></audio><small id="audioMissing" hidden>تعذر تحميل ملف الصوت tutorial.wav</small></div></div>`;const audio=$('tutorialAudioPlayer');['play','pause','seeked','volumechange','ended'].forEach(event=>audio.addEventListener(event,()=>publishTutorialAudioState(true)));audio.addEventListener('timeupdate',()=>publishTutorialAudioState());audio.play().catch(()=>{})}
-function closeTutorialAudio(){const audio=$('tutorialAudioPlayer');G.tutorialPlaying=false;G.tutorialStarted=0;if(audio){audio.pause();G.tutorialAudio={playing:false,muted:audio.muted||audio.volume===0,volume:audio.volume,currentTime:audio.currentTime}}save();$('videoModal').innerHTML=''}
-function setF(i){G.f=['الكل',...types()][i];save()}
-function rndT(){const t=types();G.f=t[Math.floor(Math.random()*t.length)];rndQ()}
-function rndQ(){const l=Qs.filter(q=>G.f==='الكل'||q.t===G.f);if(!l.length)return;let f=l.filter(q=>!G.used.includes(q.id));
- if(!f.length){G.used=G.used.filter(id=>!l.some(q=>q.id===id));f=l}sel(f[Math.floor(Math.random()*f.length)].id)}
-function sel(id){G.cur={id,q:0,o:0,a:0,buz:null,res:null,revealed:[],rank:null,awards:[],rev:{index:0,letter:'',started:0}};if(!G.used.includes(id))G.used.push(id);save()}
-function nextReverseLetter(){const q=cq(),letters=Array.from(q?.a||'').reverse(),rev=G.cur.rev||{index:0};if(!q||q.kind!=='reverse')return;if(rev.started&&Date.now()-rev.started<900)return toast('انتظر اختفاء الحرف الحالي',1);if((rev.index||0)>=letters.length)return toast('انتهت الحروف، ابدأ من جديد',1);const index=(rev.index||0)+1;G.cur.rev={index,letter:letters[index-1],started:Date.now()};save()}
-function resetReverse(){G.cur.rev={index:0,letter:'',started:0};save()}
-function tg(k){G.cur[k]=+!G.cur[k];if(k==='q'&&!G.cur.q)G.cur.o=G.cur.a=0;save()}
-function revealRank(i){if(!G.cur.revealed)G.cur.revealed=[];if(!G.cur.revealed.includes(i))G.cur.revealed.push(i);G.cur.rank=i;save()}
-function buz(i){G.cur.buz=G.cur.buz===i?null:i;G.cur.res=null;save()}
-function grade(ok,rank=null){if(G.cur.res)return;const q=cq(),top=q?.kind==='top5';if(top&&ok&&rank==null)return toast('اكشف ترتيب الإجابة أولًا',1);const key=top&&ok?`${G.cur.buz}:${rank}`:null;if(key&&G.cur.awards?.includes(key))return toast('تم احتساب نقاط هذا الترتيب للاعب',1);G.cs[G.cur.buz].s+=ok?(top?rank+1:pts(q)):-1;if(key){if(!G.cur.awards)G.cur.awards=[];G.cur.awards.push(key)}G.cur.res=ok?'ok':'no';if(ok)G.cur.a=1;save()}
-function addC(){const n=$('cn').value.trim();if(n){G.cs.push({n,s:0,y:0,r:0});save()}}
-let confirmResolve=null;
-function askConfirm(message,title='تأكيد العملية',confirmText='تأكيد'){if(confirmResolve)finishConfirm(false);return new Promise(resolve=>{confirmResolve=resolve;$('confirmModal').innerHTML=`<div class="modal" onclick="if(event.target===this)finishConfirm(false)"><div class="card confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle"><h3 id="confirmTitle">${esc(title)}</h3><p>${esc(message)}</p><div class="row confirm-actions"><button onclick="finishConfirm(false)">إلغاء</button><button class="confirm-delete" onclick="finishConfirm(true)">${esc(confirmText)}</button></div></div></div>`})}
-function finishConfirm(confirmed){if(!confirmResolve)return;const resolve=confirmResolve;confirmResolve=null;$('confirmModal').innerHTML='';resolve(confirmed)}
-async function resetScores(){if(!await askConfirm('تصفير نقاط كل المتسابقين؟','تصفير النقاط','تصفير'))return;G.cs.forEach(c=>c.s=c.y=c.r=0);save()}
-async function ch(i,k,d){const c=G.cs[i];if(k==='x'){if(!await askConfirm('حذف '+c.n+'؟','حذف متسابق','حذف'))return;G.cs.splice(i,1);G.cur.buz=null}else if(k==='s')c.s+=d;else{c[k]++;c.s-=k==='y'?1:3}save()}
-async function del(id){if(!await askConfirm('حذف السؤال نهائيًا؟','حذف سؤال','حذف'))return;try{await api('/api/questions/'+id,'DELETE');G.cur={id:null,q:0,o:0,a:0,buz:null,res:null};save();toast('تم الحذف')}catch(e){toast(e.message,1)}}
-function openForm(id){const e=Qs.find(x=>x.id===id)||{o:[],r:[],kind:'normal',d:'e',t:G.f!=='الكل'?G.f:''};
- $('form').innerHTML=`<div class="modal"><div class="card"><h3>${id?'تعديل سؤال':'سؤال جديد'}</h3>
- <input id="ft" placeholder="النوع (ديني، ثقافة عامة...)" list="tl" value="${esc(e.t)}"><datalist id="tl">${types().map(t=>`<option value="${esc(t)}">`).join('')}</datalist>
- <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind==='normal'?'selected':''}>سؤال عادي</option><option value="top5" ${e.kind==='top5'?'selected':''}>توب 5 — إجابات مرتبة</option><option value="reverse" ${e.kind==='reverse'?'selected':''}>كلمات معكوسة</option><option value="visual" ${e.kind==='visual'?'selected':''}>خمن صورة أو إيموجي</option></select>
+ ${G.cs.map((c, i) => `<div class="ct"><b>${esc(c.n)}</b> — ${c.s}<div class="row"><button onclick="ch(${i},'s',1)">＋</button><button onclick="ch(${i},'s',-1)">−</button><button onclick="ch(${i},'y',1)">🟨 ${c.y}</button><button onclick="ch(${i},'r',1)">🟥 ${c.r}</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/icons8-trash.svg" alt=""></button></div></div>`).join("")}
+ <div class="row"><button onclick="resetScores()">تصفير النقاط</button><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="logout()">🚪 خروج</button></div></div></div>`;
+      }
+      function save() {
+        G.v = Date.now();
+        render();
+        api("/api/game", "POST", G).catch(() =>
+          toast("تعذر الاتصال بالسيرفر", 1),
+        );
+      }
+      function toast(m, bad) {
+        const d = document.createElement("div");
+        d.className = "toast";
+        if (bad) d.style.background = "var(--no)";
+        d.textContent = m;
+        document.body.append(d);
+        setTimeout(() => d.remove(), 2000);
+      }
+      let tutorialAudioSyncAt = 0;
+      function publishTutorialAudioState(force = false) {
+        const audio = $("videoModal").querySelector("audio");
+        if (!audio || !G.tutorialPlaying) return;
+        const now = Date.now();
+        if (!force && now - tutorialAudioSyncAt < 600) return;
+        tutorialAudioSyncAt = now;
+        G.tutorialAudio = {
+          playing: !audio.paused && !audio.ended,
+          muted: audio.muted || audio.volume === 0,
+          volume: audio.volume,
+          currentTime: audio.currentTime,
+        };
+        G.v = now;
+        api("/api/game", "POST", G).catch(() =>
+          toast("تعذر إرسال حالة الصوت للشاشة", 1),
+        );
+      }
+      function openTutorialAudio() {
+        G.tutorialPlaying = true;
+        G.tutorialStarted = Date.now();
+        G.tutorialAudio = {
+          playing: false,
+          muted: false,
+          volume: 1,
+          currentTime: 0,
+        };
+        save();
+        $("videoModal").innerHTML =
+          `<div class="modal" onclick="if(event.target===this)closeTutorialAudio()"><div class="card audio-card"><div class="row" style="justify-content:space-between"><h3>الصوت التوضيحي</h3><button onclick="closeTutorialAudio()">إغلاق</button></div><audio id="tutorialAudioPlayer" class="tutorial-audio-player" controls preload="auto" onerror="$('audioMissing').hidden=false"><source src="/tutorial.wav" type="audio/wav"></audio><small id="audioMissing" hidden>تعذر تحميل ملف الصوت tutorial.wav</small></div></div>`;
+        const audio = $("tutorialAudioPlayer");
+        ["play", "pause", "seeked", "volumechange", "ended"].forEach((event) =>
+          audio.addEventListener(event, () => publishTutorialAudioState(true)),
+        );
+        audio.addEventListener("timeupdate", () => publishTutorialAudioState());
+        audio.play().catch(() => {});
+      }
+      function closeTutorialAudio() {
+        const audio = $("tutorialAudioPlayer");
+        G.tutorialPlaying = false;
+        G.tutorialStarted = 0;
+        if (audio) {
+          audio.pause();
+          G.tutorialAudio = {
+            playing: false,
+            muted: audio.muted || audio.volume === 0,
+            volume: audio.volume,
+            currentTime: audio.currentTime,
+          };
+        }
+        save();
+        $("videoModal").innerHTML = "";
+      }
+      function setF(i) {
+        G.f = ["الكل", ...types()][i];
+        save();
+      }
+      function rndT() {
+        const t = types();
+        G.f = t[Math.floor(Math.random() * t.length)];
+        rndQ();
+      }
+      function rndQ() {
+        const l = Qs.filter((q) => G.f === "الكل" || q.t === G.f);
+        if (!l.length) return;
+        let f = l.filter((q) => !G.used.includes(q.id));
+        if (!f.length) {
+          G.used = G.used.filter((id) => !l.some((q) => q.id === id));
+          f = l;
+        }
+        sel(f[Math.floor(Math.random() * f.length)].id);
+      }
+      function sel(id) {
+        G.cur = {
+          id,
+          q: 0,
+          o: 0,
+          a: 0,
+          buz: null,
+          res: null,
+          revealed: [],
+          rank: null,
+          awards: [],
+          rev: { index: 0, letter: "", started: 0 },
+        };
+        if (!G.used.includes(id)) G.used.push(id);
+        save();
+      }
+      function nextReverseLetter() {
+        const q = cq(),
+          letters = Array.from(q?.a || "").reverse(),
+          rev = G.cur.rev || { index: 0 };
+        if (!q || q.kind !== "reverse") return;
+        if (rev.started && Date.now() - rev.started < 900)
+          return toast("انتظر اختفاء الحرف الحالي", 1);
+        if ((rev.index || 0) >= letters.length)
+          return toast("انتهت الحروف، ابدأ من جديد", 1);
+        const index = (rev.index || 0) + 1;
+        G.cur.rev = { index, letter: letters[index - 1], started: Date.now() };
+        save();
+      }
+      function resetReverse() {
+        G.cur.rev = { index: 0, letter: "", started: 0 };
+        save();
+      }
+      function tg(k) {
+        G.cur[k] = +!G.cur[k];
+        if (k === "q" && !G.cur.q) G.cur.o = G.cur.a = 0;
+        save();
+      }
+      function revealRank(i) {
+        if (!G.cur.revealed) G.cur.revealed = [];
+        if (!G.cur.revealed.includes(i)) G.cur.revealed.push(i);
+        G.cur.rank = i;
+        save();
+      }
+      function buz(i) {
+        G.cur.buz = G.cur.buz === i ? null : i;
+        G.cur.res = null;
+        save();
+      }
+      function grade(ok, rank = null) {
+        if (G.cur.res) return;
+        const q = cq(),
+          top = q?.kind === "top5";
+        if (top && ok && rank == null)
+          return toast("اكشف ترتيب الإجابة أولًا", 1);
+        const key = top && ok ? `${G.cur.buz}:${rank}` : null;
+        if (key && G.cur.awards?.includes(key))
+          return toast("تم احتساب نقاط هذا الترتيب للاعب", 1);
+        G.cs[G.cur.buz].s += ok ? (top ? rank + 1 : pts(q)) : -1;
+        if (key) {
+          if (!G.cur.awards) G.cur.awards = [];
+          G.cur.awards.push(key);
+        }
+        G.cur.res = ok ? "ok" : "no";
+        if (ok) G.cur.a = 1;
+        save();
+      }
+      function addC() {
+        const n = $("cn").value.trim();
+        if (n) {
+          G.cs.push({ n, s: 0, y: 0, r: 0 });
+          save();
+        }
+      }
+      let confirmResolve = null;
+      function askConfirm(
+        message,
+        title = "تأكيد العملية",
+        confirmText = "تأكيد",
+      ) {
+        if (confirmResolve) finishConfirm(false);
+        return new Promise((resolve) => {
+          confirmResolve = resolve;
+          $("confirmModal").innerHTML =
+            `<div class="modal" onclick="if(event.target===this)finishConfirm(false)"><div class="card confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle"><h3 id="confirmTitle">${esc(title)}</h3><p>${esc(message)}</p><div class="row confirm-actions"><button onclick="finishConfirm(false)">إلغاء</button><button class="confirm-delete" onclick="finishConfirm(true)">${esc(confirmText)}</button></div></div></div>`;
+        });
+      }
+      function finishConfirm(confirmed) {
+        if (!confirmResolve) return;
+        const resolve = confirmResolve;
+        confirmResolve = null;
+        $("confirmModal").innerHTML = "";
+        resolve(confirmed);
+      }
+      async function resetScores() {
+        if (
+          !(await askConfirm(
+            "تصفير نقاط كل المتسابقين؟",
+            "تصفير النقاط",
+            "تصفير",
+          ))
+        )
+          return;
+        G.cs.forEach((c) => (c.s = c.y = c.r = 0));
+        save();
+      }
+      async function ch(i, k, d) {
+        const c = G.cs[i];
+        if (k === "x") {
+          if (!(await askConfirm("حذف " + c.n + "؟", "حذف متسابق", "حذف")))
+            return;
+          G.cs.splice(i, 1);
+          G.cur.buz = null;
+        } else if (k === "s") c.s += d;
+        else {
+          c[k]++;
+          c.s -= k === "y" ? 1 : 3;
+        }
+        save();
+      }
+      async function del(id) {
+        if (!(await askConfirm("حذف السؤال نهائيًا؟", "حذف سؤال", "حذف")))
+          return;
+        try {
+          await api("/api/questions/" + id, "DELETE");
+          G.cur = { id: null, q: 0, o: 0, a: 0, buz: null, res: null };
+          save();
+          toast("تم الحذف");
+        } catch (e) {
+          toast(e.message, 1);
+        }
+      }
+      function openForm(id) {
+        const e = Qs.find((x) => x.id === id) || {
+          o: [],
+          r: [],
+          kind: "normal",
+          d: "e",
+          t: G.f !== "الكل" ? G.f : "",
+        };
+        $("form").innerHTML =
+          `<div class="modal"><div class="card"><h3>${id ? "تعديل سؤال" : "سؤال جديد"}</h3>
+ <input id="ft" placeholder="النوع (ديني، ثقافة عامة...)" list="tl" value="${esc(e.t)}"><datalist id="tl">${types()
+   .map((t) => `<option value="${esc(t)}">`)
+   .join("")}</datalist>
+ <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option></select>
  <div id="questionFields"><input id="fx" placeholder="نص السؤال" value="${esc(e.x)}"></div>
  <div id="normalFields">
- <select id="fd"><option value="e" ${e.d==='e'?'selected':''}>سهل (نقطة)</option><option value="h" ${e.d==='h'?'selected':''}>صعب (نقطتان)</option></select>
+ <select id="fd"><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>
  <small>الاختيارات — اتركها فارغة لو السؤال بدون اختيارات</small>
- ${[0,1,2,3].map(i=>`<input id="fo${i}" placeholder="الاختيار ${LB[i]}" value="${esc(e.o?.[i])}">`).join('')}
- <select id="fc">${LB.map((l,i)=>`<option value="${i}" ${e.c===i?'selected':''}>الصحيح: ${l}</option>`).join('')}</select>
+ ${[0, 1, 2, 3].map((i) => `<input id="fo${i}" placeholder="الاختيار ${LB[i]}" value="${esc(e.o?.[i])}">`).join("")}
+ <select id="fc">${LB.map((l, i) => `<option value="${i}" ${e.c === i ? "selected" : ""}>الصحيح: ${l}</option>`).join("")}</select>
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
- </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى الخامس</small>${[0,1,2,3,4].map(i=>`<input id="fr${i}" placeholder="الإجابة رقم ${i+1}" value="${esc(e.r?.[i])}">`).join('')}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a||'')}"></div><div id="visualFields" hidden><input id="fva" placeholder="الكلمة المطلوب تخمينها" value="${esc(e.a||'')}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image||'')}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji||'')}"><small>أضف رابط صورة أو إيموجي، أو الاثنين معًا. تجنب شعارات الأندية.</small></div>
- <div class="row"><button class="on big2" onclick="saveQ('${id||''}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;toggleQuestionKind()}
-function toggleQuestionKind(){const kind=$('fk').value;$('questionFields').hidden=kind==='reverse'||kind==='visual';$('normalFields').hidden=kind!=='normal';$('topFields').hidden=kind!=='top5';$('reverseFields').hidden=kind!=='reverse';$('visualFields').hidden=kind!=='visual'}
-async function saveQ(id){const g=k=>$(k).value.trim(),kind=$('fk').value,o=kind==='normal'?[0,1,2,3].map(i=>g('fo'+i)).filter(Boolean):[],r=kind==='top5'?[0,1,2,3,4].map(i=>g('fr'+i)):[],word=kind==='reverse'?g('frw'):'';
- const image=kind==='visual'?g('fi'):'',emoji=kind==='visual'?g('fe'):'';
- if(!g('ft')||(kind==='reverse'?!word:kind==='visual'?(!g('fva')||(!image&&!emoji)):!g('fx')))return toast(kind==='visual'?'اكتب الكلمة وأضف صورة أو إيموجي':kind==='reverse'?'اكتب النوع والكلمة':'اكتب النوع والسؤال',1);if(kind==='top5'?r.some(a=>!a):kind==='reverse'||kind==='visual'?false:o.length?o.length<4:!g('fa'))return toast(kind==='top5'?'اكتب الإجابات الخمس بالترتيب':'أكمل 4 اختيارات أو اكتب إجابة نصية',1);
- try{await api('/api/questions','POST',{id:id||undefined,t:g('ft'),d:g('fd'),x:kind==='visual'?'خمن الصورة':kind==='reverse'?word:g('fx'),kind,r,o,c:o.length?+g('fc'):-1,a:kind==='reverse'?word:kind==='visual'?g('fva'):g('fa'),image,emoji});$('form').innerHTML='';toast('✔ اتحفظ في قاعدة البيانات')}catch(e){toast(e.message,1)}}
-let ME=null;
-function copyLink(){const l=location.origin+'/screen/'+ME.room;(navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(()=>toast('اتنسخ الرابط')).catch(()=>prompt('انسخ الرابط:',l))}
-async function logout(){await api('/api/logout','POST');location='/'}
-api('/api/me').then(m=>{ME=m;connect(render);setInterval(()=>api('/api/ping').catch(()=>{}),240000)}).catch(()=>location='/');
-</script></body></html>
+ </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى الخامس</small>${[0, 1, 2, 3, 4].map((i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}">`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fva" placeholder="الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>أضف رابط صورة أو إيموجي، أو الاثنين معًا. تجنب شعارات الأندية.</small></div>
+ <div class="row"><button class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
+        toggleQuestionKind();
+      }
+      function toggleQuestionKind() {
+        const kind = $("fk").value;
+        $("questionFields").hidden = kind === "reverse" || kind === "visual";
+        $("normalFields").hidden = kind !== "normal";
+        $("topFields").hidden = kind !== "top5";
+        $("reverseFields").hidden = kind !== "reverse";
+        $("visualFields").hidden = kind !== "visual";
+      }
+      async function saveQ(id) {
+        const g = (k) => $(k).value.trim(),
+          kind = $("fk").value,
+          o =
+            kind === "normal"
+              ? [0, 1, 2, 3].map((i) => g("fo" + i)).filter(Boolean)
+              : [],
+          r = kind === "top5" ? [0, 1, 2, 3, 4].map((i) => g("fr" + i)) : [],
+          word = kind === "reverse" ? g("frw") : "";
+        const image = kind === "visual" ? g("fi") : "",
+          emoji = kind === "visual" ? g("fe") : "";
+        if (
+          !g("ft") ||
+          (kind === "reverse"
+            ? !word
+            : kind === "visual"
+              ? !g("fva") || (!image && !emoji)
+              : !g("fx"))
+        )
+          return toast(
+            kind === "visual"
+              ? "اكتب الكلمة وأضف صورة أو إيموجي"
+              : kind === "reverse"
+                ? "اكتب النوع والكلمة"
+                : "اكتب النوع والسؤال",
+            1,
+          );
+        if (
+          kind === "top5"
+            ? r.some((a) => !a)
+            : kind === "reverse" || kind === "visual"
+              ? false
+              : o.length
+                ? o.length < 4
+                : !g("fa")
+        )
+          return toast(
+            kind === "top5"
+              ? "اكتب الإجابات الخمس بالترتيب"
+              : "أكمل 4 اختيارات أو اكتب إجابة نصية",
+            1,
+          );
+        try {
+          await api("/api/questions", "POST", {
+            id: id || undefined,
+            t: g("ft"),
+            d: g("fd"),
+            x:
+              kind === "visual"
+                ? "خمن الصورة"
+                : kind === "reverse"
+                  ? word
+                  : g("fx"),
+            kind,
+            r,
+            o,
+            c: o.length ? +g("fc") : -1,
+            a:
+              kind === "reverse"
+                ? word
+                : kind === "visual"
+                  ? g("fva")
+                  : g("fa"),
+            image,
+            emoji,
+          });
+          $("form").innerHTML = "";
+          toast("✔ اتحفظ في قاعدة البيانات");
+        } catch (e) {
+          toast(e.message, 1);
+        }
+      }
+      let ME = null;
+      function copyLink() {
+        const l = location.origin + "/screen/" + ME.room;
+        (navigator.clipboard
+          ? navigator.clipboard.writeText(l)
+          : Promise.reject()
+        )
+          .then(() => toast("اتنسخ الرابط"))
+          .catch(() => prompt("انسخ الرابط:", l));
+      }
+      async function logout() {
+        await api("/api/logout", "POST");
+        location = "/";
+      }
+      api("/api/me")
+        .then((m) => {
+          ME = m;
+          connect(render);
+          setInterval(() => api("/api/ping").catch(() => {}), 240000);
+        })
+        .catch(() => (location = "/"));
+    </script>
+  </body>
+</html>
