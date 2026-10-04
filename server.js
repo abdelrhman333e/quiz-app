@@ -45,7 +45,7 @@ setInterval(()=>rooms.forEach(s=>s.forEach(c=>c.res.write(': ka\n\n'))),25000);
 // ---- مساعدات HTTP
 const body=req=>new Promise(ok=>{let b='';req.on('data',c=>{b+=c;if(b.length>2e5)req.destroy()});req.on('end',()=>{try{ok(JSON.parse(b))}catch{ok(null)}})});
 const json=(res,o,c=200,h={})=>{res.writeHead(c,{'Content-Type':'application/json',...h});res.end(JSON.stringify(o))};
-const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.mp4':'video/mp4'};
+const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.mp4':'video/mp4','.wav':'audio/wav'};
 const str=(v,n)=>typeof v==='string'?v.trim().slice(0,n):'';
 function cleanImage(v){const image=str(v,1000);if(image.startsWith('/')&&!image.startsWith('//'))return image;try{return ['http:','https:'].includes(new URL(image).protocol)?image:''}catch{return ''}}
 function cleanQ(b){const kind=['top5','reverse','visual'].includes(b.kind)?b.kind:'normal',r=kind==='top5'&&Array.isArray(b.r)?b.r.map(s=>str(s,200)).slice(0,5):[],o=kind==='normal'&&Array.isArray(b.o)?b.o.map(s=>str(s,200)).filter(Boolean).slice(0,4):[];
