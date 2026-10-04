@@ -22,6 +22,7 @@ small{color:var(--mut)}
 /* الشاشة */
 .scr{display:grid;grid-template-columns:1fr 240px;gap:18px;padding:22px;min-height:100vh}
 .stage{display:flex;flex-direction:column;gap:18px;justify-content:center}
+.screen-sfx-toggle{position:fixed;inset-block-start:12px;inset-inline-start:12px;z-index:5;padding:8px 12px;font-size:13px;background:rgba(17,31,52,.9);border-color:var(--line)}
 .tag{align-self:center;background:rgba(7,139,255,.24);border:1px solid var(--p);border-radius:30px;padding:6px 22px;font-size:clamp(14px,2vw,24px)}
 .qbox{text-align:center;font-size:clamp(28px,5vw,64px);font-weight:700;line-height:1.5;padding:30px}
 .qbox.animate-in,.ans.animate-in{animation:stageEnter .48s cubic-bezier(.2,.7,.2,1) both}
