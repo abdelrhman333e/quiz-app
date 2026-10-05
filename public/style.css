@@ -21,6 +21,9 @@ body {
 body {
   font-family: "Segoe UI", Tahoma, system-ui, sans-serif;
   color: var(--t);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: radial-gradient(
       circle at 80% 0,
       #1d3859 0,
@@ -202,7 +205,9 @@ small {
   padding: 30px;
 }
 .qbox.animate-in,
-.ans.animate-in {
+.ans.animate-in,
+.tag.animate-in,
+.wait.animate-in {
   animation: stageEnter 0.48s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 .opts {
@@ -485,6 +490,17 @@ img.action-icon {
   width: 100%;
   margin: 16px auto 8px;
 }
+.modal .tutorial-video-card {
+  width: min(800px, 100%);
+}
+.tutorial-video-player {
+  display: block;
+  width: 100%;
+  max-height: 70vh;
+  margin: 16px auto 8px;
+  border-radius: 12px;
+  background: #000;
+}
 .toast {
   position: fixed;
   bottom: 20px;
@@ -496,4 +512,29 @@ img.action-icon {
   border-radius: 30px;
   font-weight: 700;
   z-index: 10;
+}
+.site-footer {
+  margin-top: auto;
+  padding: 18px 16px 22px;
+  border-top: 1px solid var(--line);
+  background: rgba(8, 14, 24, 0.52);
+  backdrop-filter: blur(6px);
+}
+.site-footer p {
+  margin: 0;
+  text-align: center;
+  color: var(--mut);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.site-footer a {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 700;
+  transition: opacity 0.2s ease;
+}
+.site-footer a:hover,
+.site-footer a:focus-visible {
+  opacity: 0.8;
+  text-decoration: underline;
 }

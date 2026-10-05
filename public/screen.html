@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="/style.css?v=13" />
+    <link rel="stylesheet" href="/style.css?v=14" />
     <title>شاشة العرض</title>
   </head>
   <body>
@@ -112,12 +112,12 @@
             if (button) button.hidden = false;
           });
       }
-      function reverseStage() {
+      function reverseStage(animateQuestion) {
         const letter = V.reverse?.letter,
           elapsed = Date.now() - (V.reverse?.started || 0),
           visible = !!letter && elapsed < 900;
         if (visible) reverseTimer = setTimeout(render, 905 - elapsed);
-        return `<div class="tag">الكلمات المعكوسة</div>${visible ? `<div class="reverse-letter" dir="rtl">${esc(letter)}</div>` : '<div class="wait">اضغط عرض الحرف التالي من التابلت</div>'}`;
+        return `<div class="tag ${animateQuestion ? "animate-in" : ""}">الكلمات المعكوسة</div>${visible ? `<div class="reverse-letter" dir="rtl">${esc(letter)}</div>` : `<div class="wait ${animateQuestion ? "animate-in" : ""}">اضغط عرض الحرف التالي من التابلت</div>`}`;
       }
       function visualStage(animateQuestion, animateAnswer) {
         if (!V.shown) return '<div class="wait">في انتظار السؤال...</div>';
@@ -138,10 +138,13 @@
             V.mode === "visual"
               ? `${V.image || ""}|${V.emoji || ""}`
               : V.x || "",
-          questionKey =
-            V.shown && (V.mode === "quiz" || V.mode === "visual")
-              ? `${V.mode}|${V.t}|${questionContent}`
-              : "",
+          questionKey = V.shown
+            ? V.mode === "reverse" && V.displayId
+              ? `reverse|${V.displayId}`
+              : V.mode === "quiz" || V.mode === "visual"
+                ? `${V.mode}|${V.t}|${questionContent}|${V.displayId || ""}`
+                : ""
+            : "",
           animateQuestion = !!questionKey && questionKey !== lastQuestionKey;
         const optionsKey = V.o ? `${questionKey}|${V.o.join("|")}` : "",
           animateOptions = !!optionsKey && optionsKey !== lastOptionsKey,
@@ -173,7 +176,7 @@ ${
   V.tutorialPlaying
     ? `<div class="tag">الصوت التوضيحي</div><button id="enableScreenAudio" class="on" onclick="enableScreenAudio()" hidden>السماح بتشغيل صوت التابلت</button><audio id="screenTutorialAudio" class="tutorial-audio-player" controls preload="auto"><source src="/tutorial.wav" type="audio/wav"></audio>`
     : V.mode === "reverse"
-      ? reverseStage()
+      ? reverseStage(animateQuestion)
       : V.mode === "visual"
         ? visualStage(animateQuestion, animateAnswer)
         : V.shown
@@ -234,8 +237,8 @@ ${
         document.getElementById("app").innerHTML =
           '<div class="home"><h1>افتح رابط الشاشة من التابلت</h1></div>';
     </script>
-     <footer>
-        <p>جميع الحقوق محفوظة <a href="https://abdelrhman333e-web.vercel.app/" target="_blank">abdo</a> &copy; 2026</p>
+     <footer class="site-footer">
+        <p>جميع الحقوق محفوظة <a href="https://abdelrhman333e-web.vercel.app/" target="_blank" rel="noreferrer">abdo</a> &copy; 2026</p>
     </footer>
   </body>
 </html>

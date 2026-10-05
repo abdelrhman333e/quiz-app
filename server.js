@@ -106,6 +106,7 @@ function view(g, qs) {
   const v = {
     cs: (g.cs || []).map(({ n, s, y, r }) => ({ n, s, y, r })),
     shown: sh,
+    displayId: c.displayId || null,
     buz: c.buz,
     res: c.res,
     mode: reverse ? "reverse" : visual ? "visual" : "quiz",

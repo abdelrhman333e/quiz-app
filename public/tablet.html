@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0b1425" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/style.css?v=13" />
+    <link rel="stylesheet" href="/style.css?v=14" />
     <title>تابلت التحكم</title>
   </head>
   <body>
@@ -35,7 +35,7 @@
         $("app").innerHTML =
           `<div class="tb"><div class="card"><h3>نوع السؤال</h3>
  <div class="row">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}</button>`).join("")}</div>
- <div class="row"><button onclick="rndT()">🎲 نوع عشوائي</button><button onclick="rndQ()">🎲 سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button></div>
+ <div class="row"><button onclick="rndT()">🎲 نوع عشوائي</button><button onclick="rndQ()">🎲 سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
  <div class="qs">${list.map((x) => `<div class="qi ${x.id === cu.id ? "sel" : ""}" onclick="sel('${x.id}')">${x.kind === "reverse" ? "🔁" : x.d === "h" ? "🔴" : "🟢"} ${esc(x.x)}</div>`).join("") || "<small>لا توجد أسئلة</small>"}</div>
  <h3 style="margin-top:14px">معاينة — لا تظهر على الشاشة</h3>
  ${
@@ -127,6 +127,18 @@
         save();
         $("videoModal").innerHTML = "";
       }
+      function openTutorialVideo() {
+        $("videoModal").innerHTML =
+          `<div class="modal" onclick="if(event.target===this)closeTutorialVideo()"><div class="card tutorial-video-card"><div class="row" style="justify-content:space-between"><h3>الفيديو التوضيحي</h3><button onclick="closeTutorialVideo()">إغلاق</button></div><video id="tutorialVideoPlayer" class="tutorial-video-player" controls playsinline preload="metadata" onerror="$('videoMissing').hidden=false"><source src="/tutorial.mp4" type="video/mp4"></video><small id="videoMissing" hidden>تعذر تحميل ملف الفيديو tutorial.mp4</small></div></div>`;
+        $("tutorialVideoPlayer")
+          .play()
+          .catch(() => toast("اضغط تشغيل لبدء الفيديو"));
+      }
+      function closeTutorialVideo() {
+        const video = $("tutorialVideoPlayer");
+        if (video) video.pause();
+        $("videoModal").innerHTML = "";
+      }
       function setF(i) {
         G.f = ["الكل", ...types()][i];
         save();
@@ -144,14 +156,15 @@
           G.used = G.used.filter((id) => !l.some((q) => q.id === id));
           f = l;
         }
-        sel(f[Math.floor(Math.random() * f.length)].id);
+        sel(f[Math.floor(Math.random() * f.length)].id, true);
       }
-      function sel(id) {
+      function sel(id, show = false) {
         G.cur = {
           id,
-          q: 0,
+          q: show ? 1 : 0,
           o: 0,
           a: 0,
+          displayId: show ? `${Date.now()}-${Math.random()}` : null,
           buz: null,
           res: null,
           revealed: [],
@@ -405,8 +418,8 @@
         })
         .catch(() => (location = "/"));
     </script>
-     <footer>
-        <p>جميع الحقوق محفوظة <a href="https://abdelrhman333e-web.vercel.app/" target="_blank">abdo</a> &copy; 2026</p>
+     <footer class="site-footer">
+        <p>جميع الحقوق محفوظة <a href="https://abdelrhman333e-web.vercel.app/" target="_blank" rel="noreferrer">abdo</a> &copy; 2026</p>
     </footer>
   </body>
 </html>
