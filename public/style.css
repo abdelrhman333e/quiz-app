@@ -554,6 +554,11 @@ img.action-icon {
   width: 100%;
   margin: 16px auto 8px;
 }
+.question-audio-player {
+  display: block;
+  width: min(560px, 100%);
+  margin: 16px auto;
+}
 .modal .tutorial-video-card {
   width: min(800px, 100%);
 }

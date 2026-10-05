@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0b1425" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/style.css?v=15" />
+    <link rel="stylesheet" href="/style.css?v=16" />
     <title>تابلت التحكم</title>
   </head>
   <body>
@@ -34,9 +34,10 @@
           q = cq(),
           cu = G.cur,
           hasO = q?.o?.length,
-          top = q?.kind === "top5",
+          top = q?.kind === "top5" || q?.kind === "top10",
           reverse = q?.kind === "reverse",
           visual = q?.kind === "visual",
+          audioQuestion = q?.kind === "audio",
           reverseCount = reverse ? Array.from(q.a || "").length : 0,
           reverseIndex = cu.rev?.index || 0,
           timer = cu.timer,
@@ -50,7 +51,7 @@
  ${
    q
      ? `<div style="font-size:18px"><b>${esc(q.x)}</b> <small>(${esc(q.t)} · ${pts(q)} نقطة)</small></div>
- ${visual ? `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div></div>` : reverse ? `<div style="color:var(--ok)">الكلمة: ${esc(q.a)}</div>` : top ? q.r.map((a, i) => `<div style="${cu.revealed?.includes(i) ? "color:var(--ok);font-weight:700" : ""}">${i + 1}. ${esc(a)}</div>`).join("") : hasO ? q.o.map((o, i) => `<div style="${q.c === i ? "color:var(--ok);font-weight:700" : ""}">${LB[i]}) ${esc(o)}</div>`).join("") : `<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div>`}
+ ${visual ? `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div></div>` : audioQuestion ? `<div class="visual-preview"><audio controls preload="none" src="${esc(q.audioUrl)}"></audio></div>${hasO ? q.o.map((o, i) => `<div style="${q.c === i ? "color:var(--ok);font-weight:700" : ""}">${LB[i]}) ${esc(o)}</div>`).join("") : `<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div>`}` : reverse ? `<div style="color:var(--ok)">الكلمة: ${esc(q.a)}</div>` : top ? q.r.map((a, i) => `<div style="${cu.revealed?.includes(i) ? "color:var(--ok);font-weight:700" : ""}">${i + 1}. ${esc(a)}</div>`).join("") : hasO ? q.o.map((o, i) => `<div style="${q.c === i ? "color:var(--ok);font-weight:700" : ""}">${LB[i]}) ${esc(o)}</div>`).join("") : `<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div>`}
  <div class="row">${
    reverse
      ? `<button class="big2 on" onclick="nextReverseLetter()" ${reverseIndex >= reverseCount ? "disabled" : ""}>${reverseIndex >= reverseCount ? "اكتملت الحروف" : `إظهار الحرف التالي (${reverseIndex + 1}/${reverseCount})`}</button><button class="big2" onclick="resetReverse()">ابدأ من جديد</button>`
@@ -71,7 +72,7 @@
       }
       const TIMER_DURATION = 30000;
       function timerEnabled(q) {
-        return q && (q.kind === "normal" || q.kind === "visual");
+        return q && ["normal", "visual", "audio"].includes(q.kind);
       }
       function timerPhaseLabel(phase) {
         return phase === "question"
@@ -116,7 +117,7 @@
         while (timer.phase !== "done" && Date.now() >= timer.deadline) {
           if (
             timer.phase === "question" &&
-            q?.kind === "normal" &&
+            ["normal", "audio"].includes(q?.kind) &&
             q.o?.length
           ) {
             G.cur.o = 1;
@@ -397,7 +398,7 @@
       function grade(ok, rank = null) {
         if (G.cur.res) return;
         const q = cq(),
-          top = q?.kind === "top5";
+          top = q?.kind === "top5" || q?.kind === "top10";
         if (top && ok && rank == null)
           return toast("اكشف ترتيب الإجابة أولًا", 1);
         const key = top && ok ? `${G.cur.buz}:${rank}` : null;
@@ -491,23 +492,31 @@
  <input id="ft" placeholder="النوع (ديني، ثقافة عامة...)" list="tl" value="${esc(e.t)}"><datalist id="tl">${types()
    .map((t) => `<option value="${esc(t)}">`)
    .join("")}</datalist>
- <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option></select>
+ <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option></select>
  <div id="questionFields"><input id="fx" placeholder="نص السؤال" value="${esc(e.x)}"></div>
+ <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط ملف صوتي مباشر (MP3 أو WAV)" value="${esc(e.audioUrl || "")}"><small>استخدم رابطًا مباشرًا لملف صوتي يمكن تشغيله في المتصفح.</small></div>
  <div id="normalFields">
  <select id="fd"><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>
  <small>الاختيارات — اتركها فارغة لو السؤال بدون اختيارات</small>
  ${[0, 1, 2, 3].map((i) => `<input id="fo${i}" placeholder="الاختيار ${LB[i]}" value="${esc(e.o?.[i])}">`).join("")}
  <select id="fc">${LB.map((l, i) => `<option value="${i}" ${e.c === i ? "selected" : ""}>الصحيح: ${l}</option>`).join("")}</select>
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
- </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى الخامس</small>${[0, 1, 2, 3, 4].map((i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}">`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fva" placeholder="الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>أضف رابط صورة أو إيموجي، أو الاثنين معًا. تجنب شعارات الأندية.</small></div>
+ </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fva" placeholder="الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>أضف رابط صورة أو إيموجي، أو الاثنين معًا. تجنب شعارات الأندية.</small></div>
  <div class="row"><button class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
         toggleQuestionKind();
       }
       function toggleQuestionKind() {
         const kind = $("fk").value;
-        $("questionFields").hidden = kind === "reverse" || kind === "visual";
-        $("normalFields").hidden = kind !== "normal";
-        $("topFields").hidden = kind !== "top5";
+        $("questionFields").hidden = ["reverse", "visual", "audio"].includes(kind);
+        $("normalFields").hidden = kind !== "normal" && kind !== "audio";
+        $("audioFields").hidden = kind !== "audio";
+        $("topFields").hidden = kind !== "top5" && kind !== "top10";
+        if (!$("topFields").hidden)
+          $("topFields").querySelector("small").textContent =
+            `اكتب الإجابات بالترتيب من المركز الأول إلى ${kind === "top10" ? "العاشر" : "الخامس"}`;
+        $("topFields")
+          .querySelectorAll("input")
+          .forEach((input, i) => (input.hidden = i >= 5 && kind !== "top10"));
         $("reverseFields").hidden = kind !== "reverse";
         $("visualFields").hidden = kind !== "visual";
       }
@@ -515,31 +524,50 @@
         const g = (k) => $(k).value.trim(),
           kind = $("fk").value,
           o =
-            kind === "normal"
+            kind === "normal" || kind === "audio"
               ? [0, 1, 2, 3].map((i) => g("fo" + i)).filter(Boolean)
               : [],
-          r = kind === "top5" ? [0, 1, 2, 3, 4].map((i) => g("fr" + i)) : [],
+          r =
+            kind === "top5" || kind === "top10"
+              ? Array.from(
+                  { length: kind === "top10" ? 10 : 5 },
+                  (_, i) => g("fr" + i),
+                )
+              : [],
           word = kind === "reverse" ? g("frw") : "";
         const image = kind === "visual" ? g("fi") : "",
-          emoji = kind === "visual" ? g("fe") : "";
+          emoji = kind === "visual" ? g("fe") : "",
+          audioUrl = kind === "audio" ? g("fau") : "";
+        if (kind === "audio") {
+          try {
+            if (!["http:", "https:"].includes(new URL(audioUrl).protocol))
+              throw new Error();
+          } catch {
+            return toast("أدخل رابطًا مباشرًا صالحًا يبدأ بـ HTTP أو HTTPS", 1);
+          }
+        }
         if (
           !g("ft") ||
           (kind === "reverse"
             ? !word
             : kind === "visual"
               ? !g("fva") || (!image && !emoji)
-              : !g("fx"))
+              : kind === "audio"
+                ? !audioUrl
+                : !g("fx"))
         )
           return toast(
             kind === "visual"
               ? "اكتب الكلمة وأضف صورة أو إيموجي"
               : kind === "reverse"
                 ? "اكتب النوع والكلمة"
+                : kind === "audio"
+                  ? "أضف رابط الملف الصوتي"
                 : "اكتب النوع والسؤال",
             1,
           );
         if (
-          kind === "top5"
+          kind === "top5" || kind === "top10"
             ? r.some((a) => !a)
             : kind === "reverse" || kind === "visual"
               ? false
@@ -548,8 +576,8 @@
                 : !g("fa")
         )
           return toast(
-            kind === "top5"
-              ? "اكتب الإجابات الخمس بالترتيب"
+            kind === "top5" || kind === "top10"
+              ? `اكتب الإجابات ${kind === "top10" ? "العشر" : "الخمس"} بالترتيب`
               : "أكمل 4 اختيارات أو اكتب إجابة نصية",
             1,
           );
@@ -561,6 +589,8 @@
             x:
               kind === "visual"
                 ? "خمن الصورة"
+                : kind === "audio"
+                  ? "استمع إلى الصوت"
                 : kind === "reverse"
                   ? word
                   : g("fx"),
@@ -576,6 +606,7 @@
                   : g("fa"),
             image,
             emoji,
+            audioUrl,
           });
           $("form").innerHTML = "";
           toast("✔ اتحفظ في قاعدة البيانات");

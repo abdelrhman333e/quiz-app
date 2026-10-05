@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="/style.css?v=16" />
+    <link rel="stylesheet" href="/style.css?v=17" />
     <title>شاشة العرض</title>
   </head>
   <body>
@@ -12,6 +12,7 @@
     <script>
       const room = location.pathname.split("/")[2];
       let reverseTimer, rouletteTimer;
+      let lastQuestionAudioKey = "";
       let screenAudioUnlocked = false;
       let screenVideoUnlocked = false,
         screenVideoAutoplayBlocked = false;
@@ -191,6 +192,19 @@
             .classList.toggle("timer-ending", seconds <= 5);
         }
       }
+      function playQuestionAudio() {
+        const audio = document.getElementById("questionAudioPlayer");
+        const button = document.getElementById("playQuestionAudio");
+        if (audio)
+          audio.play().then(
+            () => {
+              if (button) button.hidden = true;
+            },
+            () => {
+              if (button) button.hidden = false;
+            },
+          );
+      }
       function render() {
         if (!V) return;
         clearTimeout(rouletteTimer);
@@ -212,11 +226,13 @@
         const questionContent =
             V.mode === "visual"
               ? `${V.image || ""}|${V.emoji || ""}`
+              : V.mode === "audio"
+                ? `${V.audioUrl || ""}|${V.x || ""}`
               : V.x || "",
           questionKey = V.shown
             ? V.mode === "reverse" && V.displayId
               ? `reverse|${V.displayId}`
-              : V.mode === "quiz" || V.mode === "visual"
+              : V.mode === "quiz" || V.mode === "visual" || V.mode === "audio"
                 ? `${V.mode}|${V.t}|${questionContent}|${V.displayId || ""}`
                 : ""
             : "",
@@ -229,7 +245,8 @@
         const resultKey = V.res ? `${questionKey}|${V.res}` : "",
           buzzKey = V.buz == null ? "" : `${questionKey}|${V.buz}`,
           newRanks =
-            V.mode === "quiz" && V.kind === "top5"
+            V.mode === "quiz" &&
+            (V.kind === "top5" || V.kind === "top10")
               ? (V.revealed || []).filter(
                   (a) => !revealedRanks.includes(a.rank),
                 )
@@ -246,6 +263,16 @@
         if (reverseLetter && reverseLetter !== lastReverseLetter)
           playSfx("reverse");
         const rouletteHtml = V.shown ? rouletteStage() : "";
+        const previousQuestionAudio = document.getElementById(
+          "questionAudioPlayer",
+        );
+        const keepQuestionAudio =
+          previousQuestionAudio?.dataset.questionKey === questionKey;
+        const questionAudioTime = keepQuestionAudio
+          ? previousQuestionAudio.currentTime
+          : 0;
+        const questionAudioWasPlaying =
+          keepQuestionAudio && !previousQuestionAudio.paused;
         document.getElementById("app").innerHTML =
           `<button id="screenSfxToggle" class="screen-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx()">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><div class="scr"><div class="stage">
 ${
@@ -260,8 +287,9 @@ ${
       : V.mode === "visual"
         ? visualStage(animateQuestion, animateAnswer)
         : V.shown
-          ? `<div class="tag">${esc(V.t)} · ${V.kind === "top5" ? "النقاط حسب الترتيب" : V.d === "h" ? "صعب — نقطتان" : "سهل — نقطة"}</div><div class="card qbox ${animateQuestion ? "animate-in" : ""}">${esc(V.x)}</div>
- ${V.kind === "top5" && V.revealed?.length ? `<div class="opts">${V.revealed.map((a) => `<div class="opt ok ${revealedRanks.includes(a.rank) ? "" : "animate-in"}"><b>${a.rank}</b>${esc(a.a)}</div>`).join("")}</div>` : ""}
+          ? `<div class="tag">${esc(V.t)} · ${V.kind === "top5" || V.kind === "top10" ? "النقاط حسب الترتيب" : V.d === "h" ? "صعب — نقطتان" : "سهل — نقطة"}</div><div class="card qbox ${animateQuestion ? "animate-in" : ""}">${esc(V.x)}</div>
+ ${V.mode === "audio" ? `<button id="playQuestionAudio" class="on" onclick="playQuestionAudio()" hidden>▶ تشغيل الصوت</button><audio id="questionAudioPlayer" class="question-audio-player" controls preload="metadata" data-question-key="${esc(questionKey)}" onerror="this.nextElementSibling.hidden=false"><source src="${esc(V.audioUrl)}"></audio><small hidden>تعذر تحميل الرابط الصوتي، تأكد من أنه رابط مباشر لملف صوتي.</small>` : ""}
+ ${V.kind === "top5" || V.kind === "top10" ? V.revealed?.length ? `<div class="opts">${V.revealed.map((a) => `<div class="opt ok ${revealedRanks.includes(a.rank) ? "" : "animate-in"}"><b>${a.rank}</b>${esc(a.a)}</div>`).join("")}</div>` : "" : ""}
  ${V.o ? `<div class="opts ${animateOptions ? "animate-options" : ""}">${V.o.map((o, i) => `<div class="opt ${V.c === i ? "ok" : ""}"><b>${LB[i]}</b>${esc(o)}</div>`).join("")}</div>` : ""}
  ${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`
           : '<div class="wait">في انتظار السؤال...</div>'
@@ -269,12 +297,45 @@ ${
  ${V.timer && V.timer.phase !== "done" ? `<div class="game-timer ${timerSeconds(V.timer) <= 5 ? "timer-ending" : ""}"><span>${V.timer.phase === "question" ? "السؤال" : "الاختيارات"}${V.timer.paused ? " · متوقف" : ""}</span><b id="screenTimerCountdown">${timerSeconds(V.timer)}</b><small>ثانية</small></div>` : ""}
  ${V.mode !== "reverse" && b ? `<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res === "ok" ? "✅" : V.res === "no" ? "❌" : ""}</div>` : ""}</div>
  <div class="card" style="align-self:start"><h3>🏆 الترتيب</h3><div class="board">${board(V.cs)}</div></div></div>`;
+        if (V.mode === "audio" && V.shown) {
+          const audio = document.getElementById("questionAudioPlayer"),
+            button = document.getElementById("playQuestionAudio"),
+            shouldPlay = keepQuestionAudio
+              ? questionAudioWasPlaying
+              : questionKey !== lastQuestionAudioKey;
+          const restoreAndPlay = () => {
+            if (
+              keepQuestionAudio &&
+              Number.isFinite(questionAudioTime) &&
+              questionAudioTime < audio.duration
+            )
+              audio.currentTime = questionAudioTime;
+            if (shouldPlay)
+              audio.play().catch(() => {
+                if (button) button.hidden = false;
+              });
+          };
+          if (audio.readyState >= 1) restoreAndPlay();
+          else
+            audio.addEventListener("loadedmetadata", restoreAndPlay, {
+              once: true,
+            });
+          audio.addEventListener("play", () => {
+            if (button) button.hidden = true;
+          });
+          audio.addEventListener("pause", () => {
+            if (button) button.hidden = false;
+          });
+          if (button) button.hidden = !audio.paused && !audio.ended;
+          lastQuestionAudioKey = questionKey;
+        } else lastQuestionAudioKey = "";
         lastQuestionKey = questionKey;
         lastOptionsKey = optionsKey;
         lastAnswerKey = answerKey;
         lastTop5Key = questionKey;
         lastRevealedRanks =
-          V.mode === "quiz" && V.kind === "top5"
+          V.mode === "quiz" &&
+          (V.kind === "top5" || V.kind === "top10")
             ? (V.revealed || []).map((a) => a.rank)
             : [];
         lastResultKey = resultKey;

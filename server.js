@@ -100,7 +100,7 @@ function view(g, qs) {
   const c = g.cur,
     x = qs.find((a) => a.id === c.id),
     sh = !!(x && c.q),
-    top = x?.kind === "top5",
+    top = x?.kind === "top5" || x?.kind === "top10",
     reverse = x?.kind === "reverse",
     visual = x?.kind === "visual";
   const v = {
@@ -111,7 +111,7 @@ function view(g, qs) {
     timer: sh ? c.timer || null : null,
     buz: c.buz,
     res: c.res,
-    mode: reverse ? "reverse" : visual ? "visual" : "quiz",
+    mode: reverse ? "reverse" : visual ? "visual" : x?.kind === "audio" ? "audio" : "quiz",
     tutorialPlaying: !!g.tutorialPlaying,
     tutorialStarted: g.tutorialStarted || 0,
     tutorialVideoPlaying: !!g.tutorialVideoPlaying,
@@ -133,10 +133,21 @@ function view(g, qs) {
       ? { ...v, t: x.t, image: x.image, emoji: x.emoji, ans: c.a ? x.a : null }
       : v;
   if (sh) {
-    Object.assign(v, { t: x.t, d: x.d, x: x.x, kind: top ? "top5" : "normal" });
+    Object.assign(v, {
+      t: x.t,
+      d: x.d,
+      x: x.x,
+      kind: top ? x.kind : "normal",
+      audioUrl: x.kind === "audio" ? x.audioUrl : "",
+    });
     if (top)
       v.revealed = (c.revealed || [])
-        .filter((i) => Number.isInteger(i) && i >= 0 && i < 5)
+        .filter(
+          (i) =>
+            Number.isInteger(i) &&
+            i >= 0 &&
+            i < (x.kind === "top10" ? 10 : 5),
+        )
         .map((i) => ({ rank: i + 1, a: x.r?.[i] }))
         .filter((a) => a.a);
     else
@@ -196,6 +207,12 @@ const T = {
   ".png": "image/png",
   ".svg": "image/svg+xml",
   ".mp4": "video/mp4",
+  ".mp3": "audio/mpeg",
+  ".ogg": "audio/ogg",
+  ".oga": "audio/ogg",
+  ".opus": "audio/ogg",
+  ".m4a": "audio/mp4",
+  ".aac": "audio/aac",
   ".wav": "audio/wav",
 };
 const str = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
@@ -208,16 +225,24 @@ function cleanImage(v) {
     return "";
   }
 }
+function cleanAudio(v) {
+  const audio = str(v, 1000);
+  try {
+    return ["http:", "https:"].includes(new URL(audio).protocol) ? audio : "";
+  } catch {
+    return "";
+  }
+}
 function cleanQ(b) {
-  const kind = ["top5", "reverse", "visual"].includes(b.kind)
+  const kind = ["top5", "top10", "reverse", "visual", "audio"].includes(b.kind)
       ? b.kind
       : "normal",
     r =
-      kind === "top5" && Array.isArray(b.r)
-        ? b.r.map((s) => str(s, 200)).slice(0, 5)
+      (kind === "top5" || kind === "top10") && Array.isArray(b.r)
+        ? b.r.map((s) => str(s, 200)).slice(0, kind === "top10" ? 10 : 5)
         : [],
     o =
-      kind === "normal" && Array.isArray(b.o)
+      (kind === "normal" || kind === "audio") && Array.isArray(b.o)
         ? b.o
             .map((s) => str(s, 200))
             .filter(Boolean)
@@ -236,6 +261,7 @@ function cleanQ(b) {
       a,
       image: kind === "visual" ? cleanImage(b.image) : "",
       emoji: kind === "visual" ? str(b.emoji, 20) : "",
+      audioUrl: kind === "audio" ? cleanAudio(b.audioUrl) : "",
     };
   return x.t &&
     x.x &&
@@ -243,9 +269,11 @@ function cleanQ(b) {
       ? !!a
       : kind === "visual"
         ? !!a && !!(x.image || x.emoji)
-        : kind === "top5"
-          ? r.length === 5 && r.every(Boolean)
-          : o.length === 4 || (!o.length && x.a))
+        : kind === "top5" || kind === "top10"
+          ? r.length === (kind === "top10" ? 10 : 5) && r.every(Boolean)
+          : kind === "audio"
+            ? !!x.audioUrl && (o.length === 4 || (!o.length && x.a))
+            : o.length === 4 || (!o.length && x.a))
     ? x
     : null;
 }
