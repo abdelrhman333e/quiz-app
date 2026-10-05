@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="/style.css?v=25" />
+    <link rel="stylesheet" href="/style.css?v=26" />
     <title>شاشة العرض</title>
   </head>
   <body>
@@ -160,7 +160,7 @@
         return `<div class="tag ${animateQuestion ? "animate-in" : ""}">الكلمات المعكوسة</div>${visible ? `<div class="reverse-letter" dir="rtl">${esc(letter)}</div>` : `<div class="wait ${animateQuestion ? "animate-in" : ""}">اضغط عرض الحرف التالي من التابلت</div>`}`;
       }
       function visualStage(animateQuestion, animateAnswer) {
-        if (!V.shown) return '<div class="wait">في انتظار السؤال...</div>';
+        if (!V.shown) return '<div class="wait">هنا هيظهر السؤال ...</div>';
         return `<div class="tag">${esc(V.t)}</div><div class="visual-clues ${animateQuestion ? "animate-options" : ""}">${V.image ? `<img class="visual-clue" src="${esc(V.image)}" alt="قرينة بصرية">` : ""}${V.emoji ? `<div class="visual-emoji">${esc(V.emoji)}</div>` : ""}</div>${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`;
       }
       function statisticsStage() {
@@ -367,7 +367,7 @@ ${
  ${V.kind === "top5" || V.kind === "top10" ? V.revealed?.length ? `<div class="opts">${V.revealed.map((a) => `<div class="opt ok ${revealedRanks.includes(a.rank) ? "" : "animate-in"}"><b>${a.rank}</b>${esc(a.a)}</div>`).join("")}</div>` : "" : ""}
  ${V.o ? `<div class="opts ${animateOptions ? "animate-options" : ""}">${V.o.map((o, i) => `<div class="opt ${V.c === i ? "ok" : ""}"><b>${LB[i]}</b>${esc(o)}</div>`).join("")}</div>` : ""}
  ${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`
-          : '<div class="wait">في انتظار السؤال...</div>'
+          : '<div class="wait">هنا هيظهر السؤال ...</div>'
 }
  ${!V.showStats && V.timer && V.timer.phase !== "done" ? `<div class="game-timer ${timerSeconds(V.timer) <= 5 ? "timer-ending" : ""}"><div class="timer-readout"><span>${V.timer.phase === "question" ? "السؤال" : "الاختيارات"}${V.timer.paused ? " · متوقف" : ""}</span><b id="screenTimerCountdown">${timerSeconds(V.timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="screenTimerProgress" style="width:${timerProgress(V.timer)}%"></i></div></div>` : ""}
  ${!V.showStats && V.mode !== "reverse" && b ? `<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res === "ok" ? "✅" : V.res === "no" ? "❌" : ""}</div>` : ""}</div>

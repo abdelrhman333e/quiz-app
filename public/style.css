@@ -459,8 +459,25 @@ small {
   min-height: 0;
   overflow-y: auto;
   padding: 2px 4px 2px 2px;
-  scrollbar-color: rgba(145, 168, 199, 0.55) transparent;
+  scrollbar-color: rgba(75, 133, 194, 0.72) rgba(8, 19, 34, 0.38);
   scrollbar-width: thin;
+}
+.screen-stats-players::-webkit-scrollbar {
+  width: 8px;
+}
+.screen-stats-players::-webkit-scrollbar-track {
+  border-radius: 8px;
+  background: rgba(8, 19, 34, 0.38);
+}
+.screen-stats-players::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: rgba(75, 133, 194, 0.72);
+  background-clip: padding-box;
+}
+.screen-stats-players::-webkit-scrollbar-thumb:hover {
+  background: rgba(7, 139, 255, 0.9);
+  background-clip: padding-box;
 }
 .screen-stat-player {
   display: flex;
