@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0b1425" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/style.css?v=19" />
+    <link rel="stylesheet" href="/style.css?v=20" />
     <title>تابلت التحكم</title>
   </head>
   <body>
@@ -45,7 +45,8 @@
         $("app").innerHTML =
           `<div class="tb"><div class="card"><h3>نوع السؤال</h3>
  <div class="row">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}</button>`).join("")}</div>
- <div class="row"><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="exportQuestions()">⬇️ تصدير الأسئلة</button><button onclick="$('importQuestionsFile').click()">⬆️ استيراد أسئلة</button><input id="importQuestionsFile" type="file" accept=".json,application/json" hidden onchange="handleQuestionsImport(this)"><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
+ <div class="row"><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="exportQuestions()">⬇️ تصدير الأسئلة</button><button onclick="$('importQuestionsFile').click()">⬆️ استيراد أسئلة</button><input id="importQuestionsFile" type="file" accept=".json,.txt,.xlsx,.docx,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onchange="handleQuestionsImport(this)"><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
+ <small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><details class="import-hint"><summary>عرض مثال لملف TXT أو Word</summary><div dir="rtl">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>
  <div class="qs">${list.map((x) => `<div class="qi ${x.id === cu.id ? "sel" : ""}" onclick="sel('${x.id}')">${x.kind === "reverse" ? "🔁" : x.d === "h" ? "🔴" : "🟢"} ${esc(x.x)}</div>`).join("") || "<small>لا توجد أسئلة</small>"}</div>
  <h3 style="margin-top:14px">معاينة — لا تظهر على الشاشة</h3>
  ${
@@ -542,8 +543,36 @@
         const file = input.files[0];
         input.value = "";
         if (!file) return;
-        if (file.size > 75 * 1024 * 1024)
-          return toast("حجم النسخة الاحتياطية أكبر من 75 ميجابايت", 1);
+        const extension = file.name.split(".").pop().toLowerCase();
+        if (!["json", "txt", "xlsx", "docx"].includes(extension))
+          return toast("اختر JSON أو TXT أو Excel XLSX أو Word DOCX", 1);
+        const maxSize = extension === "json" ? 75 : 10;
+        if (file.size > maxSize * 1024 * 1024)
+          return toast(`حجم الملف يجب ألا يتجاوز ${maxSize} ميجابايت`, 1);
+        if (extension !== "json") {
+          if (
+            !(await askConfirm(
+              "سيتم قراءة الأسئلة من الملف وإضافتها إلى أسئلتك الحالية دون حذفها. هل تريد المتابعة؟",
+              "استيراد الأسئلة",
+              "استيراد",
+            ))
+          )
+            return;
+          try {
+            const response = await fetch("/api/questions/import-file", {
+                method: "POST",
+                headers: { "X-Import-Extension": extension },
+                body: file,
+              }),
+              result = await response.json();
+            if (!response.ok)
+              throw new Error(result.error || "تعذر استيراد الأسئلة");
+            toast(`تم استيراد ${result.imported} سؤال`);
+          } catch (e) {
+            toast(e.message, 1);
+          }
+          return;
+        }
         let backup;
         try {
           backup = JSON.parse(await file.text());

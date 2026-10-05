@@ -4,6 +4,7 @@ const http = require("http"),
   path = require("path"),
   crypto = require("crypto");
 const { Pool } = require("pg");
+const { parseQuestionFile } = require("./question-import");
 const PORT = process.env.PORT || 3000,
   P = path.join(__dirname, "public"),
   DBU = process.env.DATABASE_URL;
@@ -286,7 +287,11 @@ const audioTypes = {
   m4a: "audio/mp4",
   aac: "audio/aac",
 };
-function readAudio(req, limit) {
+function readAudio(
+  req,
+  limit,
+  tooLargeMessage = "حجم الملف أكبر من 20 ميجابايت",
+) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0,
@@ -301,7 +306,7 @@ function readAudio(req, limit) {
     req.on("end", () => {
       if (oversized)
         reject(
-          Object.assign(new Error("حجم الملف أكبر من 20 ميجابايت"), {
+          Object.assign(new Error(tooLargeMessage), {
             status: 413,
           }),
         );
@@ -608,6 +613,57 @@ http
             "Cache-Control": "no-store",
           });
           return res.end(JSON.stringify(backup));
+        }
+        if (u === "/api/questions/import-file" && req.method === "POST") {
+          const extension = str(req.headers["x-import-extension"], 8)
+              .replace(/^\./, "")
+              .toLowerCase();
+          if (!["txt", "xlsx", "docx"].includes(extension)) {
+            req.resume();
+            return json(res, { error: "استخدم ملف TXT أو XLSX أو DOCX" }, 415);
+          }
+          const data = await readAudio(
+            req,
+            10 * 1024 * 1024,
+            "حجم ملف الأسئلة يجب ألا يتجاوز 10 ميجابايت",
+          );
+          let questions;
+          try {
+            questions = await parseQuestionFile(extension, data);
+          } catch (error) {
+            return json(
+              res,
+              { error: error.message || "تعذر قراءة ملف الأسئلة" },
+              400,
+            );
+          }
+          const imported = questions.map((question) =>
+            cleanQ({ ...question, id: "q" + crypto.randomUUID() }),
+          );
+          const invalid = imported.findIndex((question) => !question);
+          if (invalid >= 0)
+            return json(
+              res,
+              { error: `السؤال رقم ${invalid + 1} غير مكتمل أو غير صالح` },
+              400,
+            );
+          const client = await db.connect();
+          try {
+            await client.query("BEGIN");
+            for (const question of imported)
+              await client.query(
+                "INSERT INTO questions(user_id,id,data) VALUES($1,$2,$3)",
+                [uid, question.id, JSON.stringify(question)],
+              );
+            await client.query("COMMIT");
+          } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+          } finally {
+            client.release();
+          }
+          pushAll(uid);
+          return json(res, { ok: 1, imported: imported.length });
         }
         if (u === "/api/questions/import" && req.method === "POST") {
           const backup = await readJsonBody(req, 75 * 1024 * 1024);

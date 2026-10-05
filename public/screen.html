@@ -22,6 +22,10 @@
         lastResultKey = "",
         lastBuzzKey = "",
         lastReverseLetter = "";
+      const resultSounds = {
+        correct: new Audio("/sound/correct.wav"),
+        wrong: new Audio("/sound/lose.wav"),
+      };
       let lastQuestionKey = "",
         lastOptionsKey = "",
         lastAnswerKey = "",
@@ -49,6 +53,14 @@
       }
       function playSfx(name) {
         if (!sfxEnabled || !sfxContext) return;
+        if (resultSounds[name]) {
+          const audio = resultSounds[name];
+          audio.currentTime = 0;
+          audio.play().catch((error) => {
+            console.error(`تعذر تشغيل مؤثر ${name}:`, error);
+          });
+          return;
+        }
         const notes =
           {
             question: [
@@ -56,15 +68,6 @@
               [783.99, 0.11, 0.13],
             ],
             options: [[740, 0, 0.07]],
-            correct: [
-              [523.25, 0, 0.11],
-              [659.25, 0.1, 0.11],
-              [783.99, 0.2, 0.18],
-            ],
-            wrong: [
-              [330, 0, 0.12],
-              [220, 0.13, 0.2],
-            ],
             answer: [[659.25, 0, 0.14]],
             contestant: [[440, 0, 0.08]],
             rank: [[587.33, 0, 0.07]],

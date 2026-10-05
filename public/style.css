@@ -257,6 +257,11 @@ small {
   accent-color: var(--p);
   cursor: pointer;
 }
+.import-hint {
+  display: block;
+  margin-top: 8px;
+  line-height: 1.7;
+}
 @keyframes timerPulse {
   to {
     transform: scale(1.12);
