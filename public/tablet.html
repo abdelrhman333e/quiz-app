@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0b1425" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/style.css?v=20" />
+    <link rel="stylesheet" href="/style.css?v=21" />
     <title>تابلت التحكم</title>
   </head>
   <body>
@@ -13,6 +13,7 @@
     <div id="form"></div>
     <div id="videoModal"></div>
     <div id="confirmModal"></div>
+    <div id="statsModal"></div>
     <script src="/common.js"></script>
     <script>
       const $ = (id) => document.getElementById(id);
@@ -22,6 +23,14 @@
       }
       function render() {
         if (!G) return;
+        if (!G.stats || typeof G.stats !== "object")
+          G.stats = { correct: 0, wrong: 0 };
+        G.stats.correct = Number.isSafeInteger(G.stats.correct)
+          ? Math.max(0, G.stats.correct)
+          : 0;
+        G.stats.wrong = Number.isSafeInteger(G.stats.wrong)
+          ? Math.max(0, G.stats.wrong)
+          : 0;
         if (G.cur.q && !G.cur.timer && timerEnabled(cq())) {
           startQuestionTimer(cq());
           G.v = Date.now();
@@ -70,7 +79,7 @@
  }</div>
  <div class="card"><h3>المتسابقون · ${esc(ME.u)}</h3><div class="row"><input id="cn" placeholder="اسم المتسابق" style="flex:1;width:auto"><button onclick="addC()">＋</button></div>
  ${G.cs.map((c, i) => `<div class="ct"><b>${esc(c.n)}</b> — ${c.s}<div class="row"><button onclick="ch(${i},'s',1)">＋</button><button onclick="ch(${i},'s',-1)">−</button><button onclick="ch(${i},'y',1)">🟨 ${c.y}</button><button onclick="ch(${i},'r',1)">🟥 ${c.r}</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/icons8-trash.svg" alt=""></button></div></div>`).join("")}
- <div class="row"><button onclick="resetScores()">تصفير النقاط</button><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="logout()">🚪 خروج</button></div></div></div>`;
+ <div class="row"><button onclick="showStats()">📊 الإحصائيات</button><button onclick="resetScores()">تصفير النقاط</button><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="logout()">🚪 خروج</button></div></div></div>`;
       }
       const TIMER_DURATION = 30000;
       function timerEnabled(q) {
@@ -485,6 +494,8 @@
         if (key && G.cur.awards?.includes(key))
           return toast("تم احتساب نقاط هذا الترتيب للاعب", 1);
         G.cs[G.cur.buz].s += ok ? (top ? rank + 1 : pts(q)) : -1;
+        if (!G.stats) G.stats = { correct: 0, wrong: 0 };
+        G.stats[ok ? "correct" : "wrong"]++;
         if (key) {
           if (!G.cur.awards) G.cur.awards = [];
           G.cur.awards.push(key);
@@ -493,6 +504,17 @@
         if (ok) G.cur.a = 1;
         if (ok && G.cur.timer) G.cur.timer.phase = "done";
         save();
+      }
+      function showStats() {
+        const correct = G.stats?.correct || 0,
+          wrong = G.stats?.wrong || 0,
+          answered = correct + wrong,
+          accuracy = answered ? Math.round((correct / answered) * 100) : 0;
+        $("statsModal").innerHTML =
+          `<div class="modal" onclick="if(event.target===this)closeStats()"><div class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><div class="row" style="justify-content:space-between"><h3 id="statsTitle">📊 إحصائيات الإجابات</h3><button onclick="closeStats()">إغلاق</button></div><div class="stats-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="stats-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div></div><small>الإحصائيات محفوظة مع بيانات اللعبة.</small></div></div>`;
+      }
+      function closeStats() {
+        $("statsModal").innerHTML = "";
       }
       function addC() {
         const n = $("cn").value.trim();
