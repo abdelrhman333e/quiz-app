@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const ExcelJS = require("exceljs");
 const { parseQuestionFile } = require("../question-import");
+const { exportQuestionFile } = require("../question-export");
 
 test("parses labeled Arabic text questions with choices", async () => {
   const source = [
@@ -85,5 +86,44 @@ test("rejects incomplete multiple-choice rows with a location", async () => {
   await assert.rejects(
     parseQuestionFile("txt", Buffer.from(source, "utf8")),
     /السؤال عند السطر \d+: أدخل الاختيارات الأربعة/,
+  );
+});
+
+test("exports TXT, XLSX and DOCX in formats that can be imported again", async () => {
+  const questions = [
+    {
+      t: "علوم",
+      x: "ما ناتج 2 + 2؟",
+      d: "h",
+      kind: "normal",
+      o: ["3", "4", "5", "6"],
+      c: 1,
+      a: "",
+    },
+    {
+      t: "ثقافة",
+      x: "ما لون العشب؟",
+      d: "e",
+      kind: "normal",
+      o: [],
+      c: -1,
+      a: "أخضر",
+    },
+  ];
+
+  for (const format of ["txt", "xlsx", "docx"]) {
+    const file = await exportQuestionFile(questions, format);
+    const imported = await parseQuestionFile(format, file.data);
+    assert.deepEqual(
+      imported.map(({ t, x, d, o, c, a }) => ({ t, x, d, o, c, a })),
+      questions.map(({ t, x, d, o, c, a }) => ({ t, x, d, o, c, a })),
+    );
+  }
+});
+
+test("exports no unsupported question kinds in exchange formats", async () => {
+  await assert.rejects(
+    exportQuestionFile([{ kind: "audio" }], "xlsx"),
+    /استخدم JSON لتصدير جميع أنواع الأسئلة والصوت/,
   );
 });

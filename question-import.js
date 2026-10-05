@@ -121,7 +121,11 @@ function parseLabeledText(text) {
     const field = labels.get(normalize(match[1]));
     if (!field)
       throw new Error(`اسم حقل غير معروف في السطر ${lineNumber}: ${match[1]}`);
-    if (field === "question" && record.question) commit();
+    if (
+      (field === "question" || field === "category") &&
+      record.question
+    )
+      commit();
     record[field] = match[2].trim();
     if (field === "question")
       record.source = `السؤال عند السطر ${lineNumber}`;

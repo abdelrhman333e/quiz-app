@@ -5,6 +5,7 @@ const http = require("http"),
   crypto = require("crypto");
 const { Pool } = require("pg");
 const { parseQuestionFile } = require("./question-import");
+const { exportQuestionFile } = require("./question-export");
 const PORT = process.env.PORT || 3000,
   P = path.join(__dirname, "public"),
   DBU = process.env.DATABASE_URL;
@@ -549,8 +550,25 @@ http
           return json(res, { ok: 1 });
         }
         if (u === "/api/questions/export" && req.method === "GET") {
-          const questions = await getQs(uid),
-            assets = {},
+          const format = url.searchParams.get("format") || "json",
+            questions = await getQs(uid);
+          if (!["json", "txt", "xlsx", "docx"].includes(format))
+            return json(res, { error: "صيغة التصدير غير مدعومة" }, 400);
+          if (format !== "json") {
+            let file;
+            try {
+              file = await exportQuestionFile(questions, format);
+            } catch (error) {
+              return json(res, { error: error.message }, 400);
+            }
+            res.writeHead(200, {
+              "Content-Type": file.contentType,
+              "Content-Disposition": `attachment; filename="${file.filename}"`,
+              "Cache-Control": "no-store",
+            });
+            return res.end(file.data);
+          }
+          const assets = {},
             ids = [
               ...new Set(
                 questions

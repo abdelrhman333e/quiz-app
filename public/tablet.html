@@ -559,9 +559,16 @@
           toast(e.message, 1);
         }
       }
-      async function exportQuestions() {
+      async function exportQuestions(format) {
+        if (!format) {
+          $("form").innerHTML =
+            `<div class="modal" onclick="if(event.target===this)$('form').innerHTML=''"><div class="card"><h3>اختر صيغة تصدير الأسئلة</h3><small class="import-hint">JSON نسخة احتياطية كاملة تشمل كل أنواع الأسئلة وملفات الصوت المرفوعة. TXT وExcel وWord للتبادل وتشمل الأسئلة العادية فقط.</small><div class="row"><button class="big2 on" onclick="exportQuestions('json')">JSON — نسخة كاملة</button><button class="big2" onclick="exportQuestions('xlsx')">Excel — XLSX</button><button class="big2" onclick="exportQuestions('docx')">Word — DOCX</button><button class="big2" onclick="exportQuestions('txt')">ملف نصي — TXT</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
+          return;
+        }
         try {
-          const response = await fetch("/api/questions/export");
+          const response = await fetch(
+            `/api/questions/export?format=${encodeURIComponent(format)}`,
+          );
           if (!response.ok) {
             const result = await response.json();
             throw new Error(result.error || "تعذر تصدير الأسئلة");
@@ -570,11 +577,18 @@
             url = URL.createObjectURL(blob),
             link = document.createElement("a");
           link.href = url;
-          link.download = "quiz-questions-backup.json";
+          link.download = {
+            json: "quiz-questions-backup.json",
+            txt: "quiz-questions.txt",
+            xlsx: "quiz-questions.xlsx",
+            docx: "quiz-questions.docx",
+          }[format];
           link.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
-          toast("تم تنزيل نسخة الأسئلة الاحتياطية");
+          $("form").innerHTML = "";
+          toast("تم تنزيل ملف الأسئلة");
         } catch (e) {
+          $("form").innerHTML = "";
           toast(e.message, 1);
         }
       }
