@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0b1425" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/style.css?v=16" />
+    <link rel="stylesheet" href="/style.css?v=18" />
     <title>تابلت التحكم</title>
   </head>
   <body>
@@ -60,7 +60,7 @@
  ${hasO ? `<button class="big2 ${cu.o ? "on" : ""}" onclick="tg('o')">${cu.o ? "إخفاء" : "عرض"} الاختيارات</button>` : ""}
  ${top ? "" : `<button class="big2 ${cu.a ? "on" : ""}" onclick="tg('a')">${cu.a ? "إخفاء" : "عرض"} الإجابة</button>`}`
  }</div>
- ${timer ? `<div class="timer-controls"><div class="game-timer"><span>${timerPhaseLabel(timer.phase)}</span><b id="tabletTimerCountdown">${timerSeconds(timer)}</b><small>ثانية</small></div><button onclick="${timerActive ? "toggleTimer()" : "restartTimer()"}">${timerActive ? timer.paused ? "▶ استكمال المؤقت" : "⏸ إيقاف المؤقت" : "↻ إعادة المؤقت"}</button>${timerActive ? `<button onclick="restartTimer()">↻ إعادة 30 ثانية</button>` : ""}</div>` : ""}
+ ${timer ? `<div class="timer-controls"><div class="game-timer"><div class="timer-readout"><span>${timerPhaseLabel(timer.phase)}${timer.paused ? " · متوقف" : ""}</span><b id="tabletTimerCountdown">${timerSeconds(timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="tabletTimerProgress" style="width:${timerProgress(timer)}%"></i></div></div><button onclick="${timerActive ? "toggleTimer()" : "restartTimer()"}">${timerActive ? timer.paused ? "▶ استكمال المؤقت" : "⏸ إيقاف المؤقت" : "↻ إعادة المؤقت"}</button>${timerActive ? `<button onclick="restartTimer()">↻ إعادة 30 ثانية</button>` : ""}</div>` : ""}
  <h3>من جاوب؟</h3><div class="row">${G.cs.map((c, i) => `<button class="${cu.buz === i ? "on" : ""}" onclick="buz(${i})">${esc(c.n)}</button>`).join("") || "<small>أضف متسابقين</small>"}</div>
  ${cu.buz != null ? `<div class="row">${top && cu.rank == null ? "<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>" : `<button class="big2 ok" onclick="grade(1${top ? `,${cu.rank}` : ""})">✅ صح (+${top ? cu.rank + 1 : pts(q)})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>` : ""}
  <div class="row"><button class="action-btn" onclick="openForm('${q.id}')"><img class="action-icon" src="/edit-svgrepo-com.svg" alt=""> تعديل</button><button class="action-btn" onclick="del('${q.id}')"><img class="action-icon" src="/icons8-trash.svg" alt=""> حذف</button></div>`
@@ -72,7 +72,7 @@
       }
       const TIMER_DURATION = 30000;
       function timerEnabled(q) {
-        return q && ["normal", "visual", "audio"].includes(q.kind);
+        return q && ["normal", "visual", "audio", "top5", "top10"].includes(q.kind);
       }
       function timerPhaseLabel(phase) {
         return phase === "question"
@@ -82,10 +82,18 @@
             : "وقت الإجابة";
       }
       function timerSeconds(timer) {
-        const remaining = timer.paused
-          ? timer.remaining
-          : timer.deadline - Math.max(Date.now(), timer.startedAt || 0);
-        return Math.max(0, Math.ceil(remaining / 1000));
+        return Math.ceil(timerRemaining(timer) / 1000);
+      }
+      function timerRemaining(timer) {
+        return Math.max(
+          0,
+          timer.paused
+            ? timer.remaining
+            : timer.deadline - Math.max(Date.now(), timer.startedAt || 0),
+        );
+      }
+      function timerProgress(timer) {
+        return Math.min(100, (timerRemaining(timer) / TIMER_DURATION) * 100);
       }
       function updateTimerDisplay() {
         const timer = G?.cur?.timer;
@@ -96,6 +104,8 @@
           display
             .closest(".game-timer")
             .classList.toggle("timer-ending", seconds <= 5);
+          const progress = $("tabletTimerProgress");
+          if (progress) progress.style.width = `${timerProgress(timer)}%`;
         }
       }
       function startQuestionTimer(q, startedAt = Date.now()) {
@@ -122,6 +132,13 @@
           ) {
             G.cur.o = 1;
             timer.phase = "options";
+          } else if (["top5", "top10"].includes(q?.kind)) {
+            G.cur.revealed = Array.from(
+              { length: q.r.length },
+              (_, index) => index,
+            );
+            G.cur.a = 1;
+            timer.phase = "done";
           } else {
             G.cur.a = 1;
             timer.phase = "done";
