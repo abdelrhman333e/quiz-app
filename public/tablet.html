@@ -75,6 +75,7 @@
         setTimeout(() => d.remove(), 2000);
       }
       let tutorialAudioSyncAt = 0;
+      let tutorialVideoSyncAt = 0;
       function publishTutorialAudioState(force = false) {
         const audio = $("videoModal").querySelector("audio");
         if (!audio || !G.tutorialPlaying) return;
@@ -92,7 +93,25 @@
           toast("تعذر إرسال حالة الصوت للشاشة", 1),
         );
       }
+      function publishTutorialVideoState(force = false) {
+        const video = $("videoModal").querySelector("video");
+        if (!video || !G.tutorialVideoPlaying) return;
+        const now = Date.now();
+        if (!force && now - tutorialVideoSyncAt < 600) return;
+        tutorialVideoSyncAt = now;
+        G.tutorialVideo = {
+          playing: !video.paused && !video.ended,
+          currentTime: video.currentTime,
+        };
+        G.v = now;
+        api("/api/game", "POST", G).catch(() =>
+          toast("تعذر إرسال حالة الفيديو للشاشة", 1),
+        );
+      }
       function openTutorialAudio() {
+        G.tutorialVideoPlaying = false;
+        const video = $("tutorialVideoPlayer");
+        if (video) video.pause();
         G.tutorialPlaying = true;
         G.tutorialStarted = Date.now();
         G.tutorialAudio = {
@@ -128,15 +147,36 @@
         $("videoModal").innerHTML = "";
       }
       function openTutorialVideo() {
+        G.tutorialPlaying = false;
+        const audio = $("tutorialAudioPlayer");
+        if (audio) audio.pause();
+        G.tutorialVideoPlaying = true;
+        G.tutorialVideo = { playing: false, currentTime: 0 };
+        save();
         $("videoModal").innerHTML =
           `<div class="modal" onclick="if(event.target===this)closeTutorialVideo()"><div class="card tutorial-video-card"><div class="row" style="justify-content:space-between"><h3>الفيديو التوضيحي</h3><button onclick="closeTutorialVideo()">إغلاق</button></div><video id="tutorialVideoPlayer" class="tutorial-video-player" controls playsinline preload="metadata" onerror="$('videoMissing').hidden=false"><source src="/tutorial.mp4" type="video/mp4"></video><small id="videoMissing" hidden>تعذر تحميل ملف الفيديو tutorial.mp4</small></div></div>`;
-        $("tutorialVideoPlayer")
-          .play()
-          .catch(() => toast("اضغط تشغيل لبدء الفيديو"));
+        const videoPlayer = $("tutorialVideoPlayer");
+        ["play", "pause", "seeked", "ended"].forEach((event) =>
+          videoPlayer.addEventListener(event, () =>
+            publishTutorialVideoState(true),
+          ),
+        );
+        videoPlayer.addEventListener("timeupdate", () =>
+          publishTutorialVideoState(),
+        );
+        videoPlayer.play().catch(() => toast("اضغط تشغيل لبدء الفيديو"));
       }
       function closeTutorialVideo() {
         const video = $("tutorialVideoPlayer");
-        if (video) video.pause();
+        G.tutorialVideoPlaying = false;
+        if (video) {
+          G.tutorialVideo = {
+            playing: false,
+            currentTime: video.currentTime,
+          };
+          video.pause();
+        }
+        save();
         $("videoModal").innerHTML = "";
       }
       function setF(i) {

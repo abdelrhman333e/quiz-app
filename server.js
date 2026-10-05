@@ -112,6 +112,8 @@ function view(g, qs) {
     mode: reverse ? "reverse" : visual ? "visual" : "quiz",
     tutorialPlaying: !!g.tutorialPlaying,
     tutorialStarted: g.tutorialStarted || 0,
+    tutorialVideoPlaying: !!g.tutorialVideoPlaying,
+    tutorialVideo: g.tutorialVideo || { playing: false, currentTime: 0 },
     tutorialAudio: g.tutorialAudio || {
       playing: false,
       muted: false,

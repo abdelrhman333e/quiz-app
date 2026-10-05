@@ -13,6 +13,8 @@
       const room = location.pathname.split("/")[2];
       let reverseTimer;
       let screenAudioUnlocked = false;
+      let screenVideoUnlocked = false,
+        screenVideoAutoplayBlocked = false;
       let sfxContext = null,
         sfxEnabled = false,
         lastResultKey = "",
@@ -112,6 +114,39 @@
             if (button) button.hidden = false;
           });
       }
+      function applyTutorialVideoState(video, state) {
+        if (!video || !state) return;
+        if (
+          video.readyState >= 1 &&
+          Number.isFinite(state.currentTime) &&
+          Math.abs(video.currentTime - state.currentTime) > 1
+        )
+          video.currentTime = Math.min(
+            state.currentTime,
+            video.duration || state.currentTime,
+          );
+        const enableButton = document.getElementById("enableScreenVideo");
+        if (enableButton)
+          enableButton.hidden = !state.playing || screenVideoUnlocked;
+        if (state.playing && video.paused && !screenVideoAutoplayBlocked)
+          video.play().catch(() => {
+            screenVideoAutoplayBlocked = true;
+            if (enableButton) enableButton.hidden = false;
+          });
+        else if (!state.playing && !video.paused) video.pause();
+      }
+      function enableScreenVideo() {
+        screenVideoUnlocked = true;
+        const video = document.getElementById("screenTutorialVideo");
+        const button = document.getElementById("enableScreenVideo");
+        if (button) button.hidden = true;
+        if (video && V?.tutorialVideo?.playing)
+          video.play().catch(() => {
+            screenVideoUnlocked = false;
+            screenVideoAutoplayBlocked = true;
+            if (button) button.hidden = false;
+          });
+      }
       function reverseStage(animateQuestion) {
         const letter = V.reverse?.letter,
           elapsed = Date.now() - (V.reverse?.started || 0),
@@ -129,6 +164,12 @@
         if (V.tutorialPlaying && activeAudio) {
           document.querySelector(".board").innerHTML = board(V.cs);
           applyTutorialAudioState(activeAudio, V.tutorialAudio);
+          return;
+        }
+        const activeVideo = document.getElementById("screenTutorialVideo");
+        if (V.tutorialVideoPlaying && activeVideo) {
+          document.querySelector(".board").innerHTML = board(V.cs);
+          applyTutorialVideoState(activeVideo, V.tutorialVideo);
           return;
         }
         clearTimeout(reverseTimer);
@@ -173,7 +214,9 @@
         document.getElementById("app").innerHTML =
           `<button id="screenSfxToggle" class="screen-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx()">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><div class="scr"><div class="stage">
 ${
-  V.tutorialPlaying
+  V.tutorialVideoPlaying
+    ? `<div class="tag">الفيديو التوضيحي</div><button id="enableScreenVideo" class="on" onclick="enableScreenVideo()" hidden>تشغيل الفيديو على الشاشة</button><video id="screenTutorialVideo" class="tutorial-video-player" playsinline preload="auto"><source src="/tutorial.mp4" type="video/mp4"></video>`
+    : V.tutorialPlaying
     ? `<div class="tag">الصوت التوضيحي</div><button id="enableScreenAudio" class="on" onclick="enableScreenAudio()" hidden>السماح بتشغيل صوت التابلت</button><audio id="screenTutorialAudio" class="tutorial-audio-player" controls preload="auto"><source src="/tutorial.wav" type="audio/wav"></audio>`
     : V.mode === "reverse"
       ? reverseStage(animateQuestion)
@@ -199,6 +242,27 @@ ${
         lastResultKey = resultKey;
         lastBuzzKey = buzzKey;
         lastReverseLetter = reverseLetter;
+        if (V.tutorialVideoPlaying) {
+          const video = document.getElementById("screenTutorialVideo");
+          video.addEventListener(
+            "loadedmetadata",
+            () => applyTutorialVideoState(video, V.tutorialVideo),
+            { once: true },
+          );
+          video.addEventListener(
+            "error",
+            () => {
+              const button = document.getElementById("enableScreenVideo");
+              if (button) {
+                button.hidden = false;
+                button.textContent = "تعذر تحميل الفيديو على الشاشة";
+              }
+            },
+            { once: true },
+          );
+          if (video.readyState >= 1)
+            applyTutorialVideoState(video, V.tutorialVideo);
+        }
         if (V.tutorialPlaying) {
           const audio = document.getElementById("screenTutorialAudio");
           audio.addEventListener(
