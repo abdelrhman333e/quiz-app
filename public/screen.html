@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="/style.css?v=15" />
+    <link rel="stylesheet" href="/style.css?v=16" />
     <title>شاشة العرض</title>
   </head>
   <body>
@@ -174,6 +174,23 @@
         rouletteTimer = setTimeout(render, Math.max(20, nextAt - elapsed));
         return `<div class="tag">${esc(frame.t)}</div><div class="card qbox roulette-question animate-in">${esc(frame.x)}</div>`;
       }
+      function timerSeconds(timer) {
+        const remaining = timer.paused
+          ? timer.remaining
+          : timer.deadline - Math.max(Date.now(), timer.startedAt || 0);
+        return Math.max(0, Math.ceil(remaining / 1000));
+      }
+      function updateTimerDisplay() {
+        const timer = V?.timer;
+        const display = document.getElementById("screenTimerCountdown");
+        if (display && timer) {
+          const seconds = timerSeconds(timer);
+          display.textContent = seconds;
+          display
+            .closest(".game-timer")
+            .classList.toggle("timer-ending", seconds <= 5);
+        }
+      }
       function render() {
         if (!V) return;
         clearTimeout(rouletteTimer);
@@ -249,6 +266,7 @@ ${
  ${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`
           : '<div class="wait">في انتظار السؤال...</div>'
 }
+ ${V.timer && V.timer.phase !== "done" ? `<div class="game-timer ${timerSeconds(V.timer) <= 5 ? "timer-ending" : ""}"><span>${V.timer.phase === "question" ? "السؤال" : "الاختيارات"}${V.timer.paused ? " · متوقف" : ""}</span><b id="screenTimerCountdown">${timerSeconds(V.timer)}</b><small>ثانية</small></div>` : ""}
  ${V.mode !== "reverse" && b ? `<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res === "ok" ? "✅" : V.res === "no" ? "❌" : ""}</div>` : ""}</div>
  <div class="card" style="align-self:start"><h3>🏆 الترتيب</h3><div class="board">${board(V.cs)}</div></div></div>`;
         lastQuestionKey = questionKey;
@@ -316,6 +334,7 @@ ${
           }
         }
       }
+      setInterval(updateTimerDisplay, 200);
       if (room) connectView(room, render);
       else
         document.getElementById("app").innerHTML =

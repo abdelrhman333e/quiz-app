@@ -108,6 +108,7 @@ function view(g, qs) {
     shown: sh,
     displayId: c.displayId || null,
     roulette: sh ? c.roulette || null : null,
+    timer: sh ? c.timer || null : null,
     buz: c.buz,
     res: c.res,
     mode: reverse ? "reverse" : visual ? "visual" : "quiz",

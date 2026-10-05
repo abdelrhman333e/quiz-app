@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0b1425" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/style.css?v=14" />
+    <link rel="stylesheet" href="/style.css?v=15" />
     <title>تابلت التحكم</title>
   </head>
   <body>
@@ -22,6 +22,13 @@
       }
       function render() {
         if (!G) return;
+        if (G.cur.q && !G.cur.timer && timerEnabled(cq())) {
+          startQuestionTimer(cq());
+          G.v = Date.now();
+          api("/api/game", "POST", G).catch(() =>
+            toast("تعذر الاتصال بالسيرفر", 1),
+          );
+        }
         const T = ["الكل", ...types()],
           list = Qs.filter((q) => G.f === "الكل" || q.t === G.f),
           q = cq(),
@@ -31,7 +38,9 @@
           reverse = q?.kind === "reverse",
           visual = q?.kind === "visual",
           reverseCount = reverse ? Array.from(q.a || "").length : 0,
-          reverseIndex = cu.rev?.index || 0;
+          reverseIndex = cu.rev?.index || 0,
+          timer = cu.timer,
+          timerActive = timer && timer.phase !== "done";
         $("app").innerHTML =
           `<div class="tb"><div class="card"><h3>نوع السؤال</h3>
  <div class="row">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}</button>`).join("")}</div>
@@ -50,6 +59,7 @@
  ${hasO ? `<button class="big2 ${cu.o ? "on" : ""}" onclick="tg('o')">${cu.o ? "إخفاء" : "عرض"} الاختيارات</button>` : ""}
  ${top ? "" : `<button class="big2 ${cu.a ? "on" : ""}" onclick="tg('a')">${cu.a ? "إخفاء" : "عرض"} الإجابة</button>`}`
  }</div>
+ ${timer ? `<div class="timer-controls"><div class="game-timer"><span>${timerPhaseLabel(timer.phase)}</span><b id="tabletTimerCountdown">${timerSeconds(timer)}</b><small>ثانية</small></div><button onclick="${timerActive ? "toggleTimer()" : "restartTimer()"}">${timerActive ? timer.paused ? "▶ استكمال المؤقت" : "⏸ إيقاف المؤقت" : "↻ إعادة المؤقت"}</button>${timerActive ? `<button onclick="restartTimer()">↻ إعادة 30 ثانية</button>` : ""}</div>` : ""}
  <h3>من جاوب؟</h3><div class="row">${G.cs.map((c, i) => `<button class="${cu.buz === i ? "on" : ""}" onclick="buz(${i})">${esc(c.n)}</button>`).join("") || "<small>أضف متسابقين</small>"}</div>
  ${cu.buz != null ? `<div class="row">${top && cu.rank == null ? "<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>" : `<button class="big2 ok" onclick="grade(1${top ? `,${cu.rank}` : ""})">✅ صح (+${top ? cu.rank + 1 : pts(q)})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>` : ""}
  <div class="row"><button class="action-btn" onclick="openForm('${q.id}')"><img class="action-icon" src="/edit-svgrepo-com.svg" alt=""> تعديل</button><button class="action-btn" onclick="del('${q.id}')"><img class="action-icon" src="/icons8-trash.svg" alt=""> حذف</button></div>`
@@ -58,6 +68,103 @@
  <div class="card"><h3>المتسابقون · ${esc(ME.u)}</h3><div class="row"><input id="cn" placeholder="اسم المتسابق" style="flex:1;width:auto"><button onclick="addC()">＋</button></div>
  ${G.cs.map((c, i) => `<div class="ct"><b>${esc(c.n)}</b> — ${c.s}<div class="row"><button onclick="ch(${i},'s',1)">＋</button><button onclick="ch(${i},'s',-1)">−</button><button onclick="ch(${i},'y',1)">🟨 ${c.y}</button><button onclick="ch(${i},'r',1)">🟥 ${c.r}</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/icons8-trash.svg" alt=""></button></div></div>`).join("")}
  <div class="row"><button onclick="resetScores()">تصفير النقاط</button><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="logout()">🚪 خروج</button></div></div></div>`;
+      }
+      const TIMER_DURATION = 30000;
+      function timerEnabled(q) {
+        return q && (q.kind === "normal" || q.kind === "visual");
+      }
+      function timerPhaseLabel(phase) {
+        return phase === "question"
+          ? "وقت السؤال"
+          : phase === "options"
+            ? "وقت الاختيارات"
+            : "وقت الإجابة";
+      }
+      function timerSeconds(timer) {
+        const remaining = timer.paused
+          ? timer.remaining
+          : timer.deadline - Math.max(Date.now(), timer.startedAt || 0);
+        return Math.max(0, Math.ceil(remaining / 1000));
+      }
+      function updateTimerDisplay() {
+        const timer = G?.cur?.timer;
+        const display = $("tabletTimerCountdown");
+        if (display && timer) {
+          const seconds = timerSeconds(timer);
+          display.textContent = seconds;
+          display
+            .closest(".game-timer")
+            .classList.toggle("timer-ending", seconds <= 5);
+        }
+      }
+      function startQuestionTimer(q, startedAt = Date.now()) {
+        G.cur.timer = timerEnabled(q)
+          ? {
+              phase: "question",
+              startedAt,
+              deadline: startedAt + TIMER_DURATION,
+              remaining: TIMER_DURATION,
+              paused: false,
+            }
+          : null;
+      }
+      function advanceTimer() {
+        const timer = G?.cur?.timer;
+        if (!timer || timer.paused || timer.phase === "done") return;
+        const q = cq();
+        let changed = false;
+        while (timer.phase !== "done" && Date.now() >= timer.deadline) {
+          if (
+            timer.phase === "question" &&
+            q?.kind === "normal" &&
+            q.o?.length
+          ) {
+            G.cur.o = 1;
+            timer.phase = "options";
+          } else {
+            G.cur.a = 1;
+            timer.phase = "done";
+          }
+          timer.startedAt = timer.deadline;
+          timer.deadline += TIMER_DURATION;
+          timer.remaining = TIMER_DURATION;
+          changed = true;
+        }
+        if (changed) save();
+        else updateTimerDisplay();
+      }
+      function toggleTimer() {
+        const timer = G?.cur?.timer;
+        if (!timer || timer.phase === "done") return;
+        if (timer.paused) {
+          timer.startedAt = Date.now();
+          timer.deadline = timer.startedAt + timer.remaining;
+          timer.paused = false;
+        } else {
+          timer.remaining = Math.max(
+            0,
+            timer.deadline - Math.max(Date.now(), timer.startedAt || 0),
+          );
+          timer.paused = true;
+        }
+        save();
+      }
+      function restartTimer() {
+        const q = cq();
+        if (!timerEnabled(q)) return;
+        const timer = G.cur.timer;
+        if (timer && timer.phase !== "done") {
+          timer.startedAt = Date.now();
+          timer.deadline = timer.startedAt + TIMER_DURATION;
+          timer.remaining = TIMER_DURATION;
+          timer.paused = false;
+        } else {
+          G.cur.q = 1;
+          G.cur.o = 0;
+          G.cur.a = 0;
+          startQuestionTimer(q);
+        }
+        save();
       }
       function save() {
         G.v = Date.now();
@@ -230,6 +337,11 @@
           rev: { index: 0, letter: "", started: 0 },
         };
         if (!G.used.includes(id)) G.used.push(id);
+        if (show)
+          startQuestionTimer(
+            cq(),
+            Date.now() + (roulette?.duration || 0),
+          );
         save();
       }
       function nextReverseLetter() {
@@ -254,6 +366,20 @@
         if (k === "q" && !G.cur.q) {
           G.cur.o = G.cur.a = 0;
           G.cur.roulette = null;
+          G.cur.timer = null;
+        } else if (k === "q") {
+          startQuestionTimer(cq());
+        } else if (k === "o" && G.cur.o) {
+          const now = Date.now();
+          G.cur.timer = {
+            phase: "options",
+            startedAt: now,
+            deadline: now + TIMER_DURATION,
+            remaining: TIMER_DURATION,
+            paused: false,
+          };
+        } else if (k === "a" && G.cur.a && G.cur.timer) {
+          G.cur.timer.phase = "done";
         }
         save();
       }
@@ -284,6 +410,7 @@
         }
         G.cur.res = ok ? "ok" : "no";
         if (ok) G.cur.a = 1;
+        if (ok && G.cur.timer) G.cur.timer.phase = "done";
         save();
       }
       function addC() {
@@ -474,6 +601,8 @@
         .then((m) => {
           ME = m;
           connect(render);
+          setInterval(advanceTimer, 200);
+          setInterval(updateTimerDisplay, 200);
           setInterval(() => api("/api/ping").catch(() => {}), 240000);
         })
         .catch(() => (location = "/"));
