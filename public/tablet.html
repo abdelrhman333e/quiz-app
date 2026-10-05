@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0b1425" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/style.css?v=21" />
+    <link rel="stylesheet" href="/style.css?v=22" />
     <title>تابلت التحكم</title>
   </head>
   <body>
@@ -31,6 +31,14 @@
         G.stats.wrong = Number.isSafeInteger(G.stats.wrong)
           ? Math.max(0, G.stats.wrong)
           : 0;
+        G.cs.forEach((contestant) => {
+          contestant.correct = Number.isSafeInteger(contestant.correct)
+            ? Math.max(0, contestant.correct)
+            : 0;
+          contestant.wrong = Number.isSafeInteger(contestant.wrong)
+            ? Math.max(0, contestant.wrong)
+            : 0;
+        });
         if (G.cur.q && !G.cur.timer && timerEnabled(cq())) {
           startQuestionTimer(cq());
           G.v = Date.now();
@@ -494,6 +502,8 @@
         if (key && G.cur.awards?.includes(key))
           return toast("تم احتساب نقاط هذا الترتيب للاعب", 1);
         G.cs[G.cur.buz].s += ok ? (top ? rank + 1 : pts(q)) : -1;
+        const contestant = G.cs[G.cur.buz];
+        contestant[ok ? "correct" : "wrong"]++;
         if (!G.stats) G.stats = { correct: 0, wrong: 0 };
         G.stats[ok ? "correct" : "wrong"]++;
         if (key) {
@@ -510,16 +520,46 @@
           wrong = G.stats?.wrong || 0,
           answered = correct + wrong,
           accuracy = answered ? Math.round((correct / answered) * 100) : 0;
+        const contestants = G.cs.length
+          ? G.cs
+              .map((contestant) => {
+                const playerCorrect = contestant.correct || 0,
+                  playerWrong = contestant.wrong || 0,
+                  playerAnswered = playerCorrect + playerWrong,
+                  playerAccuracy = playerAnswered
+                    ? Math.round((playerCorrect / playerAnswered) * 100)
+                    : 0;
+                return `<div class="stats-player"><b>${esc(contestant.n)}</b><span class="stats-correct">صح: ${playerCorrect}</span><span class="stats-wrong">خطأ: ${playerWrong}</span><span>الإجمالي: ${playerAnswered} · نسبة الصح: ${playerAccuracy}%</span></div>`;
+              })
+              .join("")
+          : "<small>لا يوجد متسابقون مسجلون.</small>";
         $("statsModal").innerHTML =
-          `<div class="modal" onclick="if(event.target===this)closeStats()"><div class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><div class="row" style="justify-content:space-between"><h3 id="statsTitle">📊 إحصائيات الإجابات</h3><button onclick="closeStats()">إغلاق</button></div><div class="stats-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="stats-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div></div><small>الإحصائيات محفوظة مع بيانات اللعبة.</small></div></div>`;
+          `<div class="modal" onclick="if(event.target===this)closeStats()"><div class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><div class="row" style="justify-content:space-between"><h3 id="statsTitle">📊 إحصائيات الإجابات</h3><button onclick="closeStats()">إغلاق</button></div><div class="stats-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="stats-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div></div><h3>إحصائيات كل متسابق</h3><div class="stats-players">${contestants}</div><div class="row"><button class="no" onclick="resetStats()">إعادة تسجيل الإحصائيات</button></div><small>إعادة التسجيل تصفّر الإحصائيات فقط، ولا تغيّر النقاط.</small></div></div>`;
       }
       function closeStats() {
         $("statsModal").innerHTML = "";
       }
+      async function resetStats() {
+        if (
+          !(await askConfirm(
+            "سيتم تصفير إجمالي الإجابات الصحيحة والخاطئة وإحصائيات كل المتسابقين. لن تتغير النقاط. هل تريد المتابعة؟",
+            "إعادة تسجيل الإحصائيات",
+            "تصفير الإحصائيات",
+          ))
+        )
+          return;
+        G.stats = { correct: 0, wrong: 0 };
+        G.cs.forEach((contestant) => {
+          contestant.correct = 0;
+          contestant.wrong = 0;
+        });
+        save();
+        showStats();
+      }
       function addC() {
         const n = $("cn").value.trim();
         if (n) {
-          G.cs.push({ n, s: 0, y: 0, r: 0 });
+          G.cs.push({ n, s: 0, y: 0, r: 0, correct: 0, wrong: 0 });
           save();
         }
       }

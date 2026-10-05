@@ -292,6 +292,32 @@ small {
 .stats-wrong b {
   color: var(--no);
 }
+.stats-players {
+  display: grid;
+  gap: 8px;
+  max-height: min(36vh, 320px);
+  overflow-y: auto;
+  margin: 10px 0;
+}
+.stats-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.16);
+}
+.stats-player b {
+  flex: 1 1 100%;
+}
+.stats-player .stats-correct {
+  color: var(--ok);
+}
+.stats-player .stats-wrong {
+  color: var(--no);
+}
 @keyframes timerPulse {
   to {
     transform: scale(1.12);
