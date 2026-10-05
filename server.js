@@ -42,6 +42,9 @@ async function init() {
   await q(
     `CREATE TABLE IF NOT EXISTS games(user_id INT PRIMARY KEY,data JSONB NOT NULL)`,
   );
+  await q(
+    `CREATE TABLE IF NOT EXISTS audio_assets(id UUID PRIMARY KEY,user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,content_type TEXT NOT NULL,data BYTEA NOT NULL)`,
+  );
 }
 // ---- أمان
 const eq = (a, b) => {
@@ -228,9 +231,75 @@ function cleanImage(v) {
 function cleanAudio(v) {
   const audio = str(v, 1000);
   try {
-    return ["http:", "https:"].includes(new URL(audio).protocol) ? audio : "";
+    const url = new URL(audio),
+      host = url.hostname.toLowerCase();
+    if (
+      !["http:", "https:"].includes(url.protocol) ||
+      /(^|\.)((youtube\.com)|(youtube-nocookie\.com)|(youtu\.be)|(spotify\.com)|(spotify\.link))$/.test(
+        host,
+      )
+    )
+      return "";
+    return audio;
   } catch {
-    return "";
+    return /^\/audio\/[0-9a-f-]{36}$/i.test(audio) ? audio : "";
+  }
+}
+const audioTypes = {
+  mp3: "audio/mpeg",
+  wav: "audio/wav",
+  ogg: "audio/ogg",
+  oga: "audio/ogg",
+  opus: "audio/ogg",
+  m4a: "audio/mp4",
+  aac: "audio/aac",
+};
+function readAudio(req, limit) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0,
+      oversized = false;
+    req.on("data", (chunk) => {
+      size += chunk.length;
+      if (size > limit) {
+        oversized = true;
+        chunks.length = 0;
+      } else if (!oversized) chunks.push(chunk);
+    });
+    req.on("end", () => {
+      if (oversized)
+        reject(
+          Object.assign(new Error("حجم الملف أكبر من 20 ميجابايت"), {
+            status: 413,
+          }),
+        );
+      else resolve(Buffer.concat(chunks));
+    });
+    req.on("error", reject);
+  });
+}
+function validAudio(data, extension) {
+  switch (extension) {
+    case "mp3":
+      return (
+        data.subarray(0, 3).toString("ascii") === "ID3" ||
+        (data[0] === 0xff && (data[1] & 0xe0) === 0xe0)
+      );
+    case "wav":
+      return (
+        data.subarray(0, 4).toString("ascii") === "RIFF" &&
+        data.subarray(8, 12).toString("ascii") === "WAVE"
+      );
+    case "ogg":
+    case "oga":
+    case "opus":
+      return data.subarray(0, 4).toString("ascii") === "OggS";
+    case "m4a":
+      return data.subarray(4, 8).toString("ascii") === "ftyp";
+    case "aac":
+      return data[0] === 0xff && (data[1] & 0xf6) === 0xf0;
+    default:
+      return false;
   }
 }
 function cleanQ(b) {
@@ -285,6 +354,65 @@ http
         ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
       const secure =
         req.headers["x-forwarded-proto"] === "https" ? "; Secure" : "";
+      const audioMatch = /^\/audio\/([0-9a-f-]{36})$/i.exec(u);
+      if (audioMatch && ["GET", "HEAD"].includes(req.method)) {
+        const asset = (
+          await q("SELECT content_type,data FROM audio_assets WHERE id=$1", [
+            audioMatch[1],
+          ])
+        )[0];
+        if (!asset) {
+          res.writeHead(404);
+          return res.end("404");
+        }
+        const data = asset.data,
+          headers = {
+            "Content-Type": asset.content_type,
+            "Content-Length": data.length,
+            "Cache-Control": "public, max-age=31536000, immutable",
+            "X-Content-Type-Options": "nosniff",
+            "Accept-Ranges": "bytes",
+          },
+          range = req.headers.range;
+        if (range) {
+          const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+          let start, end;
+          if (match && match[1] === "") {
+            const suffix = Number(match[2]);
+            if (Number.isSafeInteger(suffix) && suffix > 0) {
+              start = Math.max(data.length - suffix, 0);
+              end = data.length - 1;
+            }
+          } else if (match) {
+            start = Number(match[1]);
+            end = match[2] ? Number(match[2]) : data.length - 1;
+          }
+          if (
+            !Number.isSafeInteger(start) ||
+            !Number.isSafeInteger(end) ||
+            start < 0 ||
+            start >= data.length ||
+            end < start
+          ) {
+            res.writeHead(416, {
+              ...headers,
+              "Content-Range": `bytes */${data.length}`,
+            });
+            return res.end();
+          }
+          end = Math.min(end, data.length - 1);
+          res.writeHead(206, {
+            ...headers,
+            "Content-Length": end - start + 1,
+            "Content-Range": `bytes ${start}-${end}/${data.length}`,
+          });
+          return req.method === "HEAD"
+            ? res.end()
+            : res.end(data.subarray(start, end + 1));
+        }
+        res.writeHead(200, headers);
+        return req.method === "HEAD" ? res.end() : res.end(data);
+      }
       const setC = (id) => ({
         "Set-Cookie": `s=${id ? token(id) : ""}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${id ? 2592000 : 0}${secure}`,
       });
@@ -383,6 +511,37 @@ http
           await q("SELECT 1");
           return json(res, { ok: 1 });
         }
+        if (u === "/api/audio" && req.method === "POST") {
+          const extension = str(req.headers["x-audio-extension"], 8)
+              .replace(/^\./, "")
+              .toLowerCase(),
+            contentType = audioTypes[extension];
+          if (!contentType) {
+            req.resume();
+            return json(res, { error: "صيغة الملف الصوتي غير مدعومة" }, 415);
+          }
+          const data = await readAudio(req, 20 * 1024 * 1024);
+          if (!data.length)
+            return json(res, { error: "الملف الصوتي فارغ" }, 400);
+          if (!validAudio(data, extension))
+            return json(res, { error: "محتوى الملف لا يطابق صيغته الصوتية" }, 415);
+          const id = crypto.randomUUID();
+          await q(
+            "INSERT INTO audio_assets(id,user_id,content_type,data) VALUES($1,$2,$3,$4)",
+            [id, uid, contentType, data],
+          );
+          return json(res, { url: `/audio/${id}` });
+        }
+        if (u.startsWith("/api/audio/") && req.method === "DELETE") {
+          const id = u.slice("/api/audio/".length);
+          if (!/^[0-9a-f-]{36}$/i.test(id))
+            return json(res, { error: "رابط الملف غير صالح" }, 400);
+          await q("DELETE FROM audio_assets WHERE id=$1 AND user_id=$2", [
+            id,
+            uid,
+          ]);
+          return json(res, { ok: 1 });
+        }
         if (u === "/api/game" && req.method === "POST") {
           const b = await body(req);
           if (!b || !Array.isArray(b.cs) || !b.cur)
@@ -397,6 +556,21 @@ http
         if (u === "/api/questions" && req.method === "POST") {
           const x = cleanQ((await body(req)) || {});
           if (!x) return json(res, { error: "بيانات السؤال ناقصة" }, 400);
+          const assetId = /^\/audio\/([0-9a-f-]{36})$/i.exec(x.audioUrl)?.[1];
+          if (
+            assetId &&
+            !(await q("SELECT 1 FROM audio_assets WHERE id=$1 AND user_id=$2", [
+              assetId,
+              uid,
+            ])).length
+          )
+            return json(res, { error: "ملف الصوت غير موجود أو لا تملكه" }, 400);
+          const previous = (
+            await q("SELECT data FROM questions WHERE user_id=$1 AND id=$2", [
+              uid,
+              x.id,
+            ])
+          )[0]?.data;
           const upd = await q(
             "UPDATE questions SET data=$3 WHERE user_id=$1 AND id=$2 RETURNING id",
             [uid, x.id, JSON.stringify(x)],
@@ -407,14 +581,37 @@ http
               x.id,
               JSON.stringify(x),
             ]);
+          const oldAssetId = /^\/audio\/([0-9a-f-]{36})$/i.exec(
+            previous?.audioUrl || "",
+          )?.[1];
+          if (oldAssetId && previous.audioUrl !== x.audioUrl)
+            await q(
+              "DELETE FROM audio_assets a WHERE a.id=$1 AND a.user_id=$2 AND NOT EXISTS (SELECT 1 FROM questions WHERE user_id=$2 AND data->>'audioUrl'=$3)",
+              [oldAssetId, uid, previous.audioUrl],
+            );
           pushAll(uid);
           return json(res, { ok: 1, id: x.id });
         }
         if (u.startsWith("/api/questions/") && req.method === "DELETE") {
+          const id = decodeURIComponent(u.split("/").pop());
+          const previous = (
+            await q("SELECT data FROM questions WHERE user_id=$1 AND id=$2", [
+              uid,
+              id,
+            ])
+          )[0]?.data;
           await q("DELETE FROM questions WHERE user_id=$1 AND id=$2", [
             uid,
-            decodeURIComponent(u.split("/").pop()),
+            id,
           ]);
+          const assetId = /^\/audio\/([0-9a-f-]{36})$/i.exec(
+            previous?.audioUrl || "",
+          )?.[1];
+          if (assetId)
+            await q(
+              "DELETE FROM audio_assets a WHERE a.id=$1 AND a.user_id=$2 AND NOT EXISTS (SELECT 1 FROM questions WHERE user_id=$2 AND data->>'audioUrl'=$3)",
+              [assetId, uid, previous.audioUrl],
+            );
           pushAll(uid);
           return json(res, { ok: 1 });
         }
@@ -491,7 +688,12 @@ http
       fs.createReadStream(f).pipe(res);
     } catch (e) {
       console.error(e);
-      if (!res.headersSent) json(res, { error: "خطأ في السيرفر" }, 500);
+      if (!res.headersSent)
+        json(
+          res,
+          { error: e.status === 413 ? e.message : "خطأ في السيرفر" },
+          e.status || 500,
+        );
       else res.end();
     }
   })

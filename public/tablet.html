@@ -511,7 +511,7 @@
    .join("")}</datalist>
  <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option></select>
  <div id="questionFields"><input id="fx" placeholder="نص السؤال" value="${esc(e.x)}"></div>
- <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط ملف صوتي مباشر (MP3 أو WAV)" value="${esc(e.audioUrl || "")}"><small>استخدم رابطًا مباشرًا لملف صوتي يمكن تشغيله في المتصفح.</small></div>
+ <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط ملف صوتي مباشر (اختياري)" value="${esc(e.audioUrl || "")}" oninput="$('fauFile').value=''"><small>يمكنك لصق رابط مباشر لملف صوتي، أو رفع ملف من جهازك. روابط صفحات YouTube وSpotify لا تعمل كمصدر صوت؛ ارفع ملفًا صوتيًا تملك حق استخدامه. الصيغ المدعومة: MP3 وWAV وOGG وM4A وAAC، بحد أقصى 20 ميجابايت.</small><label for="fauFile">اختيار ملف صوتي من الجهاز</label><input id="fauFile" type="file" accept=".mp3,.wav,.ogg,.oga,.opus,.m4a,.aac"><small id="audioUploadStatus" aria-live="polite"></small></div>
  <div id="normalFields">
  <select id="fd"><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>
  <small>الاختيارات — اتركها فارغة لو السؤال بدون اختيارات</small>
@@ -519,7 +519,7 @@
  <select id="fc">${LB.map((l, i) => `<option value="${i}" ${e.c === i ? "selected" : ""}>الصحيح: ${l}</option>`).join("")}</select>
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
  </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fva" placeholder="الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>أضف رابط صورة أو إيموجي، أو الاثنين معًا. تجنب شعارات الأندية.</small></div>
- <div class="row"><button class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
+ <div class="row"><button id="saveQuestionBtn" class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
         toggleQuestionKind();
       }
       function toggleQuestionKind() {
@@ -554,15 +554,37 @@
           word = kind === "reverse" ? g("frw") : "";
         const image = kind === "visual" ? g("fi") : "",
           emoji = kind === "visual" ? g("fe") : "",
-          audioUrl = kind === "audio" ? g("fau") : "";
-        if (kind === "audio") {
+          audioFile = kind === "audio" ? $("fauFile").files[0] : null;
+        let audioUrl = kind === "audio" ? g("fau") : "";
+        if (kind === "audio" && !audioFile) {
           try {
-            if (!["http:", "https:"].includes(new URL(audioUrl).protocol))
-              throw new Error();
+            if (!/^\/audio\/[0-9a-f-]{36}$/i.test(audioUrl)) {
+              const url = new URL(audioUrl);
+              if (
+                !["http:", "https:"].includes(url.protocol) ||
+                /(^|\.)((youtube\.com)|(youtube-nocookie\.com)|(youtu\.be)|(spotify\.com)|(spotify\.link))$/i.test(
+                  url.hostname,
+                )
+              )
+                throw new Error();
+            }
+            if (!audioUrl) throw new Error();
           } catch {
-            return toast("أدخل رابطًا مباشرًا صالحًا يبدأ بـ HTTP أو HTTPS", 1);
+            return toast(
+              "أضف ملفًا صوتيًا أو رابطًا مباشرًا؛ روابط YouTube وSpotify لا تعمل هنا",
+              1,
+            );
           }
         }
+        if (
+          audioFile &&
+          (audioFile.size > 20 * 1024 * 1024 ||
+            !/\.(mp3|wav|ogg|oga|opus|m4a|aac)$/i.test(audioFile.name))
+        )
+          return toast(
+            "اختر ملف MP3 أو WAV أو OGG أو M4A أو AAC لا يتجاوز 20 ميجابايت",
+            1,
+          );
         if (
           !g("ft") ||
           (kind === "reverse"
@@ -570,7 +592,7 @@
             : kind === "visual"
               ? !g("fva") || (!image && !emoji)
               : kind === "audio"
-                ? !audioUrl
+                ? !audioUrl && !audioFile
                 : !g("fx"))
         )
           return toast(
@@ -579,7 +601,7 @@
               : kind === "reverse"
                 ? "اكتب النوع والكلمة"
                 : kind === "audio"
-                  ? "أضف رابط الملف الصوتي"
+                  ? "أضف ملفًا صوتيًا أو رابطًا مباشرًا"
                 : "اكتب النوع والسؤال",
             1,
           );
@@ -598,7 +620,25 @@
               : "أكمل 4 اختيارات أو اكتب إجابة نصية",
             1,
           );
+        const saveButton = $("saveQuestionBtn");
+        saveButton.disabled = true;
+        let uploadedAudioUrl = "";
         try {
+          if (audioFile) {
+            $("audioUploadStatus").textContent = "جارٍ رفع الملف...";
+            const response = await fetch("/api/audio", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/octet-stream",
+                "X-Audio-Extension": audioFile.name.split(".").pop(),
+              },
+              body: audioFile,
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "تعذر رفع الملف");
+            uploadedAudioUrl = result.url;
+            audioUrl = uploadedAudioUrl;
+          }
           await api("/api/questions", "POST", {
             id: id || undefined,
             t: g("ft"),
@@ -628,7 +668,24 @@
           $("form").innerHTML = "";
           toast("✔ اتحفظ في قاعدة البيانات");
         } catch (e) {
-          toast(e.message, 1);
+          let cleanupFailed = false;
+          if (uploadedAudioUrl) {
+            try {
+              await api(
+                uploadedAudioUrl.replace("/audio/", "/api/audio/"),
+                "DELETE",
+              );
+            } catch {
+              cleanupFailed = true;
+            }
+          }
+          saveButton.disabled = false;
+          toast(
+            cleanupFailed
+              ? `${e.message} — وتعذر تنظيف الملف المرفوع`
+              : e.message,
+            1,
+          );
         }
       }
       let ME = null;
