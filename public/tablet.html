@@ -196,15 +196,37 @@
           G.used = G.used.filter((id) => !l.some((q) => q.id === id));
           f = l;
         }
-        sel(f[Math.floor(Math.random() * f.length)].id, true);
+        const chosen = f[Math.floor(Math.random() * f.length)];
+        const frames = [];
+        let offset = 0;
+        for (let i = 0; i < 16; i++) {
+          const question = f[Math.floor(Math.random() * f.length)];
+          frames.push({
+            at: offset,
+            t: question.t,
+            x: question.kind === "reverse" ? "كلمة معكوسة" : question.x,
+          });
+          offset += 55 + i * 22;
+        }
+        frames.push({
+          at: offset,
+          t: chosen.t,
+          x: chosen.kind === "reverse" ? "كلمة معكوسة" : chosen.x,
+        });
+        sel(chosen.id, true, {
+          started: Date.now(),
+          duration: offset + 500,
+          frames,
+        });
       }
-      function sel(id, show = false) {
+      function sel(id, show = false, roulette = null) {
         G.cur = {
           id,
           q: show ? 1 : 0,
           o: 0,
           a: 0,
           displayId: show ? `${Date.now()}-${Math.random()}` : null,
+          roulette,
           buz: null,
           res: null,
           revealed: [],
@@ -234,7 +256,10 @@
       }
       function tg(k) {
         G.cur[k] = +!G.cur[k];
-        if (k === "q" && !G.cur.q) G.cur.o = G.cur.a = 0;
+        if (k === "q" && !G.cur.q) {
+          G.cur.o = G.cur.a = 0;
+          G.cur.roulette = null;
+        }
         save();
       }
       function revealRank(i) {

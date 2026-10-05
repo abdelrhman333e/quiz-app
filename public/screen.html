@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="/style.css?v=14" />
+    <link rel="stylesheet" href="/style.css?v=15" />
     <title>شاشة العرض</title>
   </head>
   <body>
@@ -11,7 +11,7 @@
     <script src="/common.js"></script>
     <script>
       const room = location.pathname.split("/")[2];
-      let reverseTimer;
+      let reverseTimer, rouletteTimer;
       let screenAudioUnlocked = false;
       let screenVideoUnlocked = false,
         screenVideoAutoplayBlocked = false;
@@ -158,8 +158,25 @@
         if (!V.shown) return '<div class="wait">في انتظار السؤال...</div>';
         return `<div class="tag">${esc(V.t)}</div><div class="visual-clues ${animateQuestion ? "animate-options" : ""}">${V.image ? `<img class="visual-clue" src="${esc(V.image)}" alt="قرينة بصرية">` : ""}${V.emoji ? `<div class="visual-emoji">${esc(V.emoji)}</div>` : ""}</div>${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`;
       }
+      function rouletteStage() {
+        const roulette = V.roulette;
+        if (!roulette?.frames?.length) return "";
+        const elapsed = Math.max(0, Date.now() - roulette.started);
+        if (elapsed >= roulette.duration) return "";
+        let index = 0;
+        while (
+          index + 1 < roulette.frames.length &&
+          roulette.frames[index + 1].at <= elapsed
+        )
+          index++;
+        const frame = roulette.frames[index],
+          nextAt = roulette.frames[index + 1]?.at ?? roulette.duration;
+        rouletteTimer = setTimeout(render, Math.max(20, nextAt - elapsed));
+        return `<div class="tag">${esc(frame.t)}</div><div class="card qbox roulette-question animate-in">${esc(frame.x)}</div>`;
+      }
       function render() {
         if (!V) return;
+        clearTimeout(rouletteTimer);
         const activeAudio = document.getElementById("screenTutorialAudio");
         if (V.tutorialPlaying && activeAudio) {
           document.querySelector(".board").innerHTML = board(V.cs);
@@ -211,6 +228,7 @@
         newRanks.forEach(() => playSfx("rank"));
         if (reverseLetter && reverseLetter !== lastReverseLetter)
           playSfx("reverse");
+        const rouletteHtml = V.shown ? rouletteStage() : "";
         document.getElementById("app").innerHTML =
           `<button id="screenSfxToggle" class="screen-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx()">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><div class="scr"><div class="stage">
 ${
@@ -218,7 +236,9 @@ ${
     ? `<div class="tag">الفيديو التوضيحي</div><button id="enableScreenVideo" class="on" onclick="enableScreenVideo()" hidden>تشغيل الفيديو على الشاشة</button><video id="screenTutorialVideo" class="tutorial-video-player" playsinline preload="auto"><source src="/tutorial.mp4" type="video/mp4"></video>`
     : V.tutorialPlaying
     ? `<div class="tag">الصوت التوضيحي</div><button id="enableScreenAudio" class="on" onclick="enableScreenAudio()" hidden>السماح بتشغيل صوت التابلت</button><audio id="screenTutorialAudio" class="tutorial-audio-player" controls preload="auto"><source src="/tutorial.wav" type="audio/wav"></audio>`
-    : V.mode === "reverse"
+    : rouletteHtml
+      ? rouletteHtml
+      : V.mode === "reverse"
       ? reverseStage(animateQuestion)
       : V.mode === "visual"
         ? visualStage(animateQuestion, animateAnswer)

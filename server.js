@@ -107,6 +107,7 @@ function view(g, qs) {
     cs: (g.cs || []).map(({ n, s, y, r }) => ({ n, s, y, r })),
     shown: sh,
     displayId: c.displayId || null,
+    roulette: sh ? c.roulette || null : null,
     buz: c.buz,
     res: c.res,
     mode: reverse ? "reverse" : visual ? "visual" : "quiz",
