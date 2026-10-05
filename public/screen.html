@@ -241,7 +241,7 @@
           );
         }
       }
-      function applyQuestionAudioControl(audio, button, control, questionKey) {
+      function applyQuestionAudioControl(audio, control, questionKey) {
         if (!audio || !control) return;
         if (Number.isFinite(control.volume))
           audio.volume = Math.max(0, Math.min(1, control.volume));
@@ -294,8 +294,7 @@
           return;
         }
         clearTimeout(reverseTimer);
-        const b = V.buz != null ? V.cs[V.buz] : null,
-          cu = V;
+        const b = V.buz != null ? V.cs[V.buz] : null;
         const questionContent =
             V.mode === "visual"
               ? `${V.image || ""}|${V.emoji || ""}`
@@ -402,7 +401,7 @@ ${
             if (button) button.hidden = false;
           });
           if (button) button.hidden = !audio.paused && !audio.ended;
-          applyQuestionAudioControl(audio, button, V.audioControl, questionKey);
+          applyQuestionAudioControl(audio, V.audioControl, questionKey);
           lastQuestionAudioKey = questionKey;
         } else {
           lastQuestionAudioKey = "";
