@@ -142,6 +142,7 @@ function view(g, qs) {
       x: x.x,
       kind: top ? x.kind : "normal",
       audioUrl: x.kind === "audio" ? x.audioUrl : "",
+      audioControl: x.kind === "audio" ? c.audioControl || null : null,
     });
     if (top)
       v.revealed = (c.revealed || [])

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="/style.css?v=18" />
+    <link rel="stylesheet" href="/style.css?v=19" />
     <title>شاشة العرض</title>
   </head>
   <body>
@@ -13,6 +13,7 @@
       const room = location.pathname.split("/")[2];
       let reverseTimer, rouletteTimer;
       let lastQuestionAudioKey = "";
+      let lastQuestionAudioControlKey = "";
       let screenAudioUnlocked = false;
       let screenVideoUnlocked = false,
         screenVideoAutoplayBlocked = false;
@@ -205,7 +206,8 @@
       function playQuestionAudio() {
         const audio = document.getElementById("questionAudioPlayer");
         const button = document.getElementById("playQuestionAudio");
-        if (audio)
+        if (audio) {
+          audio.dataset.remotePaused = "false";
           audio.play().then(
             () => {
               if (button) button.hidden = true;
@@ -214,6 +216,44 @@
               if (button) button.hidden = false;
             },
           );
+        }
+      }
+      function applyQuestionAudioControl(audio, button, control, questionKey) {
+        if (!audio || !control) return;
+        if (Number.isFinite(control.volume))
+          audio.volume = Math.max(0, Math.min(1, control.volume));
+        if (!control.seq) return;
+        const commandKey = `${questionKey}|${control.seq}`;
+        if (commandKey === lastQuestionAudioControlKey) return;
+        lastQuestionAudioControlKey = commandKey;
+        const run = () => {
+          if (control.action === "pause") {
+            audio.dataset.remotePaused = "true";
+            audio.pause();
+            return;
+          }
+          if (control.action === "restart") {
+            audio.dataset.remotePaused = "false";
+            if (audio.readyState >= 1) {
+              audio.currentTime = 0;
+              playQuestionAudio();
+            } else
+              audio.addEventListener(
+                "loadedmetadata",
+                () => {
+                  audio.currentTime = 0;
+                  playQuestionAudio();
+                },
+                { once: true },
+              );
+            return;
+          }
+          if (control.action === "play") {
+            audio.dataset.remotePaused = "false";
+            playQuestionAudio();
+          }
+        };
+        run();
       }
       function render() {
         if (!V) return;
@@ -320,7 +360,7 @@ ${
               questionAudioTime < audio.duration
             )
               audio.currentTime = questionAudioTime;
-            if (shouldPlay)
+            if (shouldPlay && audio.dataset.remotePaused !== "true")
               audio.play().catch(() => {
                 if (button) button.hidden = false;
               });
@@ -337,8 +377,12 @@ ${
             if (button) button.hidden = false;
           });
           if (button) button.hidden = !audio.paused && !audio.ended;
+          applyQuestionAudioControl(audio, button, V.audioControl, questionKey);
           lastQuestionAudioKey = questionKey;
-        } else lastQuestionAudioKey = "";
+        } else {
+          lastQuestionAudioKey = "";
+          lastQuestionAudioControlKey = "";
+        }
         lastQuestionKey = questionKey;
         lastOptionsKey = optionsKey;
         lastAnswerKey = answerKey;

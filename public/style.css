@@ -242,6 +242,21 @@ small {
 .timer-controls .game-timer b {
   font-size: 1.4em;
 }
+.audio-control-panel {
+  margin: 12px 0;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.audio-control-panel label {
+  display: block;
+  color: var(--mut);
+}
+.audio-control-panel input[type="range"] {
+  accent-color: var(--p);
+  cursor: pointer;
+}
 @keyframes timerPulse {
   to {
     transform: scale(1.12);

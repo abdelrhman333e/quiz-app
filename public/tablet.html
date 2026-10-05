@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0b1425" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/style.css?v=18" />
+    <link rel="stylesheet" href="/style.css?v=19" />
     <title>تابلت التحكم</title>
   </head>
   <body>
@@ -60,6 +60,7 @@
  ${hasO ? `<button class="big2 ${cu.o ? "on" : ""}" onclick="tg('o')">${cu.o ? "إخفاء" : "عرض"} الاختيارات</button>` : ""}
  ${top ? "" : `<button class="big2 ${cu.a ? "on" : ""}" onclick="tg('a')">${cu.a ? "إخفاء" : "عرض"} الإجابة</button>`}`
  }</div>
+ ${audioQuestion ? `<div class="audio-control-panel"><h3>التحكم في صوت السؤال</h3><div class="row"><button class="big2 on" onclick="setQuestionAudio(${cu.audioControl?.playing === false ? "'play'" : "'pause'"})">${cu.audioControl?.playing === false ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت"}</button><button class="big2" onclick="setQuestionAudio('restart')">↺ إعادة من البداية</button></div><label for="questionAudioVolume">مستوى الصوت: <span id="questionAudioVolumeValue">${Math.round((cu.audioControl?.volume ?? 1) * 100)}%</span></label><input id="questionAudioVolume" type="range" min="0" max="100" value="${Math.round((cu.audioControl?.volume ?? 1) * 100)}" oninput="$('questionAudioVolumeValue').textContent=this.value+'%'" onchange="setQuestionAudio('volume',this.value/100)"><small>إذا منع المتصفح التشغيل عن بُعد، اضغط تشغيل على شاشة العرض مرة واحدة.</small></div>` : ""}
  ${timer ? `<div class="timer-controls"><div class="game-timer"><div class="timer-readout"><span>${timerPhaseLabel(timer.phase)}${timer.paused ? " · متوقف" : ""}</span><b id="tabletTimerCountdown">${timerSeconds(timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="tabletTimerProgress" style="width:${timerProgress(timer)}%"></i></div></div><button onclick="${timerActive ? "toggleTimer()" : "restartTimer()"}">${timerActive ? timer.paused ? "▶ استكمال المؤقت" : "⏸ إيقاف المؤقت" : "↻ إعادة المؤقت"}</button>${timerActive ? `<button onclick="restartTimer()">↻ إعادة 30 ثانية</button>` : ""}</div>` : ""}
  <h3>من جاوب؟</h3><div class="row">${G.cs.map((c, i) => `<button class="${cu.buz === i ? "on" : ""}" onclick="buz(${i})">${esc(c.n)}</button>`).join("") || "<small>أضف متسابقين</small>"}</div>
  ${cu.buz != null ? `<div class="row">${top && cu.rank == null ? "<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>" : `<button class="big2 ok" onclick="grade(1${top ? `,${cu.rank}` : ""})">✅ صح (+${top ? cu.rank + 1 : pts(q)})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>` : ""}
@@ -190,6 +191,28 @@
         api("/api/game", "POST", G).catch(() =>
           toast("تعذر الاتصال بالسيرفر", 1),
         );
+      }
+      function setQuestionAudio(action, volume = null) {
+        const current = G?.cur?.audioControl || {
+          seq: 0,
+          playing: true,
+          volume: 1,
+        };
+        G.cur.audioControl = {
+          seq: (current.seq || 0) + 1,
+          action,
+          playing:
+            action === "pause"
+              ? false
+              : action === "play" || action === "restart"
+                ? true
+                : current.playing !== false,
+          volume:
+            action === "volume"
+              ? Math.max(0, Math.min(1, Number(volume)))
+              : current.volume ?? 1,
+        };
+        save();
       }
       function toast(m, bad) {
         const d = document.createElement("div");
