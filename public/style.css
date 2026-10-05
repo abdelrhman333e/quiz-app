@@ -263,28 +263,58 @@ small {
   line-height: 1.7;
 }
 .stats-card {
-  width: min(480px, 100%);
+  width: min(500px, 100%);
+}
+.modal .stats-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(500px, 100%);
+  max-height: min(90vh, 760px);
+  padding: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(125, 167, 218, 0.3);
+  border-radius: 18px;
+  background: linear-gradient(155deg, #1a304c, #14243a 75%);
+  box-shadow: 0 20px 64px rgba(0, 0, 0, 0.42);
+}
+.stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.stats-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--t);
+}
+.stats-header button {
+  padding: 7px 12px;
 }
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 16px 0;
+  gap: 9px;
 }
 .stats-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.16);
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 82px;
+  padding: 12px 14px;
+  border: 1px solid rgba(125, 167, 218, 0.24);
+  border-radius: 13px;
+  background: rgba(8, 19, 34, 0.36);
 }
 .stats-item span {
   color: var(--mut);
+  font-size: 13px;
 }
 .stats-item b {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
+  line-height: 1;
 }
 .stats-correct b {
   color: var(--ok);
@@ -292,31 +322,51 @@ small {
 .stats-wrong b {
   color: var(--no);
 }
+.stats-subtitle {
+  margin: 0;
+}
 .stats-players {
   display: grid;
-  gap: 8px;
-  max-height: min(36vh, 320px);
+  gap: 7px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 32vh;
   overflow-y: auto;
-  margin: 10px 0;
+  padding: 2px 2px 2px 5px;
+  scrollbar-color: rgba(145, 168, 199, 0.5) transparent;
+  scrollbar-width: thin;
 }
 .stats-player {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 7px 12px;
   flex-wrap: wrap;
   padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(125, 167, 218, 0.2);
+  border-radius: 11px;
+  background: rgba(8, 19, 34, 0.3);
 }
 .stats-player b {
   flex: 1 1 100%;
+  font-size: 14px;
 }
 .stats-player .stats-correct {
   color: var(--ok);
 }
 .stats-player .stats-wrong {
   color: var(--no);
+}
+.stats-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.stats-actions button {
+  flex: 1 1 180px;
+}
+.stats-note {
+  display: block;
+  line-height: 1.6;
 }
 .screen-stats-overlay {
   position: fixed;

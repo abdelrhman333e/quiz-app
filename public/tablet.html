@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0b1425" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/style.css?v=23" />
+    <link rel="stylesheet" href="/style.css?v=24" />
     <title>تابلت التحكم</title>
   </head>
   <body>
@@ -534,7 +534,7 @@
               .join("")
           : "<small>لا يوجد متسابقون مسجلون.</small>";
         $("statsModal").innerHTML =
-          `<div class="modal" onclick="if(event.target===this)closeStats()"><div class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><div class="row" style="justify-content:space-between"><h3 id="statsTitle">📊 إحصائيات الإجابات</h3><button onclick="closeStats()">إغلاق</button></div><div class="stats-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="stats-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div></div><h3>إحصائيات كل متسابق</h3><div class="stats-players">${contestants}</div><div class="row"><button class="on" onclick="toggleStatsOnScreen()">${G.showStats ? "إخفاء الإحصائيات من شاشة العرض" : "إظهار الإحصائيات على شاشة العرض"}</button><button class="no" onclick="resetStats()">إعادة تسجيل الإحصائيات</button></div><small>إعادة التسجيل تصفّر الإحصائيات فقط، ولا تغيّر النقاط.</small></div></div>`;
+          `<div class="modal stats-modal" onclick="if(event.target===this)closeStats()"><div class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><div class="stats-header"><h3 id="statsTitle">📊 إحصائيات الإجابات</h3><button onclick="closeStats()">إغلاق</button></div><div class="stats-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="stats-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div></div><h3 class="stats-subtitle">إحصائيات كل متسابق</h3><div class="stats-players">${contestants}</div><div class="stats-actions"><button class="on" onclick="toggleStatsOnScreen()">${G.showStats ? "إخفاء الإحصائيات من شاشة العرض" : "إظهار الإحصائيات على شاشة العرض"}</button><button class="no" onclick="resetStats()">إعادة تسجيل الإحصائيات</button></div><small class="stats-note">إعادة التسجيل تصفّر الإحصائيات فقط، ولا تغيّر النقاط.</small></div></div>`;
       }
       function toggleStatsOnScreen() {
         G.showStats = !G.showStats;
