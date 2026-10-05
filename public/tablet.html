@@ -35,7 +35,7 @@
         $("app").innerHTML =
           `<div class="tb"><div class="card"><h3>نوع السؤال</h3>
  <div class="row">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}</button>`).join("")}</div>
- <div class="row"><button onclick="rndQ()">🎲 سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
+ <div class="row"><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
  <div class="qs">${list.map((x) => `<div class="qi ${x.id === cu.id ? "sel" : ""}" onclick="sel('${x.id}')">${x.kind === "reverse" ? "🔁" : x.d === "h" ? "🔴" : "🟢"} ${esc(x.x)}</div>`).join("") || "<small>لا توجد أسئلة</small>"}</div>
  <h3 style="margin-top:14px">معاينة — لا تظهر على الشاشة</h3>
  ${

@@ -431,6 +431,12 @@ small {
   font-size: 16px;
   line-height: 1;
 }
+button > img.action-icon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  filter: invert(1);
+}
 img.action-icon {
   width: 16px;
   height: 16px;
