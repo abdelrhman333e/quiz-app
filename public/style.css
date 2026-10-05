@@ -374,56 +374,74 @@ small {
   z-index: 8;
   display: grid;
   place-items: center;
-  padding: 12px;
-  background: rgba(3, 8, 16, 0.78);
+  padding: clamp(16px, 4vw, 56px);
+  background: rgba(3, 8, 16, 0.84);
+  backdrop-filter: blur(8px);
 }
 .screen-stats-panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  width: min(520px, 100%);
-  max-height: min(94vh, 760px);
-  padding: 16px;
+  gap: clamp(14px, 2vh, 22px);
+  width: min(1040px, 100%);
+  max-height: 90vh;
+  padding: clamp(20px, 3vw, 36px);
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #192b43;
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(125, 167, 218, 0.34);
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 90% 0, rgba(7, 139, 255, 0.16), transparent 55%),
+    linear-gradient(145deg, #1a304c, #101d30 78%);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.55);
+  animation: statsPanelEnter 0.35s ease-out both;
+}
+@keyframes statsPanelEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .screen-stats-panel h2,
 .screen-stats-panel h3 {
   margin: 0;
-  color: var(--mut);
+  color: var(--t);
   text-align: right;
 }
 .screen-stats-panel h2 {
-  font-size: 15px;
+  font-size: clamp(22px, 2.2vw, 32px);
 }
 .screen-stats-panel h3 {
-  margin-top: 2px;
+  font-size: clamp(17px, 1.5vw, 22px);
 }
 .screen-stats-summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: clamp(10px, 1.5vw, 18px);
 }
 .screen-stat {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-height: 90px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(8, 19, 34, 0.35);
+  justify-content: space-between;
+  gap: 10px;
+  min-height: clamp(104px, 14vh, 150px);
+  padding: clamp(15px, 2vw, 24px);
+  border: 1px solid rgba(125, 167, 218, 0.28);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(38, 62, 92, 0.72), rgba(8, 19, 34, 0.6));
   text-align: right;
 }
 .screen-stat span,
 .screen-stat-player-details span {
   color: var(--mut);
 }
+.screen-stat span {
+  font-size: clamp(15px, 1.4vw, 20px);
+}
 .screen-stat b {
-  font-size: 1.65rem;
+  font-size: clamp(34px, 4vw, 58px);
   line-height: 1.1;
 }
 .screen-stat-correct b,
@@ -435,33 +453,35 @@ small {
   color: var(--no);
 }
 .screen-stats-players {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 10px;
   min-height: 0;
   overflow-y: auto;
-  padding-inline-end: 2px;
+  padding: 2px 4px 2px 2px;
+  scrollbar-color: rgba(145, 168, 199, 0.55) transparent;
+  scrollbar-width: thin;
 }
 .screen-stat-player {
   display: flex;
-  flex: none;
   flex-direction: column;
   gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: rgba(8, 19, 34, 0.35);
+  padding: 14px 16px;
+  border: 1px solid rgba(125, 167, 218, 0.23);
+  border-radius: 15px;
+  background: rgba(8, 19, 34, 0.48);
   text-align: right;
 }
 .screen-stat-player b {
-  font-size: 0.98rem;
+  color: var(--t);
+  font-size: clamp(16px, 1.35vw, 20px);
 }
 .screen-stat-player-details {
   display: flex;
   align-items: center;
   gap: 8px 12px;
   flex-wrap: wrap;
-  font-size: 0.88rem;
+  font-size: clamp(13px, 1.1vw, 16px);
 }
 @keyframes timerPulse {
   to {
