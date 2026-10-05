@@ -198,6 +198,37 @@ const body = (req) =>
       }
     });
   });
+const readJsonBody = (req, limit) =>
+  new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0,
+      oversized = false;
+    req.on("data", (chunk) => {
+      size += chunk.length;
+      if (size > limit) {
+        oversized = true;
+        chunks.length = 0;
+      } else if (!oversized) chunks.push(chunk);
+    });
+    req.on("end", () => {
+      if (oversized)
+        return reject(
+          Object.assign(new Error("حجم ملف النسخة الاحتياطية أكبر من المسموح"), {
+            status: 413,
+          }),
+        );
+      try {
+        resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));
+      } catch {
+        reject(
+          Object.assign(new Error("ملف النسخة الاحتياطية ليس JSON صالحًا"), {
+            status: 400,
+          }),
+        );
+      }
+    });
+    req.on("error", reject);
+  });
 const json = (res, o, c = 200, h = {}) => {
   res.writeHead(c, { "Content-Type": "application/json", ...h });
   res.end(JSON.stringify(o));
@@ -510,6 +541,183 @@ http
         if (u === "/api/ping") {
           await q("SELECT 1");
           return json(res, { ok: 1 });
+        }
+        if (u === "/api/questions/export" && req.method === "GET") {
+          const questions = await getQs(uid),
+            assets = {},
+            ids = [
+              ...new Set(
+                questions
+                  .map((question) =>
+                    /^\/audio\/([0-9a-f-]{36})$/i.exec(question.audioUrl || "")?.[1],
+                  )
+                  .filter(Boolean),
+              ),
+            ];
+          if (ids.length) {
+            const stored = await q(
+              "SELECT id,content_type,data FROM audio_assets WHERE user_id=$1 AND id=ANY($2::uuid[])",
+              [uid, ids],
+            );
+            if (stored.length !== ids.length)
+              return json(
+                res,
+                { error: "تعذر تصدير بعض الملفات الصوتية المرتبطة بالأسئلة" },
+                500,
+              );
+            let totalAudioBytes = 0;
+            const extensions = {
+              "audio/mpeg": "mp3",
+              "audio/wav": "wav",
+              "audio/ogg": "ogg",
+              "audio/mp4": "m4a",
+              "audio/aac": "aac",
+            };
+            for (const asset of stored) {
+              totalAudioBytes += asset.data.length;
+              if (totalAudioBytes > 50 * 1024 * 1024)
+                return json(
+                  res,
+                  { error: "إجمالي ملفات الصوت يتجاوز 50 ميجابايت؛ قلّلها ثم أعد التصدير" },
+                  413,
+                );
+              const extension = extensions[asset.content_type];
+              if (!extension)
+                return json(
+                  res,
+                  { error: "صيغة ملف صوتي مرتبطة بالأسئلة غير مدعومة في النسخة الاحتياطية" },
+                  415,
+                );
+              assets[asset.id] = {
+                extension,
+                data: asset.data.toString("base64"),
+              };
+            }
+          }
+          const backup = {
+            format: "quiz-app-questions",
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            questions,
+            assets,
+          };
+          res.writeHead(200, {
+            "Content-Type": "application/json; charset=utf-8",
+            "Content-Disposition": 'attachment; filename="quiz-questions-backup.json"',
+            "Cache-Control": "no-store",
+          });
+          return res.end(JSON.stringify(backup));
+        }
+        if (u === "/api/questions/import" && req.method === "POST") {
+          const backup = await readJsonBody(req, 75 * 1024 * 1024);
+          if (
+            !backup ||
+            backup.format !== "quiz-app-questions" ||
+            backup.version !== 1 ||
+            !Array.isArray(backup.questions) ||
+            !backup.assets ||
+            typeof backup.assets !== "object" ||
+            Array.isArray(backup.assets)
+          )
+            return json(res, { error: "صيغة النسخة الاحتياطية غير مدعومة" }, 400);
+          if (backup.questions.length > 500)
+            return json(
+              res,
+              { error: "الحد الأقصى لاستيراد النسخة هو 500 سؤال" },
+              400,
+            );
+          const imported = [],
+            assets = new Map(),
+            extensions = new Set(Object.keys(audioTypes));
+          let totalAudioBytes = 0;
+          for (const [id, asset] of Object.entries(backup.assets)) {
+            if (
+              !/^[0-9a-f-]{36}$/i.test(id) ||
+              !asset ||
+              typeof asset.data !== "string" ||
+              !extensions.has(asset.extension)
+            )
+              return json(res, { error: "بيانات ملف صوتي في النسخة غير صالحة" }, 400);
+            const data = Buffer.from(asset.data, "base64");
+            if (
+              !data.length ||
+              data.length > 20 * 1024 * 1024 ||
+              data.toString("base64") !== asset.data ||
+              !validAudio(data, asset.extension)
+            )
+              return json(res, { error: "ملف صوتي في النسخة تالف أو لا يطابق صيغته" }, 400);
+            totalAudioBytes += data.length;
+            if (totalAudioBytes > 50 * 1024 * 1024)
+              return json(res, { error: "إجمالي ملفات الصوت يتجاوز 50 ميجابايت" }, 413);
+            assets.set(id, { data, contentType: audioTypes[asset.extension] });
+          }
+          const sourceIds = new Set();
+          for (const source of backup.questions) {
+            if (!source || typeof source !== "object" || Array.isArray(source))
+              return json(res, { error: "يوجد سؤال غير صالح في النسخة" }, 400);
+            const originalId = str(source.id, 40);
+            if (!originalId || sourceIds.has(originalId))
+              return json(res, { error: "معرّفات الأسئلة في النسخة مفقودة أو مكررة" }, 400);
+            sourceIds.add(originalId);
+            const audioId =
+              source.kind === "audio"
+                ? /^\/audio\/([0-9a-f-]{36})$/i.exec(
+                    source.audioUrl || "",
+                  )?.[1]
+                : null;
+            let audio = null;
+            if (audioId) {
+              audio = assets.get(audioId);
+              if (!audio)
+                return json(
+                  res,
+                  { error: "ملف صوتي مرتبط بأحد الأسئلة غير موجود في النسخة" },
+                  400,
+                );
+            }
+            const question = cleanQ({
+              ...source,
+              id: "q" + crypto.randomUUID(),
+              audioUrl: audioId ? `/audio/${audioId}` : source.audioUrl,
+            });
+            if (!question)
+              return json(
+                res,
+                { error: `بيانات السؤال «${str(source.x, 80)}» غير مكتملة أو غير صالحة` },
+                400,
+              );
+            imported.push({ question, audio, audioId });
+          }
+          const client = await db.connect();
+          try {
+            await client.query("BEGIN");
+            const importedAudio = new Map();
+            for (const { question, audio, audioId } of imported) {
+              if (audio) {
+                const id = importedAudio.get(audioId) || crypto.randomUUID();
+                if (!importedAudio.has(audioId)) {
+                  await client.query(
+                    "INSERT INTO audio_assets(id,user_id,content_type,data) VALUES($1,$2,$3,$4)",
+                    [id, uid, audio.contentType, audio.data],
+                  );
+                  importedAudio.set(audioId, id);
+                }
+                question.audioUrl = `/audio/${id}`;
+              }
+              await client.query(
+                "INSERT INTO questions(user_id,id,data) VALUES($1,$2,$3)",
+                [uid, question.id, JSON.stringify(question)],
+              );
+            }
+            await client.query("COMMIT");
+          } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+          } finally {
+            client.release();
+          }
+          pushAll(uid);
+          return json(res, { ok: 1, imported: imported.length });
         }
         if (u === "/api/audio" && req.method === "POST") {
           const extension = str(req.headers["x-audio-extension"], 8)

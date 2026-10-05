@@ -45,7 +45,7 @@
         $("app").innerHTML =
           `<div class="tb"><div class="card"><h3>نوع السؤال</h3>
  <div class="row">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}</button>`).join("")}</div>
- <div class="row"><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
+ <div class="row"><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="exportQuestions()">⬇️ تصدير الأسئلة</button><button onclick="$('importQuestionsFile').click()">⬆️ استيراد أسئلة</button><input id="importQuestionsFile" type="file" accept=".json,application/json" hidden onchange="handleQuestionsImport(this)"><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
  <div class="qs">${list.map((x) => `<div class="qi ${x.id === cu.id ? "sel" : ""}" onclick="sel('${x.id}')">${x.kind === "reverse" ? "🔁" : x.d === "h" ? "🔴" : "🟢"} ${esc(x.x)}</div>`).join("") || "<small>لا توجد أسئلة</small>"}</div>
  <h3 style="margin-top:14px">معاينة — لا تظهر على الشاشة</h3>
  ${
@@ -492,6 +492,64 @@
           G.cur = { id: null, q: 0, o: 0, a: 0, buz: null, res: null };
           save();
           toast("تم الحذف");
+        } catch (e) {
+          toast(e.message, 1);
+        }
+      }
+      async function exportQuestions() {
+        try {
+          const response = await fetch("/api/questions/export");
+          if (!response.ok) {
+            const result = await response.json();
+            throw new Error(result.error || "تعذر تصدير الأسئلة");
+          }
+          const blob = await response.blob(),
+            url = URL.createObjectURL(blob),
+            link = document.createElement("a");
+          link.href = url;
+          link.download = "quiz-questions-backup.json";
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          toast("تم تنزيل نسخة الأسئلة الاحتياطية");
+        } catch (e) {
+          toast(e.message, 1);
+        }
+      }
+      async function handleQuestionsImport(input) {
+        const file = input.files[0];
+        input.value = "";
+        if (!file) return;
+        if (file.size > 75 * 1024 * 1024)
+          return toast("حجم النسخة الاحتياطية أكبر من 75 ميجابايت", 1);
+        let backup;
+        try {
+          backup = JSON.parse(await file.text());
+        } catch {
+          return toast("تعذر قراءة الملف؛ اختر نسخة JSON صالحة", 1);
+        }
+        if (
+          backup?.format !== "quiz-app-questions" ||
+          backup.version !== 1 ||
+          !Array.isArray(backup.questions)
+        )
+          return toast("صيغة النسخة الاحتياطية غير مدعومة", 1);
+        if (
+          !(await askConfirm(
+            `سيتم إضافة ${backup.questions.length} سؤال إلى أسئلتك الحالية دون حذفها. هل تريد المتابعة؟`,
+            "استيراد الأسئلة",
+            "استيراد",
+          ))
+        )
+          return;
+        try {
+          const response = await fetch("/api/questions/import", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: file,
+            }),
+            result = await response.json();
+          if (!response.ok) throw new Error(result.error || "تعذر استيراد الأسئلة");
+          toast(`تم استيراد ${result.imported} سؤال`);
         } catch (e) {
           toast(e.message, 1);
         }
