@@ -237,9 +237,44 @@
           volume: audio.volume,
           currentTime: audio.currentTime,
         };
+        updateTutorialAudioControls();
         G.v = now;
         api("/api/game", "POST", G).catch(() =>
           toast("تعذر إرسال حالة الصوت للشاشة", 1),
+        );
+      }
+      function updateTutorialAudioControls() {
+        const audio = $("tutorialAudioPlayer");
+        if (!audio) return;
+        const button = $("tutorialAudioToggle");
+        if (button)
+          button.textContent = audio.paused
+            ? "▶ تشغيل الصوت"
+            : "⏸ إيقاف مؤقت";
+        const volume = $("tutorialAudioVolume");
+        if (volume) {
+          volume.value = Math.round(audio.volume * 100);
+          $("tutorialAudioVolumeValue").textContent = `${volume.value}%`;
+        }
+      }
+      function controlTutorialAudio(action, volume = null) {
+        const audio = $("tutorialAudioPlayer");
+        if (!audio) return;
+        if (action === "pause") {
+          audio.pause();
+          publishTutorialAudioState(true);
+          return;
+        }
+        if (action === "volume") {
+          audio.volume = Math.max(0, Math.min(1, Number(volume)));
+          audio.muted = audio.volume === 0;
+          publishTutorialAudioState(true);
+          return;
+        }
+        if (action === "restart") audio.currentTime = 0;
+        audio.play().then(
+          () => publishTutorialAudioState(true),
+          () => toast("تعذر تشغيل الصوت التوضيحي؛ تحقق من تحميله", 1),
         );
       }
       function publishTutorialVideoState(force = false) {
@@ -271,12 +306,16 @@
         };
         save();
         $("videoModal").innerHTML =
-          `<div class="modal" onclick="if(event.target===this)closeTutorialAudio()"><div class="card audio-card"><div class="row" style="justify-content:space-between"><h3>الصوت التوضيحي</h3><button onclick="closeTutorialAudio()">إغلاق</button></div><audio id="tutorialAudioPlayer" class="tutorial-audio-player" controls preload="auto" onerror="$('audioMissing').hidden=false"><source src="/tutorial.wav" type="audio/wav"></audio><small id="audioMissing" hidden>تعذر تحميل ملف الصوت tutorial.wav</small></div></div>`;
+          `<div class="modal" onclick="if(event.target===this)closeTutorialAudio()"><div class="card audio-card"><div class="row" style="justify-content:space-between"><h3>الصوت التوضيحي</h3><button onclick="closeTutorialAudio()">إغلاق</button></div><audio id="tutorialAudioPlayer" class="tutorial-audio-player" preload="auto" onerror="$('audioMissing').hidden=false"><source src="/tutorial.wav" type="audio/wav"></audio><div class="audio-control-panel"><div class="row"><button id="tutorialAudioToggle" class="big2 on" onclick="controlTutorialAudio($('tutorialAudioPlayer').paused?'play':'pause')">▶ تشغيل الصوت</button><button class="big2" onclick="controlTutorialAudio('restart')">↺ إعادة من البداية</button></div><label for="tutorialAudioVolume">مستوى الصوت: <span id="tutorialAudioVolumeValue">100%</span></label><input id="tutorialAudioVolume" type="range" min="0" max="100" value="100" oninput="$('tutorialAudioVolumeValue').textContent=this.value+'%'" onchange="controlTutorialAudio('volume',this.value/100)"></div><small id="audioMissing" hidden>تعذر تحميل ملف الصوت tutorial.wav</small></div></div>`;
         const audio = $("tutorialAudioPlayer");
         ["play", "pause", "seeked", "volumechange", "ended"].forEach((event) =>
-          audio.addEventListener(event, () => publishTutorialAudioState(true)),
+          audio.addEventListener(event, () => {
+            updateTutorialAudioControls();
+            publishTutorialAudioState(true);
+          }),
         );
         audio.addEventListener("timeupdate", () => publishTutorialAudioState());
+        updateTutorialAudioControls();
         audio.play().catch(() => {});
       }
       function closeTutorialAudio() {
