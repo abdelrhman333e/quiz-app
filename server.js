@@ -983,6 +983,7 @@ http
       }
       res.writeHead(200, {
         "Content-Type": (T[ext] || "text/plain") + "; charset=utf-8",
+        ...(ext === ".html" ? { "Cache-Control": "no-cache" } : {}),
       });
       fs.createReadStream(f).pipe(res);
     } catch (e) {
