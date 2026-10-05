@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="/style.css?v=19" />
+    <link rel="stylesheet" href="/style.css?v=20" />
     <title>شاشة العرض</title>
   </head>
   <body>
@@ -162,6 +162,13 @@
       function visualStage(animateQuestion, animateAnswer) {
         if (!V.shown) return '<div class="wait">في انتظار السؤال...</div>';
         return `<div class="tag">${esc(V.t)}</div><div class="visual-clues ${animateQuestion ? "animate-options" : ""}">${V.image ? `<img class="visual-clue" src="${esc(V.image)}" alt="قرينة بصرية">` : ""}${V.emoji ? `<div class="visual-emoji">${esc(V.emoji)}</div>` : ""}</div>${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`;
+      }
+      function statisticsStage() {
+        const correct = V.stats?.correct || 0,
+          wrong = V.stats?.wrong || 0,
+          answered = correct + wrong,
+          accuracy = answered ? Math.round((correct / answered) * 100) : 0;
+        return `<div class="tag">📊 إحصائيات الإجابات</div><div class="screen-stats-summary"><div class="screen-stat screen-stat-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="screen-stat screen-stat-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="screen-stat"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="screen-stat"><span>نسبة الصحيح</span><b>${accuracy}%</b></div></div><div class="screen-stats-players">${V.cs.length ? V.cs.map((contestant) => { const playerCorrect = contestant.correct || 0, playerWrong = contestant.wrong || 0, playerTotal = playerCorrect + playerWrong, playerAccuracy = playerTotal ? Math.round((playerCorrect / playerTotal) * 100) : 0; return `<div class="screen-stat-player"><b>${esc(contestant.n)}</b><span class="screen-stat-correct">صح: ${playerCorrect}</span><span class="screen-stat-wrong">خطأ: ${playerWrong}</span><span>الإجمالي: ${playerTotal} · الصحيح: ${playerAccuracy}%</span></div>`; }).join("") : '<div class="wait">لا يوجد متسابقون مسجلون</div>'}</div>`;
       }
       function rouletteStage() {
         const roulette = V.roulette;
@@ -333,7 +340,9 @@ ${
     ? `<div class="tag">الفيديو التوضيحي</div><button id="enableScreenVideo" class="on" onclick="enableScreenVideo()" hidden>تشغيل الفيديو على الشاشة</button><video id="screenTutorialVideo" class="tutorial-video-player" playsinline preload="auto"><source src="/tutorial.mp4" type="video/mp4"></video>`
     : V.tutorialPlaying
     ? `<div class="tag">الصوت التوضيحي</div><button id="enableScreenAudio" class="on" onclick="enableScreenAudio()" hidden>السماح بتشغيل صوت التابلت</button><audio id="screenTutorialAudio" class="tutorial-audio-player" controls preload="auto"><source src="/tutorial.wav" type="audio/wav"></audio>`
-    : rouletteHtml
+    : V.showStats
+      ? statisticsStage()
+      : rouletteHtml
       ? rouletteHtml
       : V.mode === "reverse"
       ? reverseStage(animateQuestion)
@@ -347,10 +356,10 @@ ${
  ${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`
           : '<div class="wait">في انتظار السؤال...</div>'
 }
- ${V.timer && V.timer.phase !== "done" ? `<div class="game-timer ${timerSeconds(V.timer) <= 5 ? "timer-ending" : ""}"><div class="timer-readout"><span>${V.timer.phase === "question" ? "السؤال" : "الاختيارات"}${V.timer.paused ? " · متوقف" : ""}</span><b id="screenTimerCountdown">${timerSeconds(V.timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="screenTimerProgress" style="width:${timerProgress(V.timer)}%"></i></div></div>` : ""}
- ${V.mode !== "reverse" && b ? `<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res === "ok" ? "✅" : V.res === "no" ? "❌" : ""}</div>` : ""}</div>
+ ${!V.showStats && V.timer && V.timer.phase !== "done" ? `<div class="game-timer ${timerSeconds(V.timer) <= 5 ? "timer-ending" : ""}"><div class="timer-readout"><span>${V.timer.phase === "question" ? "السؤال" : "الاختيارات"}${V.timer.paused ? " · متوقف" : ""}</span><b id="screenTimerCountdown">${timerSeconds(V.timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="screenTimerProgress" style="width:${timerProgress(V.timer)}%"></i></div></div>` : ""}
+ ${!V.showStats && V.mode !== "reverse" && b ? `<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res === "ok" ? "✅" : V.res === "no" ? "❌" : ""}</div>` : ""}</div>
  <div class="card" style="align-self:start"><h3>🏆 الترتيب</h3><div class="board">${board(V.cs)}</div></div></div>`;
-        if (V.mode === "audio" && V.shown) {
+        if (!V.showStats && V.mode === "audio" && V.shown) {
           const audio = document.getElementById("questionAudioPlayer"),
             button = document.getElementById("playQuestionAudio"),
             shouldPlay = keepQuestionAudio
