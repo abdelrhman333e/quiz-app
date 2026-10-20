@@ -1,4 +1,4 @@
-const CACHE_NAME = "quiz-app-v3";
+const CACHE_NAME = "quiz-app-v4";
 const APP_SHELL = [
   "/",
   "/tablet",
@@ -10,8 +10,8 @@ const APP_SHELL = [
   "/manifest.json",
   "/favicon.svg",
   "/favicon.png",
-  "/icon-192.png",
-  "/icon-512.png",
+  "/icon-192-v2.png",
+  "/icon-512-v2.png",
 ];
 
 self.addEventListener("install", (event) => {
@@ -72,7 +72,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname === "/manifest.json" ||
     url.pathname === "/favicon.svg" ||
     url.pathname === "/favicon.png" ||
-    /^\/icon-(192|512)\.png$/.test(url.pathname)
+    /^\/icon-(192|512)(-v2)?\.png$/.test(url.pathname)
   ) {
     event.respondWith(
       caches.match(request, { ignoreSearch: true }).then((cached) => {
