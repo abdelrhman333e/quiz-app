@@ -59,6 +59,14 @@ button.on {
   box-shadow: 0 0 18px rgba(0, 136, 255, 0.32);
   font-weight: 700;
 }
+.install-app {
+  width: 100%;
+  margin-top: 8px;
+  border-color: #168fff;
+}
+.install-app[hidden] {
+  display: none;
+}
 button.ok {
   background: rgba(34, 197, 94, 0.2);
   border-color: var(--ok);

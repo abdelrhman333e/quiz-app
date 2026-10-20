@@ -4,9 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0b1425" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="المسابقة" />
     <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="stylesheet" href="/style.css?v=26" />
     <title>تابلت التحكم</title>
+    <script src="/pwa.js" defer></script>
   </head>
   <body>
     <div id="app"></div>
@@ -323,7 +328,7 @@
         };
         save();
         $("videoModal").innerHTML =
-          `<div class="modal" onclick="if(event.target===this)closeTutorialAudio()"><div class="card audio-card"><div class="row" style="justify-content:space-between"><h3>الصوت التوضيحي</h3><button onclick="closeTutorialAudio()">إغلاق</button></div><audio id="tutorialAudioPlayer" class="tutorial-audio-player" preload="auto" onerror="$('audioMissing').hidden=false"><source src="/tutorial.wav" type="audio/wav"></audio><div class="audio-control-panel"><div class="row"><button id="tutorialAudioToggle" class="big2 on" onclick="controlTutorialAudio($('tutorialAudioPlayer').paused?'play':'pause')">▶ تشغيل الصوت</button><button class="big2" onclick="controlTutorialAudio('restart')">↺ إعادة من البداية</button></div><label for="tutorialAudioVolume">مستوى الصوت: <span id="tutorialAudioVolumeValue">100%</span></label><input id="tutorialAudioVolume" type="range" min="0" max="100" value="100" oninput="$('tutorialAudioVolumeValue').textContent=this.value+'%'" onchange="controlTutorialAudio('volume',this.value/100)"></div><small id="audioMissing" hidden>تعذر تحميل ملف الصوت tutorial.wav</small></div></div>`;
+          `<div class="modal" onclick="if(event.target===this)closeTutorialAudio()"><div class="card audio-card"><div class="row" style="justify-content:space-between"><h3>الصوت التوضيحي</h3><button onclick="closeTutorialAudio()">إغلاق</button></div><audio id="tutorialAudioPlayer" class="tutorial-audio-player" preload="auto" onerror="$('audioMissing').hidden=false"><source src="/so/tutorial.wav" type="audio/wav"></audio><div class="audio-control-panel"><div class="row"><button id="tutorialAudioToggle" class="big2 on" onclick="controlTutorialAudio($('tutorialAudioPlayer').paused?'play':'pause')">▶ تشغيل الصوت</button><button class="big2" onclick="controlTutorialAudio('restart')">↺ إعادة من البداية</button></div><label for="tutorialAudioVolume">مستوى الصوت: <span id="tutorialAudioVolumeValue">100%</span></label><input id="tutorialAudioVolume" type="range" min="0" max="100" value="100" oninput="$('tutorialAudioVolumeValue').textContent=this.value+'%'" onchange="controlTutorialAudio('volume',this.value/100)"></div><small id="audioMissing" hidden>تعذر تحميل ملف الصوت tutorial.wav</small></div></div>`;
         const audio = $("tutorialAudioPlayer");
         ["play", "pause", "seeked", "volumechange", "ended"].forEach((event) =>
           audio.addEventListener(event, () => {

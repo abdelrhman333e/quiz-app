@@ -3,8 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0b1425" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="المسابقة" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="stylesheet" href="/style.css?v=13" />
     <title>المسابقة</title>
+    <script src="/pwa.js" defer></script>
   </head>
   <body>
     <div class="home">
@@ -35,6 +42,9 @@
           id="go"
         >
           دخول
+        </button>
+        <button id="installApp" class="install-app" type="button" hidden>
+          تثبيت التطبيق
         </button>
         <div
           id="msg"
