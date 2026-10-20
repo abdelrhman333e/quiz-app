@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/style.css?v=26" />
     <title>تابلت التحكم</title>
     <script src="/pwa.js" defer></script>
+    <script src="/sfx.js"></script>
   </head>
   <body>
     <div id="app"></div>
@@ -67,7 +68,7 @@
         $("app").innerHTML =
           `<div class="tb"><div class="card"><h3>نوع السؤال</h3>
  <div class="row">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}</button>`).join("")}</div>
- <div class="row"><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="exportQuestions()">⬇️ تصدير الأسئلة</button><button onclick="$('importQuestionsFile').click()">⬆️ استيراد أسئلة</button><input id="importQuestionsFile" type="file" accept=".json,.txt,.xlsx,.docx,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onchange="handleQuestionsImport(this)"><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
+ <div class="row"><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="exportQuestions()">⬇️ تصدير الأسئلة</button><button onclick="$('importQuestionsFile').click()">⬆️ استيراد أسئلة</button><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><input id="importQuestionsFile" type="file" accept=".json,.txt,.xlsx,.docx,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onchange="handleQuestionsImport(this)"><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
  <small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><details class="import-hint"><summary>عرض مثال لملف TXT أو Word</summary><div dir="rtl">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>
  <div class="qs">${list.map((x) => `<div class="qi ${x.id === cu.id ? "sel" : ""}" onclick="sel('${x.id}')">${x.kind === "reverse" ? "🔁" : x.d === "h" ? "🔴" : "🟢"} ${esc(x.x)}</div>`).join("") || "<small>لا توجد أسئلة</small>"}</div>
  <h3 style="margin-top:14px">معاينة — لا تظهر على الشاشة</h3>
@@ -155,16 +156,19 @@
             q.o?.length
           ) {
             G.cur.o = 1;
+            playSfx("options");
             timer.phase = "options";
           } else if (["top5", "top10"].includes(q?.kind)) {
             G.cur.revealed = Array.from(
               { length: q.r.length },
               (_, index) => index,
             );
+            for (let i = 0; i < q.r.length; i++) playSfx("rank");
             G.cur.a = 1;
             timer.phase = "done";
           } else {
             G.cur.a = 1;
+            playSfx("answer");
             timer.phase = "done";
           }
           timer.startedAt = timer.deadline;
@@ -445,6 +449,7 @@
             cq(),
             Date.now() + (roulette?.duration || 0),
           );
+        if (show) playSfx("question");
         save();
       }
       function nextReverseLetter() {
@@ -458,6 +463,7 @@
           return toast("انتهت الحروف، ابدأ من جديد", 1);
         const index = (rev.index || 0) + 1;
         G.cur.rev = { index, letter: letters[index - 1], started: Date.now() };
+        playSfx("reverse");
         save();
       }
       function resetReverse() {
@@ -472,7 +478,9 @@
           G.cur.timer = null;
         } else if (k === "q") {
           startQuestionTimer(cq());
+          playSfx("question");
         } else if (k === "o" && G.cur.o) {
+          playSfx("options");
           const now = Date.now();
           G.cur.timer = {
             phase: "options",
@@ -484,15 +492,20 @@
         } else if (k === "a" && G.cur.a && G.cur.timer) {
           G.cur.timer.phase = "done";
         }
+        if (k === "a" && G.cur.a && !G.cur.res) playSfx("answer");
         save();
       }
       function revealRank(i) {
         if (!G.cur.revealed) G.cur.revealed = [];
-        if (!G.cur.revealed.includes(i)) G.cur.revealed.push(i);
+        if (!G.cur.revealed.includes(i)) {
+          G.cur.revealed.push(i);
+          playSfx("rank");
+        }
         G.cur.rank = i;
         save();
       }
       function buz(i) {
+        if (G.cur.buz !== i) playSfx("contestant");
         G.cur.buz = G.cur.buz === i ? null : i;
         G.cur.res = null;
         save();
@@ -506,6 +519,7 @@
         const key = top && ok ? `${G.cur.buz}:${rank}` : null;
         if (key && G.cur.awards?.includes(key))
           return toast("تم احتساب نقاط هذا الترتيب للاعب", 1);
+        playSfx(ok ? "correct" : "wrong");
         G.cs[G.cur.buz].s += ok ? (top ? rank + 1 : pts(q)) : -1;
         const contestant = G.cs[G.cur.buz];
         contestant[ok ? "correct" : "wrong"]++;

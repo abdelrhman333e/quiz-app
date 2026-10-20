@@ -524,6 +524,9 @@ small {
   background: rgba(17, 31, 52, 0.9);
   border-color: var(--line);
 }
+.tablet-sfx-toggle {
+  border-color: #168fff;
+}
 .tag {
   align-self: center;
   background: rgba(7, 139, 255, 0.24);
