@@ -1,4 +1,4 @@
-const CACHE_NAME = "quiz-app-v2";
+const CACHE_NAME = "quiz-app-v3";
 const APP_SHELL = [
   "/",
   "/tablet",
@@ -8,6 +8,8 @@ const APP_SHELL = [
   "/pwa.js",
   "/sfx.js",
   "/manifest.json",
+  "/favicon.svg",
+  "/favicon.png",
   "/icon-192.png",
   "/icon-512.png",
 ];
@@ -68,6 +70,8 @@ self.addEventListener("fetch", (event) => {
     url.pathname === "/pwa.js" ||
     url.pathname === "/sfx.js" ||
     url.pathname === "/manifest.json" ||
+    url.pathname === "/favicon.svg" ||
+    url.pathname === "/favicon.png" ||
     /^\/icon-(192|512)\.png$/.test(url.pathname)
   ) {
     event.respondWith(
