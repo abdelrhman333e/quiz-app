@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
     <link rel="icon" type="image/png" href="/favicon.png?v=2" />
     <link rel="apple-touch-icon" href="/icon-192-v2.png" />
-    <link rel="stylesheet" href="/style.css?v=26" />
+    <link rel="stylesheet" href="/style.css?v=27" />
     <title>تابلت التحكم</title>
     <script src="/pwa.js" defer></script>
     <script src="/sfx.js"></script>
@@ -67,35 +67,117 @@
           reverseIndex = cu.rev?.index || 0,
           timer = cu.timer,
           timerActive = timer && timer.phase !== "done";
-        $("app").innerHTML =
-          `<div class="tb"><div class="card"><h3>نوع السؤال</h3>
- <div class="row">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}</button>`).join("")}</div>
- <div class="row"><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> سؤال عشوائي</button><button onclick="nextQ()">السؤال التالي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="exportQuestions()">⬇️ تصدير الأسئلة</button><button onclick="$('importQuestionsFile').click()">⬆️ استيراد أسئلة</button><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><input id="importQuestionsFile" type="file" accept=".json,.txt,.xlsx,.docx,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onchange="handleQuestionsImport(this)"><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
- <small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><details class="import-hint"><summary>عرض مثال لملف TXT أو Word</summary><div dir="rtl">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>
- <div class="qs">${list.map((x) => `<div class="qi ${x.id === cu.id ? "sel" : ""}" onclick="sel('${x.id}')">${x.kind === "reverse" ? "🔁" : x.d === "h" ? "🔴" : "🟢"} ${esc(x.x)}</div>`).join("") || "<small>لا توجد أسئلة</small>"}</div>
- <h3 style="margin-top:14px">معاينة — لا تظهر على الشاشة</h3>
- ${
-   q
-     ? `<div style="font-size:18px"><b>${esc(q.x)}</b> <small>(${esc(q.t)} · ${pts(q)} نقطة)</small></div>
- ${visual ? `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div></div>` : audioQuestion ? `<div class="visual-preview"><audio controls preload="none" src="${esc(q.audioUrl)}"></audio></div>${hasO ? q.o.map((o, i) => `<div style="${q.c === i ? "color:var(--ok);font-weight:700" : ""}">${LB[i]}) ${esc(o)}</div>`).join("") : `<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div>`}` : reverse ? `<div style="color:var(--ok)">الكلمة: ${esc(q.a)}</div>` : top ? q.r.map((a, i) => `<div style="${cu.revealed?.includes(i) ? "color:var(--ok);font-weight:700" : ""}">${i + 1}. ${esc(a)}</div>`).join("") : hasO ? q.o.map((o, i) => `<div style="${q.c === i ? "color:var(--ok);font-weight:700" : ""}">${LB[i]}) ${esc(o)}</div>`).join("") : `<div style="color:var(--ok)">الإجابة: ${esc(q.a)}</div>`}
- <div class="row">${
-   reverse
-     ? `<button class="big2 on" onclick="nextReverseLetter()" ${reverseIndex >= reverseCount ? "disabled" : ""}>${reverseIndex >= reverseCount ? "اكتملت الحروف" : `إظهار الحرف التالي (${reverseIndex + 1}/${reverseCount})`}</button><button class="big2" onclick="resetReverse()">ابدأ من جديد</button>`
-     : `<button class="big2 ${cu.q ? "on" : ""}" onclick="tg('q')">${cu.q ? "إخفاء" : "عرض"} السؤال</button>
- ${top ? q.r.map((a, i) => `<button class="big2 ${cu.revealed?.includes(i) ? "on" : ""}" onclick="revealRank(${i})">${cu.revealed?.includes(i) ? "تم كشف" : "كشف"} رقم ${i + 1}</button>`).join("") : ""}
- ${hasO ? `<button class="big2 ${cu.o ? "on" : ""}" onclick="tg('o')">${cu.o ? "إخفاء" : "عرض"} الاختيارات</button>` : ""}
- ${top ? "" : `<button class="big2 ${cu.a ? "on" : ""}" onclick="tg('a')">${cu.a ? "إخفاء" : "عرض"} الإجابة</button>`}`
- }</div>
- ${audioQuestion ? `<div class="audio-control-panel"><h3>التحكم في صوت السؤال</h3><div class="row"><button class="big2 on" onclick="setQuestionAudio(${cu.audioControl?.playing === false ? "'play'" : "'pause'"})">${cu.audioControl?.playing === false ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت"}</button><button class="big2" onclick="setQuestionAudio('restart')">↺ إعادة من البداية</button></div><label for="questionAudioVolume">مستوى الصوت: <span id="questionAudioVolumeValue">${Math.round((cu.audioControl?.volume ?? 1) * 100)}%</span></label><input id="questionAudioVolume" type="range" min="0" max="100" value="${Math.round((cu.audioControl?.volume ?? 1) * 100)}" oninput="$('questionAudioVolumeValue').textContent=this.value+'%'" onchange="setQuestionAudio('volume',this.value/100)"><small>إذا منع المتصفح التشغيل عن بُعد، اضغط تشغيل على شاشة العرض مرة واحدة.</small></div>` : ""}
- ${timer ? `<div class="timer-controls"><div class="game-timer"><div class="timer-readout"><span>${timerPhaseLabel(timer.phase)}${timer.paused ? " · متوقف" : ""}</span><b id="tabletTimerCountdown">${timerSeconds(timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="tabletTimerProgress" style="width:${timerProgress(timer)}%"></i></div></div><button onclick="${timerActive ? "toggleTimer()" : "restartTimer()"}">${timerActive ? timer.paused ? "▶ استكمال المؤقت" : "⏸ إيقاف المؤقت" : "↻ إعادة المؤقت"}</button>${timerActive ? `<button onclick="restartTimer()">↻ إعادة 30 ثانية</button>` : ""}</div>` : ""}
- <h3>من جاوب؟</h3><div class="row">${G.cs.map((c, i) => `<button class="${cu.buz === i ? "on" : ""}" onclick="buz(${i})">${esc(c.n)}</button>`).join("") || "<small>أضف متسابقين</small>"}</div>
- ${cu.buz != null ? `<div class="row">${top && cu.rank == null ? "<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>" : `<button class="big2 ok" onclick="grade(1${top ? `,${cu.rank}` : ""})">✅ صح (+${top ? cu.rank + 1 : pts(q)})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>` : ""}
- <div class="row"><button class="action-btn" onclick="openForm('${q.id}')"><img class="action-icon" src="/edit-svgrepo-com.svg" alt=""> تعديل</button><button class="action-btn" onclick="del('${q.id}')"><img class="action-icon" src="/icons8-trash.svg" alt=""> حذف</button></div>`
-     : "<small>اختر سؤالًا أو اضغط عشوائي</small>"
- }</div>
- <div class="card"><h3>المتسابقون · ${esc(ME.u)}</h3><div class="row"><input id="cn" placeholder="اسم المتسابق" style="flex:1;width:auto"><button onclick="addC()">＋</button></div>
- ${G.cs.map((c, i) => `<div class="ct"><b>${esc(c.n)}</b> — ${c.s}<div class="row"><button onclick="ch(${i},'s',1)">＋</button><button onclick="ch(${i},'s',-1)">−</button><button onclick="ch(${i},'y',1)">🟨 ${c.y}</button><button onclick="ch(${i},'r',1)">🟥 ${c.r}</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/icons8-trash.svg" alt=""></button></div></div>`).join("")}
- <div class="row"><button onclick="showStats()">📊 الإحصائيات</button><button onclick="resetScores()">تصفير النقاط</button><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="logout()">🚪 خروج</button></div></div></div>`;
+        const keepName = $("cn") ? $("cn").value : "";
+        const ctx = { T, list, q, cu, hasO, top, reverse, visual, audioQuestion, reverseCount, reverseIndex, timer, timerActive };
+        $("app").innerHTML = `<div class="tb2">${hdrHTML()}${tabSel === "manage" ? manageHTML(ctx) : playHTML(ctx)}<input id="importQuestionsFile" type="file" accept="${IMPORT_ACCEPT}" hidden onchange="handleQuestionsImport(this)"></div>`;
+        if (keepName && $("cn")) $("cn").value = keepName;
+      }
+      let tabSel = "play";
+      function setTab(t) {
+        tabSel = t;
+        render();
+      }
+      const IMPORT_ACCEPT =
+        ".json,.txt,.xlsx,.docx,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      function hdrHTML() {
+        return `<div class="hdr"><div class="tabs" role="tablist"><button role="tab" aria-selected="${tabSel === "play"}" class="${tabSel === "play" ? "act" : ""}" onclick="setTab('play')">اللعب</button><button role="tab" aria-selected="${tabSel === "manage"}" class="${tabSel === "manage" ? "act" : ""}" onclick="setTab('manage')">الأسئلة والإعدادات</button></div><div class="hdr-acts"><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="showStats()">📊 الإحصائيات</button></div></div>`;
+      }
+      function catsHTML(T) {
+        return `<div class="cats" aria-label="التصنيف">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}<span class="cnt">${t === "الكل" ? Qs.length : Qs.filter((x) => x.t === t).length}</span></button>`).join("")}</div>`;
+      }
+      function optsHTML(q) {
+        return `<div class="opts">${q.o.map((o, i) => `<div class="opt ${q.c === i ? "good" : ""}"><b>${LB[i]}</b><span>${esc(o)}</span>${q.c === i ? '<i class="chk">✓</i>' : ""}</div>`).join("")}</div>`;
+      }
+      function previewHTML(c) {
+        const { q, cu, hasO, top, reverse, visual, audioQuestion } = c;
+        if (visual)
+          return `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div class="ans">الإجابة: ${esc(q.a)}</div></div>`;
+        if (audioQuestion)
+          return `<div class="visual-preview"><audio controls preload="none" src="${esc(q.audioUrl)}"></audio></div>${hasO ? optsHTML(q) : `<div class="ans">الإجابة: ${esc(q.a)}</div>`}`;
+        if (reverse) return `<div class="ans">الكلمة: ${esc(q.a)}</div>`;
+        if (top)
+          return `<div class="opts">${q.r.map((a, i) => `<div class="opt ${cu.revealed?.includes(i) ? "good" : ""}"><b>${i + 1}</b><span>${esc(a)}</span></div>`).join("")}</div>`;
+        return hasO
+          ? optsHTML(q)
+          : `<div class="ans">الإجابة: ${esc(q.a)}</div>`;
+      }
+      function qListHTML(list, cu, withActions) {
+        return `<div class="qs">${
+          list
+            .map(
+              (x) =>
+                `<div class="qi ${x.id === cu.id ? "sel" : ""} ${G.used?.includes(x.id) ? "used" : ""}" onclick="tabSel='play';sel('${x.id}')"><span class="qt">${esc(x.x)}</span><span class="bdg ${x.kind === "reverse" ? "rev" : x.d === "h" ? "hard" : "easy"}">${x.kind === "reverse" ? "معكوسة" : x.d === "h" ? "صعب" : "سهل"}</span>${withActions ? `<button class="icon" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation();openForm('${x.id}')"><img class="action-icon" src="/edit-svgrepo-com.svg" alt=""></button>` : ""}</div>`,
+            )
+            .join("") || "<small>لا توجد أسئلة في هذا التصنيف</small>"
+        }</div>`;
+      }
+      function emptyHTML() {
+        if (!Qs.length)
+          return `<div class="card empty"><div class="big">ابدأ بإضافة أول سؤال</div><p>الأسئلة والتصنيفات بتتعمل من عندك. أضف سؤالًا جديدًا أو استورد ملف أسئلة جاهزًا.</p><div class="row c"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد أسئلة</button></div></div>`;
+        return `<div class="card empty"><div class="big">اختر سؤالًا للبدء</div><p>اضغط «السؤال التالي» أو «عشوائي» من الشريط السفلي، أو اختر سؤالًا بعينه من القائمة.</p></div>`;
+      }
+      function questionCardHTML(c) {
+        const { q, cu, top, reverse } = c;
+        if (!q) return emptyHTML();
+        const reveal = top
+          ? `<div class="reveal">${q.r.map((a, i) => `<button class="${cu.revealed?.includes(i) ? "on" : ""}" onclick="revealRank(${i})">${cu.revealed?.includes(i) ? "تم كشف" : "كشف"} رقم ${i + 1}</button>`).join("")}</div>`
+          : "";
+        return `<div class="card qcard"><div class="qhead"><span class="bdg">${esc(q.t)}</span><span class="mut">${pts(q)} نقطة</span>${reverse ? '<span class="bdg rev">كلمة معكوسة</span>' : ""}<span class="sp"></span><span class="mut note">معاينة · لا تظهر على الشاشة</span><button class="icon" title="تعديل السؤال" aria-label="تعديل السؤال" onclick="openForm('${q.id}')"><img class="action-icon" src="/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف السؤال" aria-label="حذف السؤال" onclick="del('${q.id}')"><img class="action-icon" src="/icons8-trash.svg" alt=""></button></div><div class="qtext">${esc(q.x)}</div>${previewHTML(c)}${reveal}</div>`;
+      }
+      function timerHTML(c) {
+        const { timer, timerActive } = c;
+        return `<div class="timer-controls"><div class="game-timer"><div class="timer-readout"><span>${timerPhaseLabel(timer.phase)}${timer.paused ? " · متوقف" : ""}</span><b id="tabletTimerCountdown">${timerSeconds(timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="tabletTimerProgress" style="width:${timerProgress(timer)}%"></i></div></div><button onclick="${timerActive ? "toggleTimer()" : "restartTimer()"}">${timerActive ? (timer.paused ? "▶ استكمال المؤقت" : "⏸ إيقاف المؤقت") : "↻ إعادة المؤقت"}</button>${timerActive ? `<button onclick="restartTimer()">↻ إعادة 30 ثانية</button>` : ""}</div>`;
+      }
+      function audioHTML(c) {
+        const { cu } = c;
+        return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><div class="row"><button class="big2 on" onclick="setQuestionAudio(${cu.audioControl?.playing === false ? "'play'" : "'pause'"})">${cu.audioControl?.playing === false ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت"}</button><button class="big2" onclick="setQuestionAudio('restart')">↺ إعادة من البداية</button></div><label for="questionAudioVolume">مستوى الصوت: <span id="questionAudioVolumeValue">${Math.round((cu.audioControl?.volume ?? 1) * 100)}%</span></label><input id="questionAudioVolume" type="range" min="0" max="100" value="${Math.round((cu.audioControl?.volume ?? 1) * 100)}" oninput="$('questionAudioVolumeValue').textContent=this.value+'%'" onchange="setQuestionAudio('volume',this.value/100)"><small>إذا منع المتصفح التشغيل عن بُعد، اضغط تشغيل على شاشة العرض مرة واحدة.</small></div>`;
+      }
+      function whoHTML(c) {
+        const { q, cu, top } = c;
+        const chips =
+          G.cs
+            .map(
+              (p, i) =>
+                `<button class="${cu.buz === i ? "on" : ""}" onclick="buz(${i})">${esc(p.n)}</button>`,
+            )
+            .join("") || "<small>أضف متسابقين من اللوحة الجانبية</small>";
+        const grade =
+          cu.buz != null
+            ? `<div class="row grade">${top && cu.rank == null ? "<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>" : `<button class="big2 ok" onclick="grade(1${top ? `,${cu.rank}` : ""})">✅ صح (+${top ? cu.rank + 1 : pts(q)})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>${cu.res ? `<small class="res ${cu.res}">تم التسجيل: ${cu.res === "ok" ? "صح" : "غلط"}</small>` : ""}`
+            : "";
+        return `<div class="card who"><h3>من جاوب؟</h3><div class="chips">${chips}</div>${grade}</div>`;
+      }
+      function dockHTML(c) {
+        const { q, cu, hasO, top, reverse, reverseCount, reverseIndex } = c;
+        const nav = `<div class="dock-nav"><button class="primary" onclick="nextQ()">السؤال التالي ‹</button><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> عشوائي</button></div>`;
+        if (!q || !Qs.length) return `<div class="dock">${nav}</div>`;
+        const show = reverse
+          ? `<button class="big2 on" onclick="nextReverseLetter()" ${reverseIndex >= reverseCount ? "disabled" : ""}>${reverseIndex >= reverseCount ? "اكتملت الحروف" : `إظهار الحرف التالي (${reverseIndex + 1}/${reverseCount})`}</button><button class="big2" onclick="resetReverse()">ابدأ من جديد</button>`
+          : `<button class="big2 ${cu.q ? "on" : ""}" onclick="tg('q')">${cu.q ? "إخفاء" : "عرض"} السؤال</button>${hasO ? `<button class="big2 ${cu.o ? "on" : ""}" onclick="tg('o')">${cu.o ? "إخفاء" : "عرض"} الاختيارات</button>` : ""}${top ? "" : `<button class="big2 ${cu.a ? "on" : ""}" onclick="tg('a')">${cu.a ? "إخفاء" : "عرض"} الإجابة</button>`}`;
+        return `<div class="dock">${nav}<div class="dock-show">${show}</div></div>`;
+      }
+      function playersHTML(c) {
+        const { cu } = c;
+        return `<div class="card players"><h3>المتسابقون · ${esc(ME.u)}</h3><div class="addrow"><input id="cn" placeholder="اسم المتسابق" onkeydown="if(event.key==='Enter')addC()"><button class="primary" onclick="addC()">＋ إضافة</button></div>${
+          G.cs
+            .map(
+              (p, i) =>
+                `<div class="ct ${cu.buz === i ? "buz" : ""}"><div class="top"><b>${esc(p.n)}</b><span class="sc">${p.s}</span></div><div class="acts"><button aria-label="زيادة نقطة" onclick="ch(${i},'s',1)">＋</button><button aria-label="خصم نقطة" onclick="ch(${i},'s',-1)">−</button><button title="كارت أصفر (−1)" onclick="ch(${i},'y',1)">🟨 ${p.y}</button><button title="كارت أحمر (−3)" onclick="ch(${i},'r',1)">🟥 ${p.r}</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/icons8-trash.svg" alt=""></button></div></div>`,
+            )
+            .join("") ||
+          '<div class="empty-mini">أضف أسماء المتسابقين عشان تقدر تختار مين جاوب.</div>'
+        }<div class="foot"><button class="danger" onclick="resetScores()">تصفير النقاط</button></div></div>`;
+      }
+      function playHTML(c) {
+        const { T, list, q, cu, timer, audioQuestion } = c;
+        const picker = Qs.length
+          ? `<details class="pick"><summary>اختيار سؤال محدد · ${list.length}</summary>${qListHTML(list, cu)}</details>`
+          : "";
+        return `<div class="play"><div class="main">${T.length > 1 ? catsHTML(T) : ""}${picker}${questionCardHTML(c)}${q && timer ? `<div class="card">${timerHTML(c)}</div>` : ""}${q && audioQuestion ? audioHTML(c) : ""}${q ? whoHTML(c) : ""}${dockHTML(c)}</div>${playersHTML(c)}</div>`;
+      }
+      function manageHTML(c) {
+        const { T, list, cu } = c;
+        return `<div class="mg"><div class="card"><h3>الأسئلة · ${Qs.length}</h3><div class="row"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد أسئلة</button><button onclick="exportQuestions()">⬇ تصدير الأسئلة</button></div><details class="import-hint"><summary>طريقة تجهيز ملف الاستيراد</summary><small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><div dir="rtl" class="sample">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>${T.length > 1 ? catsHTML(T) : ""}${qListHTML(list, cu, true)}</div><div class="card"><h3>الصوت والشرح</h3><div class="row"><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div></div><div class="card"><h3>الحساب</h3><div class="row"><button class="danger" onclick="logout()">🚪 خروج</button></div></div></div>`;
       }
       const TIMER_DURATION = 30000;
       function timerEnabled(q) {
