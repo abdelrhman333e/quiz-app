@@ -444,7 +444,7 @@
 }
 .tb2 .ct .acts {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.2fr 1.2fr 44px;
+  grid-template-columns: 1fr 1fr auto 44px;
   gap: 6px;
 }
 .tb2 .ct button {
@@ -455,6 +455,10 @@
 .tb2 .ct button.contestant-delete {
   width: 44px;
   height: 42px;
+}
+.tb2 .ct button.contestant-reset {
+  min-width: 68px;
+  color: var(--mut2);
 }
 .tb2 .empty-mini {
   padding: 14px 4px;

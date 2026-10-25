@@ -256,13 +256,6 @@ html[data-theme="light"] .pl {
   min-width: 26px;
   text-align: center;
 }
-.cd {
-  display: inline-block;
-  width: 9px;
-  height: 13px;
-  border-radius: 2px;
-  margin-inline-start: 2px;
-}
 /* الشاشة */
 .scr {
   display: grid;

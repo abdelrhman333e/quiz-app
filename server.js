@@ -133,11 +133,9 @@ function view(g, qs) {
     visual = x?.kind === "visual";
   const v = {
     cs: (g.cs || []).map(
-      ({ n, s, y, r, correct, wrong, deductedPoints }) => ({
+      ({ n, s, correct, wrong, deductedPoints }) => ({
         n,
         s,
-        y,
-        r,
         correct: Number.isSafeInteger(correct) ? Math.max(0, correct) : 0,
         wrong: Number.isSafeInteger(wrong) ? Math.max(0, wrong) : 0,
         deductedPoints: Number.isSafeInteger(deductedPoints)

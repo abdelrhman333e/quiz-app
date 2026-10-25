@@ -12,6 +12,35 @@
         const hasDeductionStats = Number.isSafeInteger(
           G.stats.deductedPoints,
         );
+        let legacyCardsRemoved = false;
+        if (!G.cardStatsMigrated) {
+          let cardDeductions = 0;
+          G.cs.forEach((contestant) => {
+            const legacyDeduction =
+              (Number.isSafeInteger(contestant.y)
+                ? Math.max(0, contestant.y)
+                : 0) +
+              (Number.isSafeInteger(contestant.r)
+                ? Math.max(0, contestant.r)
+                : 0) *
+                3;
+            cardDeductions += legacyDeduction;
+            if (Number.isSafeInteger(contestant.deductedPoints))
+              contestant.deductedPoints = Math.max(
+                0,
+                contestant.deductedPoints - legacyDeduction,
+              );
+            delete contestant.y;
+            delete contestant.r;
+          });
+          if (hasDeductionStats)
+            G.stats.deductedPoints = Math.max(
+              0,
+              G.stats.deductedPoints - cardDeductions,
+            );
+          G.cardStatsMigrated = true;
+          legacyCardsRemoved = true;
+        }
         G.stats.correct = Number.isSafeInteger(G.stats.correct)
           ? Math.max(0, G.stats.correct)
           : 0;
@@ -25,20 +54,11 @@
           contestant.wrong = Number.isSafeInteger(contestant.wrong)
             ? Math.max(0, contestant.wrong)
             : 0;
-          const knownCardDeductions =
-              (Number.isSafeInteger(contestant.y)
-                ? Math.max(0, contestant.y)
-                : 0) +
-              (Number.isSafeInteger(contestant.r)
-                ? Math.max(0, contestant.r)
-                : 0) *
-                3,
-            knownWrongAnswerDeductions = contestant.wrong;
           contestant.deductedPoints = Number.isSafeInteger(
             contestant.deductedPoints,
           )
             ? Math.max(0, contestant.deductedPoints)
-            : knownCardDeductions + knownWrongAnswerDeductions;
+            : contestant.wrong;
         });
         if (!hasDeductionStats)
           G.stats.deductedPoints = G.cs.reduce(
@@ -46,6 +66,10 @@
             0,
           );
         else G.stats.deductedPoints = Math.max(0, G.stats.deductedPoints);
+        if (legacyCardsRemoved)
+          api("/api/game", "POST", G).catch(() =>
+            toast("تعذر حفظ تحديث بيانات اللعبة", 1),
+          );
         if (G.cur.q && !G.cur.timer && timerEnabled(cq())) {
           startQuestionTimer(cq());
           G.v = Date.now();
@@ -157,11 +181,11 @@
       }
       function playersHTML(c) {
         const { cu } = c;
-        return `<div class="card players"><h3>المتسابقون · ${esc(ME.u)}</h3><div class="addrow"><input id="cn" placeholder="اسم المتسابق" onkeydown="if(event.key==='Enter')addC()"><button class="primary" onclick="addC()">＋ إضافة</button></div>${
+        return `<div class="card players"><h3>المتسابقون · ${esc(ME.u)}</h3><div class="addrow"><input id="cn" placeholder="اسم المتسابق" onkeydown="if(event.key==='Enter')addC()"><button class="primary" type="button" aria-label="إضافة متسابق" title="إضافة متسابق" onclick="addC()">+</button></div>${
           G.cs
             .map(
               (p, i) =>
-                `<div class="ct ${cu.buz === i ? "tbbuz" : ""}"><div class="top"><b>${esc(p.n)}</b><span class="sc">${p.s}</span></div><div class="acts"><button aria-label="زيادة نقطة" onclick="ch(${i},'s',1)">＋</button><button aria-label="خصم نقطة" onclick="ch(${i},'s',-1)">−</button><button title="كارت أصفر (−1)" aria-label="كارت أصفر، خصم نقطة" onclick="ch(${i},'y',1)">🟨</button><button title="كارت أحمر (−3)" aria-label="كارت أحمر، خصم 3 نقاط" onclick="ch(${i},'r',1)">🟥</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div></div>`,
+                `<div class="ct ${cu.buz === i ? "tbbuz" : ""}"><div class="top"><b>${esc(p.n)}</b><span class="sc">${p.s}</span></div><div class="acts"><button aria-label="زيادة نقطة" onclick="ch(${i},'s',1)">＋</button><button aria-label="خصم نقطة" onclick="ch(${i},'s',-1)">−</button><button class="contestant-reset" onclick="resetContestantScore(${i})">تصفير</button><button class="contestant-delete" title="حذف متسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div></div>`,
             )
             .join("") ||
           '<div class="empty-mini">أضف أسماء المتسابقين عشان تقدر تختار مين جاوب.</div>'
@@ -564,8 +588,6 @@
           G.cs.push({
             n,
             s: 0,
-            y: 0,
-            r: 0,
             correct: 0,
             wrong: 0,
             deductedPoints: 0,
@@ -602,7 +624,21 @@
           ))
         )
           return;
-        G.cs.forEach((c) => (c.s = c.y = c.r = 0));
+        G.cs.forEach((c) => (c.s = 0));
+        save();
+      }
+      async function resetContestantScore(i) {
+        const contestant = G.cs[i];
+        if (!contestant) return;
+        if (
+          !(await askConfirm(
+            `تصفير نقاط ${contestant.n} فقط؟`,
+            "تصفير نقاط متسابق",
+            "تصفير",
+          ))
+        )
+          return;
+        contestant.s = 0;
         save();
       }
       async function ch(i, k, d) {
@@ -615,11 +651,6 @@
         } else if (k === "s") {
           c.s += d;
           if (d < 0) recordPointDeduction(c, -d);
-        } else {
-          c[k]++;
-          const penalty = k === "y" ? 1 : 3;
-          c.s -= penalty;
-          recordPointDeduction(c, penalty);
         }
         save();
       }
