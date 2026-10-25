@@ -486,6 +486,45 @@
   font-size: 14px;
   line-height: 1.8;
 }
+html[data-theme="light"] .tb2 {
+  --s1: #fff;
+  --s2: #f1f5f9;
+  --s3: #e8eef5;
+  --bd: #cbd5e1;
+  --txt: #172438;
+  --mut2: #53657d;
+  --blue: #0878d1;
+  --green: #15803d;
+  --red: #dc2626;
+  --amber: #b45309;
+}
+html[data-theme="light"] .tb2 button.ok {
+  color: #166534;
+}
+html[data-theme="light"] .tb2 button.no,
+html[data-theme="light"] .tb2 button.danger {
+  color: #b91c1c;
+}
+html[data-theme="light"] .tb2 .bdg {
+  color: #075985;
+}
+html[data-theme="light"] .tb2 .bdg.hard {
+  color: #b91c1c;
+}
+html[data-theme="light"] .tb2 .bdg.easy {
+  color: #166534;
+}
+html[data-theme="light"] .tb2 .bdg.rev {
+  color: #92400e;
+}
+html[data-theme="light"] .tb2 .dock {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: var(--bd);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.12);
+}
+html[data-theme="light"] .tb2 .cnt {
+  background: rgba(23, 36, 56, 0.08);
+}
 @media (max-width: 900px) {
   .tb2 .play {
     grid-template-columns: 1fr;
