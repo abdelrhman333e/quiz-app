@@ -150,6 +150,14 @@ function playSfx(name) {
       contestant: [[440, 0, 0.08]],
       rank: [[587.33, 0, 0.07]],
       reverse: [[880, 0, 0.06]],
+      pointsUp: [
+        [659.25, 0, 0.08],
+        [880, 0.1, 0.12],
+      ],
+      pointsDown: [
+        [440, 0, 0.1],
+        [329.63, 0.12, 0.14],
+      ],
     }[name] || [];
   for (const [frequency, delay, duration] of notes) {
     const start = sfxContext.currentTime + delay;

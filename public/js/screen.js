@@ -2,6 +2,10 @@
       let reverseTimer, rouletteTimer;
       let lastQuestionAudioKey = "";
       let lastQuestionAudioControlKey = "";
+      let lastScoreChangeId = null;
+      let hasInitialView = false;
+      let scoreNotice = null;
+      let scoreNoticeTimer;
       let lastResultKey = "",
         lastBuzzKey = "",
         lastReverseLetter = "";
@@ -145,6 +149,20 @@
         // حتى لا تتكرر الحركة أو المؤثرات عند كل تحديث لحظي.
         clearTimeout(rouletteTimer);
         clearTimeout(reverseTimer);
+        const scoreChange = V.scoreChange;
+        if (!hasInitialView) {
+          lastScoreChangeId = scoreChange?.id || null;
+          hasInitialView = true;
+        } else if (scoreChange?.id && scoreChange.id !== lastScoreChangeId) {
+          lastScoreChangeId = scoreChange.id;
+          scoreNotice = scoreChange;
+          playSfx(scoreChange.delta > 0 ? "pointsUp" : "pointsDown");
+          clearTimeout(scoreNoticeTimer);
+          scoreNoticeTimer = setTimeout(() => {
+            scoreNotice = null;
+            render();
+          }, 3500);
+        }
         const b = V.buz != null ? V.cs[V.buz] : null;
         const questionContent =
             V.mode === "visual"
@@ -218,6 +236,17 @@ ${
  ${!V.showStats && V.timer && V.timer.phase !== "done" ? `<div class="game-timer ${timerSeconds(V.timer) <= 5 ? "timer-ending" : ""}"><div class="timer-readout"><span>${V.timer.phase === "question" ? "السؤال" : "الاختيارات"}${V.timer.paused ? " · متوقف" : ""}</span><b id="screenTimerCountdown">${timerSeconds(V.timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="screenTimerProgress" style="width:${timerProgress(V.timer)}%"></i></div></div>` : ""}
  ${!V.showStats && V.mode !== "reverse" && b ? `<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res === "ok" ? "✅" : V.res === "no" ? "❌" : ""}</div>` : ""}</div>
  <div class="card" style="align-self:start"><h3>🏆 الترتيب</h3><div class="board">${board(V.cs)}</div></div></div>`;
+        if (scoreNotice) {
+          const amount = Math.abs(scoreNotice.delta),
+            pointLabel = amount === 1 ? "نقطة" : "نقاط",
+            sign = scoreNotice.delta > 0 ? "+" : "−",
+            direction =
+              scoreNotice.delta > 0 ? "score-notice-up" : "score-notice-down";
+          document.getElementById("app").insertAdjacentHTML(
+            "beforeend",
+            `<div class="score-notice ${direction}" role="status" aria-live="polite"><b>${esc(scoreNotice.contestant)}</b><span>${sign}${amount} ${pointLabel}</span><small>الإجمالي: ${scoreNotice.score}</small></div>`,
+          );
+        }
         if (!V.showStats && V.mode === "audio" && V.shown) {
           const audio = document.getElementById("questionAudioPlayer"),
             button = document.getElementById("playQuestionAudio"),

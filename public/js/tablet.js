@@ -651,6 +651,12 @@
         } else if (k === "s") {
           c.s += d;
           if (d < 0) recordPointDeduction(c, -d);
+          G.scoreChange = {
+            id: `${Date.now()}-${Math.random()}`,
+            contestant: c.n,
+            delta: d,
+            score: c.s,
+          };
         }
         save();
       }

@@ -154,6 +154,19 @@ function view(g, qs) {
         ? Math.max(0, g.stats.deductedPoints)
         : 0,
     },
+    scoreChange:
+      g.scoreChange &&
+      typeof g.scoreChange.id === "string" &&
+      Number.isSafeInteger(g.scoreChange.delta) &&
+      g.scoreChange.delta !== 0 &&
+      Number.isSafeInteger(g.scoreChange.score)
+        ? {
+            id: str(g.scoreChange.id, 80),
+            contestant: str(g.scoreChange.contestant, 40),
+            delta: g.scoreChange.delta,
+            score: g.scoreChange.score,
+          }
+        : null,
     showStats: !!g.showStats,
     shown: sh,
     displayId: c.displayId || null,

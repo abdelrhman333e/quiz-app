@@ -607,6 +607,60 @@ html[data-theme="light"] .pl {
   background: rgba(17, 31, 52, 0.9);
   border-color: var(--line);
 }
+.score-notice {
+  position: fixed;
+  inset-inline-start: 50%;
+  inset-inline-end: auto;
+  inset-block-end: 24px;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: max-content;
+  max-width: min(90vw, 720px);
+  padding: 14px 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--bg2);
+  color: var(--t);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35);
+  transform: translateX(50%);
+  animation: scoreNoticeEnter 0.24s ease-out both;
+}
+.score-notice b {
+  font-size: clamp(18px, 2.2vw, 26px);
+}
+.score-notice span {
+  font-size: clamp(20px, 2.5vw, 30px);
+  font-weight: 800;
+}
+.score-notice small {
+  color: var(--mut);
+  font-size: 14px;
+}
+.score-notice-up {
+  border-color: var(--ok);
+}
+.score-notice-up span {
+  color: var(--ok);
+}
+.score-notice-down {
+  border-color: var(--no);
+}
+.score-notice-down span {
+  color: var(--no);
+}
+@keyframes scoreNoticeEnter {
+  from {
+    opacity: 0;
+    transform: translate(50%, 12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(50%, 0) scale(1);
+  }
+}
 .tablet-sfx-toggle {
   border-color: #168fff;
 }
