@@ -498,6 +498,30 @@ html[data-theme="light"] .tb2 {
   --red: #dc2626;
   --amber: #b45309;
 }
+html[data-theme="green"] .tb2 {
+  --s1: #123628;
+  --s2: #194633;
+  --s3: #0c281d;
+  --bd: #2e6248;
+  --txt: #e6fff0;
+  --mut2: #a4cbb3;
+  --blue: #34d399;
+  --green: #4ade80;
+  --red: #fb7185;
+  --amber: #fcd34d;
+}
+html[data-theme="black"] .tb2 {
+  --s1: #111114;
+  --s2: #1c1c21;
+  --s3: #08080a;
+  --bd: #34343c;
+  --txt: #f1f5f9;
+  --mut2: #a1a1aa;
+  --blue: #a78bfa;
+  --green: #4ade80;
+  --red: #fb7185;
+  --amber: #f0abfc;
+}
 html[data-theme="light"] .tb2 button.ok {
   color: #166534;
 }
@@ -524,6 +548,38 @@ html[data-theme="light"] .tb2 .dock {
 }
 html[data-theme="light"] .tb2 .cnt {
   background: rgba(23, 36, 56, 0.08);
+}
+html[data-theme="green"] .tb2 .bdg {
+  color: #a7f3d0;
+}
+html[data-theme="green"] .tb2 .bdg.hard {
+  color: #fecdd3;
+}
+html[data-theme="green"] .tb2 .bdg.easy {
+  color: #bbf7d0;
+}
+html[data-theme="green"] .tb2 .bdg.rev {
+  color: #fef08a;
+}
+html[data-theme="green"] .tb2 .dock {
+  background: rgba(8, 31, 21, 0.96);
+  border-color: var(--bd);
+}
+html[data-theme="black"] .tb2 .bdg {
+  color: #ddd6fe;
+}
+html[data-theme="black"] .tb2 .bdg.hard {
+  color: #fecdd3;
+}
+html[data-theme="black"] .tb2 .bdg.easy {
+  color: #bbf7d0;
+}
+html[data-theme="black"] .tb2 .bdg.rev {
+  color: #f5d0fe;
+}
+html[data-theme="black"] .tb2 .dock {
+  background: rgba(0, 0, 0, 0.96);
+  border-color: var(--bd);
 }
 @media (max-width: 900px) {
   .tb2 .play {

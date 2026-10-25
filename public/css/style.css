@@ -20,6 +20,28 @@ html[data-theme="light"] {
   --mut: #53657d;
   --p: #0878d1;
 }
+html[data-theme="green"] {
+  color-scheme: dark;
+  --bg1: #14382c;
+  --bg2: #091b14;
+  --card: rgba(57, 112, 81, 0.2);
+  --line: rgba(134, 239, 172, 0.22);
+  --t: #e6fff0;
+  --mut: #a4cbb3;
+  --p: #34d399;
+  --gold: #fcd34d;
+}
+html[data-theme="black"] {
+  color-scheme: dark;
+  --bg1: #111114;
+  --bg2: #030304;
+  --card: rgba(255, 255, 255, 0.07);
+  --line: rgba(203, 213, 225, 0.2);
+  --t: #f1f5f9;
+  --mut: #a1a1aa;
+  --p: #a78bfa;
+  --gold: #f0abfc;
+}
 * {
   box-sizing: border-box;
 }
@@ -27,6 +49,12 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+}
+html[data-theme="green"] body {
+  background: radial-gradient(circle at 80% 0, #245943 0, var(--bg1) 42%, var(--bg2) 100%) fixed;
+}
+html[data-theme="black"] body {
+  background: radial-gradient(circle at 80% 0, #202024 0, var(--bg1) 42%, var(--bg2) 100%) fixed;
 }
 html[data-theme="light"] body {
   background: radial-gradient(circle at 80% 0, #fff 0, var(--bg1) 48%, var(--bg2) 100%) fixed;
@@ -72,6 +100,37 @@ button {
   padding: 8px 12px;
   background: var(--card);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+}
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 10px;
+}
+.theme-option {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 48px;
+  background: var(--card);
+  border-color: var(--line);
+}
+.theme-option.selected {
+  outline: 2px solid var(--p);
+  outline-offset: 1px;
+}
+.theme-option-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(127, 127, 127, 0.16);
+}
+.theme-description {
+  margin: 0 0 12px;
+  color: var(--mut);
+  line-height: 1.6;
 }
 button:active {
   transform: scale(0.96);
@@ -943,6 +1002,74 @@ html[data-theme="light"] .site-footer {
 }
 html[data-theme="light"] .screen-sfx-toggle {
   background: rgba(255, 255, 255, 0.92);
+}
+html[data-theme="green"] .game-timer,
+html[data-theme="green"] .stats-item,
+html[data-theme="green"] .stats-player {
+  background: rgba(6, 30, 20, 0.52);
+}
+html[data-theme="green"] .modal .card,
+html[data-theme="green"] .modal .stats-card {
+  color: var(--t);
+  border-color: var(--line);
+  background: linear-gradient(155deg, #1a4433, #10271d 75%);
+}
+html[data-theme="green"] .screen-stats-overlay {
+  background: rgba(3, 18, 11, 0.86);
+}
+html[data-theme="green"] .screen-stats-panel {
+  border-color: var(--line);
+  background:
+    radial-gradient(ellipse at 90% 0, rgba(52, 211, 153, 0.12), transparent 55%),
+    linear-gradient(145deg, #1a4433, #0c2017 78%);
+}
+html[data-theme="green"] .screen-stat {
+  border-color: var(--line);
+  background: linear-gradient(145deg, rgba(36, 89, 67, 0.82), rgba(6, 30, 20, 0.72));
+}
+html[data-theme="green"] .screen-stat-player {
+  border-color: var(--line);
+  background: rgba(6, 30, 20, 0.55);
+}
+html[data-theme="green"] .site-footer {
+  background: rgba(6, 24, 16, 0.62);
+}
+html[data-theme="green"] .screen-sfx-toggle {
+  background: rgba(9, 35, 23, 0.94);
+}
+html[data-theme="black"] .game-timer,
+html[data-theme="black"] .stats-item,
+html[data-theme="black"] .stats-player {
+  background: rgba(0, 0, 0, 0.72);
+}
+html[data-theme="black"] .modal .card,
+html[data-theme="black"] .modal .stats-card {
+  color: var(--t);
+  border-color: var(--line);
+  background: linear-gradient(155deg, #17171b, #080809 75%);
+}
+html[data-theme="black"] .screen-stats-overlay {
+  background: rgba(0, 0, 0, 0.9);
+}
+html[data-theme="black"] .screen-stats-panel {
+  border-color: var(--line);
+  background:
+    radial-gradient(ellipse at 90% 0, rgba(167, 139, 250, 0.1), transparent 55%),
+    linear-gradient(145deg, #18181b, #050506 78%);
+}
+html[data-theme="black"] .screen-stat {
+  border-color: var(--line);
+  background: linear-gradient(145deg, #202024, #09090b);
+}
+html[data-theme="black"] .screen-stat-player {
+  border-color: var(--line);
+  background: rgba(0, 0, 0, 0.68);
+}
+html[data-theme="black"] .site-footer {
+  background: rgba(0, 0, 0, 0.72);
+}
+html[data-theme="black"] .screen-sfx-toggle {
+  background: rgba(0, 0, 0, 0.94);
   font-size: 14px;
   line-height: 1.6;
 }
