@@ -1165,12 +1165,12 @@ img.action-icon {
   line-height: 1.6;
   margin: 6px 0 14px;
 }
-.tb2 .opts {
+.tb2 .tbopts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 8px;
 }
-.tb2 .opt {
+.tb2 .tbopt {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1180,24 +1180,24 @@ img.action-icon {
   background: var(--s3);
   font-size: 17px;
 }
-.tb2 .opt b {
+.tb2 .tbopt b {
   color: var(--mut2);
   min-width: 20px;
 }
-.tb2 .opt.good {
+.tb2 .tbopt.good {
   border-color: var(--green);
   background: rgba(34, 197, 94, 0.12);
 }
-.tb2 .opt.good b,
-.tb2 .opt .chk {
+.tb2 .tbopt.good b,
+.tb2 .tbopt .chk {
   color: var(--green);
 }
-.tb2 .opt .chk {
+.tb2 .tbopt .chk {
   margin-inline-start: auto;
   font-style: normal;
   font-weight: 700;
 }
-.tb2 .ans {
+.tb2 .tbans {
   color: var(--green);
   font-weight: 700;
   font-size: 18px;
@@ -1331,7 +1331,7 @@ img.action-icon {
   margin-top: 8px;
   background: var(--s3);
 }
-.tb2 .ct.buz {
+.tb2 .ct.tbbuz {
   border-color: var(--blue);
   background: rgba(59, 130, 246, 0.12);
 }

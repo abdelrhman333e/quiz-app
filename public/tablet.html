@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
     <link rel="icon" type="image/png" href="/favicon.png?v=2" />
     <link rel="apple-touch-icon" href="/icon-192-v2.png" />
-    <link rel="stylesheet" href="/style.css?v=27" />
+    <link rel="stylesheet" href="/style.css?v=28" />
     <title>تابلت التحكم</title>
     <script src="/pwa.js" defer></script>
     <script src="/sfx.js"></script>
@@ -86,20 +86,20 @@
         return `<div class="cats" aria-label="التصنيف">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}<span class="cnt">${t === "الكل" ? Qs.length : Qs.filter((x) => x.t === t).length}</span></button>`).join("")}</div>`;
       }
       function optsHTML(q) {
-        return `<div class="opts">${q.o.map((o, i) => `<div class="opt ${q.c === i ? "good" : ""}"><b>${LB[i]}</b><span>${esc(o)}</span>${q.c === i ? '<i class="chk">✓</i>' : ""}</div>`).join("")}</div>`;
+        return `<div class="tbopts">${q.o.map((o, i) => `<div class="tbopt ${q.c === i ? "good" : ""}"><b>${LB[i]}</b><span>${esc(o)}</span>${q.c === i ? '<i class="chk">✓</i>' : ""}</div>`).join("")}</div>`;
       }
       function previewHTML(c) {
         const { q, cu, hasO, top, reverse, visual, audioQuestion } = c;
         if (visual)
-          return `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div class="ans">الإجابة: ${esc(q.a)}</div></div>`;
+          return `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div class="tbans">الإجابة: ${esc(q.a)}</div></div>`;
         if (audioQuestion)
-          return `<div class="visual-preview"><audio controls preload="none" src="${esc(q.audioUrl)}"></audio></div>${hasO ? optsHTML(q) : `<div class="ans">الإجابة: ${esc(q.a)}</div>`}`;
-        if (reverse) return `<div class="ans">الكلمة: ${esc(q.a)}</div>`;
+          return `<div class="visual-preview"><audio controls preload="none" src="${esc(q.audioUrl)}"></audio></div>${hasO ? optsHTML(q) : `<div class="tbans">الإجابة: ${esc(q.a)}</div>`}`;
+        if (reverse) return `<div class="tbans">الكلمة: ${esc(q.a)}</div>`;
         if (top)
-          return `<div class="opts">${q.r.map((a, i) => `<div class="opt ${cu.revealed?.includes(i) ? "good" : ""}"><b>${i + 1}</b><span>${esc(a)}</span></div>`).join("")}</div>`;
+          return `<div class="tbopts">${q.r.map((a, i) => `<div class="tbopt ${cu.revealed?.includes(i) ? "good" : ""}"><b>${i + 1}</b><span>${esc(a)}</span></div>`).join("")}</div>`;
         return hasO
           ? optsHTML(q)
-          : `<div class="ans">الإجابة: ${esc(q.a)}</div>`;
+          : `<div class="tbans">الإجابة: ${esc(q.a)}</div>`;
       }
       function qListHTML(list, cu, withActions) {
         return `<div class="qs">${
@@ -162,7 +162,7 @@
           G.cs
             .map(
               (p, i) =>
-                `<div class="ct ${cu.buz === i ? "buz" : ""}"><div class="top"><b>${esc(p.n)}</b><span class="sc">${p.s}</span></div><div class="acts"><button aria-label="زيادة نقطة" onclick="ch(${i},'s',1)">＋</button><button aria-label="خصم نقطة" onclick="ch(${i},'s',-1)">−</button><button title="كارت أصفر (−1)" onclick="ch(${i},'y',1)">🟨 ${p.y}</button><button title="كارت أحمر (−3)" onclick="ch(${i},'r',1)">🟥 ${p.r}</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/icons8-trash.svg" alt=""></button></div></div>`,
+                `<div class="ct ${cu.buz === i ? "tbbuz" : ""}"><div class="top"><b>${esc(p.n)}</b><span class="sc">${p.s}</span></div><div class="acts"><button aria-label="زيادة نقطة" onclick="ch(${i},'s',1)">＋</button><button aria-label="خصم نقطة" onclick="ch(${i},'s',-1)">−</button><button title="كارت أصفر (−1)" onclick="ch(${i},'y',1)">🟨 ${p.y}</button><button title="كارت أحمر (−3)" onclick="ch(${i},'r',1)">🟥 ${p.r}</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/icons8-trash.svg" alt=""></button></div></div>`,
             )
             .join("") ||
           '<div class="empty-mini">أضف أسماء المتسابقين عشان تقدر تختار مين جاوب.</div>'
