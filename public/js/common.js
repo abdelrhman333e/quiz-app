@@ -39,8 +39,7 @@ function board(cs = G.cs) {
         (
           c,
           k,
-        ) => `<div class="pl"><span class="rk">${k + 1}</span><span class="nm">${esc(c.n)}</span>
- <span>${'<i class="cd" style="background:#facc15"></i>'.repeat(c.y)}${'<i class="cd" style="background:#ef4444"></i>'.repeat(c.r)}</span><span class="sc">${c.s}</span></div>`,
+        ) => `<div class="pl"><span class="rk">${k + 1}</span><span class="nm">${esc(c.n)}</span><span class="sc">${c.s}</span></div>`,
       )
       .join("") || "<small>—</small>"
   );

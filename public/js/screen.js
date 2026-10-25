@@ -24,6 +24,7 @@
       function statisticsStage() {
         const correct = V.stats?.correct || 0,
           wrong = V.stats?.wrong || 0,
+          deductedPoints = V.stats?.deductedPoints || 0,
           answered = correct + wrong,
           accuracy = answered ? Math.round((correct / answered) * 100) : 0;
         const contestants = V.cs.length
@@ -31,15 +32,16 @@
               .map((contestant) => {
                 const playerCorrect = contestant.correct || 0,
                   playerWrong = contestant.wrong || 0,
+                  playerDeductions = contestant.deductedPoints || 0,
                   playerTotal = playerCorrect + playerWrong,
                   playerAccuracy = playerTotal
                     ? Math.round((playerCorrect / playerTotal) * 100)
                     : 0;
-                return `<article class="screen-stat-player"><b>${esc(contestant.n)}</b><div class="screen-stat-player-details"><span class="screen-stat-correct">صح: ${playerCorrect}</span><span class="screen-stat-wrong">خطأ: ${playerWrong}</span><span>الإجمالي: ${playerTotal}</span><span>نسبة الصح: ${playerAccuracy}%</span></div></article>`;
+                return `<article class="screen-stat-player"><b>${esc(contestant.n)}</b><div class="screen-stat-player-details"><span class="screen-stat-correct">صح: ${playerCorrect}</span><span class="screen-stat-wrong">خطأ: ${playerWrong}</span><span>النقاط المخصومة: ${playerDeductions}</span><span>الإجمالي: ${playerTotal}</span><span>نسبة الصح: ${playerAccuracy}%</span></div></article>`;
               })
               .join("")
           : '<div class="wait">لا يوجد متسابقون مسجلون</div>';
-        return `<div class="screen-stats-overlay"><section class="screen-stats-panel"><h2>📊 إحصائيات الإجابات</h2><div class="screen-stats-summary"><div class="screen-stat screen-stat-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="screen-stat screen-stat-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="screen-stat"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="screen-stat"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div></div><h3>إحصائيات كل متسابق</h3><div class="screen-stats-players">${contestants}</div></section></div>`;
+        return `<div class="screen-stats-overlay"><section class="screen-stats-panel"><h2>📊 إحصائيات الإجابات</h2><div class="screen-stats-summary"><div class="screen-stat screen-stat-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="screen-stat screen-stat-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="screen-stat"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="screen-stat"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div><div class="screen-stat screen-stat-deductions"><span>إجمالي النقاط المخصومة</span><b>${deductedPoints}</b></div></div><h3>إحصائيات كل متسابق</h3><div class="screen-stats-players">${contestants}</div></section></div>`;
       }
       function rouletteStage() {
         const roulette = V.roulette;

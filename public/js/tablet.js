@@ -8,7 +8,10 @@
         // صحّح العدادات القديمة/غير المكتملة قبل إنشاء HTML، حتى لا تظهر
         // قيم غير صالحة أو يتعطل العرض عند تحميل حالة لعبة قديمة.
         if (!G.stats || typeof G.stats !== "object")
-          G.stats = { correct: 0, wrong: 0 };
+          G.stats = { correct: 0, wrong: 0, deductedPoints: 0 };
+        const hasDeductionStats = Number.isSafeInteger(
+          G.stats.deductedPoints,
+        );
         G.stats.correct = Number.isSafeInteger(G.stats.correct)
           ? Math.max(0, G.stats.correct)
           : 0;
@@ -22,7 +25,27 @@
           contestant.wrong = Number.isSafeInteger(contestant.wrong)
             ? Math.max(0, contestant.wrong)
             : 0;
+          const knownCardDeductions =
+              (Number.isSafeInteger(contestant.y)
+                ? Math.max(0, contestant.y)
+                : 0) +
+              (Number.isSafeInteger(contestant.r)
+                ? Math.max(0, contestant.r)
+                : 0) *
+                3,
+            knownWrongAnswerDeductions = contestant.wrong;
+          contestant.deductedPoints = Number.isSafeInteger(
+            contestant.deductedPoints,
+          )
+            ? Math.max(0, contestant.deductedPoints)
+            : knownCardDeductions + knownWrongAnswerDeductions;
         });
+        if (!hasDeductionStats)
+          G.stats.deductedPoints = G.cs.reduce(
+            (total, contestant) => total + contestant.deductedPoints,
+            0,
+          );
+        else G.stats.deductedPoints = Math.max(0, G.stats.deductedPoints);
         if (G.cur.q && !G.cur.timer && timerEnabled(cq())) {
           startQuestionTimer(cq());
           G.v = Date.now();
@@ -138,7 +161,7 @@
           G.cs
             .map(
               (p, i) =>
-                `<div class="ct ${cu.buz === i ? "tbbuz" : ""}"><div class="top"><b>${esc(p.n)}</b><span class="sc">${p.s}</span></div><div class="acts"><button aria-label="زيادة نقطة" onclick="ch(${i},'s',1)">＋</button><button aria-label="خصم نقطة" onclick="ch(${i},'s',-1)">−</button><button title="كارت أصفر (−1)" onclick="ch(${i},'y',1)">🟨 ${p.y}</button><button title="كارت أحمر (−3)" onclick="ch(${i},'r',1)">🟥 ${p.r}</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div></div>`,
+                `<div class="ct ${cu.buz === i ? "tbbuz" : ""}"><div class="top"><b>${esc(p.n)}</b><span class="sc">${p.s}</span></div><div class="acts"><button aria-label="زيادة نقطة" onclick="ch(${i},'s',1)">＋</button><button aria-label="خصم نقطة" onclick="ch(${i},'s',-1)">−</button><button title="كارت أصفر (−1)" aria-label="كارت أصفر، خصم نقطة" onclick="ch(${i},'y',1)">🟨</button><button title="كارت أحمر (−3)" aria-label="كارت أحمر، خصم 3 نقاط" onclick="ch(${i},'r',1)">🟥</button><button class="contestant-delete" title="حذف المتسابق" aria-label="حذف المتسابق" onclick="ch(${i},'x')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div></div>`,
             )
             .join("") ||
           '<div class="empty-mini">أضف أسماء المتسابقين عشان تقدر تختار مين جاوب.</div>'
@@ -471,6 +494,7 @@
         contestant[ok ? "correct" : "wrong"]++;
         if (!G.stats) G.stats = { correct: 0, wrong: 0 };
         G.stats[ok ? "correct" : "wrong"]++;
+        if (!ok) recordPointDeduction(contestant, 1);
         if (key) {
           if (!G.cur.awards) G.cur.awards = [];
           G.cur.awards.push(key);
@@ -483,6 +507,7 @@
       function showStats() {
         const correct = G.stats?.correct || 0,
           wrong = G.stats?.wrong || 0,
+          deductedPoints = G.stats?.deductedPoints || 0,
           answered = correct + wrong,
           accuracy = answered ? Math.round((correct / answered) * 100) : 0;
         const contestants = G.cs.length
@@ -490,16 +515,17 @@
               .map((contestant) => {
                 const playerCorrect = contestant.correct || 0,
                   playerWrong = contestant.wrong || 0,
+                  playerDeductions = contestant.deductedPoints || 0,
                   playerAnswered = playerCorrect + playerWrong,
                   playerAccuracy = playerAnswered
                     ? Math.round((playerCorrect / playerAnswered) * 100)
                     : 0;
-                return `<div class="stats-player"><b>${esc(contestant.n)}</b><span class="stats-correct">صح: ${playerCorrect}</span><span class="stats-wrong">خطأ: ${playerWrong}</span><span>الإجمالي: ${playerAnswered} · نسبة الصح: ${playerAccuracy}%</span></div>`;
+                return `<div class="stats-player"><b>${esc(contestant.n)}</b><span class="stats-correct">صح: ${playerCorrect}</span><span class="stats-wrong">خطأ: ${playerWrong}</span><span>النقاط المخصومة: ${playerDeductions}</span><span>الإجمالي: ${playerAnswered} · نسبة الصح: ${playerAccuracy}%</span></div>`;
               })
               .join("")
           : "<small>لا يوجد متسابقون مسجلون.</small>";
         $("statsModal").innerHTML =
-          `<div class="modal stats-modal" onclick="if(event.target===this)closeStats()"><div class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><div class="stats-header"><h3 id="statsTitle">📊 إحصائيات الإجابات</h3><button onclick="closeStats()">إغلاق</button></div><div class="stats-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="stats-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div></div><h3 class="stats-subtitle">إحصائيات كل متسابق</h3><div class="stats-players">${contestants}</div><div class="stats-actions"><button class="on" onclick="toggleStatsOnScreen()">${G.showStats ? "إخفاء الإحصائيات من شاشة العرض" : "إظهار الإحصائيات على شاشة العرض"}</button><button class="no" onclick="resetStats()">إعادة تسجيل الإحصائيات</button></div><small class="stats-note">إعادة التسجيل تصفّر الإحصائيات فقط، ولا تغيّر النقاط.</small></div></div>`;
+          `<div class="modal stats-modal" onclick="if(event.target===this)closeStats()"><div class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><div class="stats-header"><h3 id="statsTitle">📊 إحصائيات الإجابات</h3><button onclick="closeStats()">إغلاق</button></div><div class="stats-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="stats-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div><div class="stats-item stats-deductions"><span>إجمالي النقاط المخصومة</span><b>${deductedPoints}</b></div></div><h3 class="stats-subtitle">إحصائيات كل متسابق</h3><div class="stats-players">${contestants}</div><div class="stats-actions"><button class="on" onclick="toggleStatsOnScreen()">${G.showStats ? "إخفاء الإحصائيات من شاشة العرض" : "إظهار الإحصائيات على شاشة العرض"}</button><button class="no" onclick="resetStats()">إعادة تسجيل الإحصائيات</button></div><small class="stats-note">إعادة التسجيل تصفّر الإحصائيات فقط، ولا تغيّر النقاط.</small></div></div>`;
       }
       function toggleStatsOnScreen() {
         G.showStats = !G.showStats;
@@ -517,16 +543,17 @@
       async function resetStats() {
         if (
           !(await askConfirm(
-            "سيتم تصفير إجمالي الإجابات الصحيحة والخاطئة وإحصائيات كل المتسابقين. لن تتغير النقاط. هل تريد المتابعة؟",
+            "سيتم تصفير الإجابات الصحيحة والخاطئة وإجمالي النقاط المخصومة لكل المتسابقين. لن يتغير رصيد النقاط الحالي. هل تريد المتابعة؟",
             "إعادة تسجيل الإحصائيات",
             "تصفير الإحصائيات",
           ))
         )
           return;
-        G.stats = { correct: 0, wrong: 0 };
+        G.stats = { correct: 0, wrong: 0, deductedPoints: 0 };
         G.cs.forEach((contestant) => {
           contestant.correct = 0;
           contestant.wrong = 0;
+          contestant.deductedPoints = 0;
         });
         save();
         showStats();
@@ -534,7 +561,15 @@
       function addC() {
         const n = $("cn").value.trim();
         if (n) {
-          G.cs.push({ n, s: 0, y: 0, r: 0, correct: 0, wrong: 0 });
+          G.cs.push({
+            n,
+            s: 0,
+            y: 0,
+            r: 0,
+            correct: 0,
+            wrong: 0,
+            deductedPoints: 0,
+          });
           save();
         }
       }
@@ -577,12 +612,23 @@
             return;
           G.cs.splice(i, 1);
           G.cur.buz = null;
-        } else if (k === "s") c.s += d;
-        else {
+        } else if (k === "s") {
+          c.s += d;
+          if (d < 0) recordPointDeduction(c, -d);
+        } else {
           c[k]++;
-          c.s -= k === "y" ? 1 : 3;
+          const penalty = k === "y" ? 1 : 3;
+          c.s -= penalty;
+          recordPointDeduction(c, penalty);
         }
         save();
+      }
+      function recordPointDeduction(contestant, points) {
+        if (!G.stats || typeof G.stats !== "object")
+          G.stats = { correct: 0, wrong: 0, deductedPoints: 0 };
+        G.stats.deductedPoints = (G.stats.deductedPoints || 0) + points;
+        contestant.deductedPoints =
+          (contestant.deductedPoints || 0) + points;
       }
       async function del(id) {
         if (!(await askConfirm("حذف السؤال نهائيًا؟", "حذف سؤال", "حذف")))

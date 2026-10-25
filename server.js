@@ -132,20 +132,28 @@ function view(g, qs) {
     reverse = x?.kind === "reverse",
     visual = x?.kind === "visual";
   const v = {
-    cs: (g.cs || []).map(({ n, s, y, r, correct, wrong }) => ({
-      n,
-      s,
-      y,
-      r,
-      correct: Number.isSafeInteger(correct) ? Math.max(0, correct) : 0,
-      wrong: Number.isSafeInteger(wrong) ? Math.max(0, wrong) : 0,
-    })),
+    cs: (g.cs || []).map(
+      ({ n, s, y, r, correct, wrong, deductedPoints }) => ({
+        n,
+        s,
+        y,
+        r,
+        correct: Number.isSafeInteger(correct) ? Math.max(0, correct) : 0,
+        wrong: Number.isSafeInteger(wrong) ? Math.max(0, wrong) : 0,
+        deductedPoints: Number.isSafeInteger(deductedPoints)
+          ? Math.max(0, deductedPoints)
+          : 0,
+      }),
+    ),
     stats: {
       correct: Number.isSafeInteger(g.stats?.correct)
         ? Math.max(0, g.stats.correct)
         : 0,
       wrong: Number.isSafeInteger(g.stats?.wrong)
         ? Math.max(0, g.stats.wrong)
+        : 0,
+      deductedPoints: Number.isSafeInteger(g.stats?.deductedPoints)
+        ? Math.max(0, g.stats.deductedPoints)
         : 0,
     },
     showStats: !!g.showStats,
