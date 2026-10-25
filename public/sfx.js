@@ -1,24 +1,36 @@
 var sfxContext = null;
-var sfxEnabled = false;
+var sfxEnabled = true;
 var resultSounds = {
   correct: new Audio("/sound/correct.wav"),
   wrong: new Audio("/sound/lose.wav"),
 };
 
-function toggleSfx(buttonId = "screenSfxToggle") {
-  if (!sfxContext) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
-    sfxContext = new AudioContextClass();
-  }
-  sfxEnabled = !sfxEnabled;
-  if (sfxEnabled)
+function resumeSfx() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  if (!sfxContext) sfxContext = new AudioContextClass();
+  if (sfxEnabled && sfxContext.state !== "running")
     sfxContext
       .resume()
-      .then(() => {
-        if (sfxEnabled) playSfx("question");
-      })
-      .catch((error) => console.error("تعذر تفعيل المؤثرات الصوتية:", error));
+      .catch((error) => console.error("تعذر تشغيل المؤثرات الصوتية:", error));
+}
+
+function unlockSfx() {
+  document.removeEventListener("pointerdown", unlockSfx);
+  document.removeEventListener("keydown", unlockSfx);
+  resumeSfx();
+}
+
+document.addEventListener("pointerdown", unlockSfx);
+document.addEventListener("keydown", unlockSfx);
+resumeSfx();
+
+function toggleSfx(buttonId = "screenSfxToggle") {
+  sfxEnabled = !sfxEnabled;
+  if (sfxEnabled) {
+    resumeSfx();
+    if (sfxContext) playSfx("question");
+  }
   updateSfxButton(buttonId);
 }
 

@@ -70,7 +70,7 @@
         $("app").innerHTML =
           `<div class="tb"><div class="card"><h3>نوع السؤال</h3>
  <div class="row">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}</button>`).join("")}</div>
- <div class="row"><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> سؤال عشوائي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="exportQuestions()">⬇️ تصدير الأسئلة</button><button onclick="$('importQuestionsFile').click()">⬆️ استيراد أسئلة</button><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><input id="importQuestionsFile" type="file" accept=".json,.txt,.xlsx,.docx,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onchange="handleQuestionsImport(this)"><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
+ <div class="row"><button onclick="rndQ()"><img class="action-icon" src="/random.svg" alt=""> سؤال عشوائي</button><button onclick="nextQ()">السؤال التالي</button><button onclick="openForm()">＋ سؤال جديد</button><button onclick="exportQuestions()">⬇️ تصدير الأسئلة</button><button onclick="$('importQuestionsFile').click()">⬆️ استيراد أسئلة</button><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><input id="importQuestionsFile" type="file" accept=".json,.txt,.xlsx,.docx,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onchange="handleQuestionsImport(this)"><button onclick="openTutorialAudio()">🔊 الصوت التوضيحي</button><button onclick="openTutorialVideo()">🎬 الفيديو التوضيحي</button></div>
  <small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><details class="import-hint"><summary>عرض مثال لملف TXT أو Word</summary><div dir="rtl">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>
  <div class="qs">${list.map((x) => `<div class="qi ${x.id === cu.id ? "sel" : ""}" onclick="sel('${x.id}')">${x.kind === "reverse" ? "🔁" : x.d === "h" ? "🔴" : "🟢"} ${esc(x.x)}</div>`).join("") || "<small>لا توجد أسئلة</small>"}</div>
  <h3 style="margin-top:14px">معاينة — لا تظهر على الشاشة</h3>
@@ -399,14 +399,24 @@
         G.f = ["الكل", ...types()][i];
         save();
       }
+      function availableQuestions(questions) {
+        G.used = Array.isArray(G.used) ? G.used : [];
+        const used = G.used;
+        let available = questions.filter((q) => !used.includes(q.id));
+        if (!available.length && questions.length > 1) {
+          const questionIds = new Set(questions.map((q) => q.id));
+          G.used = used.filter((id) => !questionIds.has(id));
+          if (questions.some((q) => q.id === G.cur?.id))
+            G.used.push(G.cur.id);
+          available = questions.filter((q) => !G.used.includes(q.id));
+        }
+        return available;
+      }
       function rndQ() {
         const l = Qs.filter((q) => G.f === "الكل" || q.t === G.f);
         if (!l.length) return;
-        let f = l.filter((q) => !G.used.includes(q.id));
-        if (!f.length) {
-          G.used = G.used.filter((id) => !l.some((q) => q.id === id));
-          f = l;
-        }
+        const f = availableQuestions(l);
+        if (!f.length) return toast("لا يوجد سؤال آخر في هذا التصنيف", 1);
         const chosen = f[Math.floor(Math.random() * f.length)];
         const frames = [];
         let offset = 0;
@@ -429,6 +439,18 @@
           duration: offset + 500,
           frames,
         });
+      }
+      function nextQ() {
+        const questions = Qs.filter((q) => G.f === "الكل" || q.t === G.f);
+        if (!questions.length) return;
+        const available = availableQuestions(questions);
+        if (!available.length)
+          return toast("لا يوجد سؤال آخر في هذا التصنيف", 1);
+        const currentIndex = questions.findIndex((q) => q.id === G.cur?.id);
+        const next =
+          available.find((q) => questions.indexOf(q) > currentIndex) ||
+          available[0];
+        sel(next.id, true);
       }
       function sel(id, show = false, roulette = null) {
         G.cur = {
