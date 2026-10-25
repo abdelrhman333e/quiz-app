@@ -1,9 +1,10 @@
-const CACHE_NAME = "quiz-app-v5";
+const CACHE_NAME = "quiz-app-v6";
 const APP_SHELL = [
   "/",
   "/tablet",
   "/screen",
   "/style.css",
+  "/tablet.css",
   "/common.js",
   "/pwa.js",
   "/sfx.js",
@@ -80,6 +81,7 @@ self.addEventListener("fetch", (event) => {
   // عشان أي تعديل في style.css أو الجافاسكريبت يظهر من أول تحميل
   if (
     url.pathname === "/style.css" ||
+    url.pathname === "/tablet.css" ||
     url.pathname === "/common.js" ||
     url.pathname === "/pwa.js" ||
     url.pathname === "/sfx.js" ||
