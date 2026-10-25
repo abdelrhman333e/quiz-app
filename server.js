@@ -4,11 +4,29 @@ const http = require("http"),
   path = require("path"),
   crypto = require("crypto");
 const { Pool } = require("pg");
-const { parseQuestionFile } = require("./question-import");
-const { exportQuestionFile } = require("./question-export");
+const { parseQuestionFile } = require("./server/questions/import");
+const { exportQuestionFile } = require("./server/questions/export");
 const PORT = process.env.PORT || 3000,
   P = path.join(__dirname, "public"),
   DBU = process.env.DATABASE_URL;
+const STATIC_ALIASES = new Map([
+  ["/style.css", "css/style.css"],
+  ["/tablet.css", "css/tablet.css"],
+  ["/common.js", "js/common.js"],
+  ["/pwa.js", "js/pwa.js"],
+  ["/sfx.js", "js/sfx.js"],
+  ["/favicon.svg", "assets/icons/favicon.svg"],
+  ["/favicon.png", "assets/icons/favicon.png"],
+  ["/icon-192.png", "assets/icons/icon-192-v2.png"],
+  ["/icon-192-v2.png", "assets/icons/icon-192-v2.png"],
+  ["/icon-512.png", "assets/icons/icon-512-v2.png"],
+  ["/icon-512-v2.png", "assets/icons/icon-512-v2.png"],
+  ["/random.svg", "assets/icons/random.svg"],
+  ["/edit-svgrepo-com.svg", "assets/icons/edit-svgrepo-com.svg"],
+  ["/icons8-trash.svg", "assets/icons/icons8-trash.svg"],
+  ["/sound/correct.wav", "assets/audio/sfx/correct.wav"],
+  ["/sound/lose.wav", "assets/audio/sfx/lose.wav"],
+]);
 const SECRET =
   process.env.SESSION_SECRET ||
   crypto
@@ -25,7 +43,10 @@ const db = new Pool({
 });
 const q = (s, p) => db.query(s, p).then((r) => r.rows);
 const SEED = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "seed.json"), "utf8"),
+  fs.readFileSync(
+    path.join(__dirname, "server", "questions", "seed.json"),
+    "utf8",
+  ),
 );
 const NEWGAME = () => ({
   cs: [],
@@ -133,16 +154,6 @@ function view(g, qs) {
     buz: c.buz,
     res: c.res,
     mode: reverse ? "reverse" : visual ? "visual" : x?.kind === "audio" ? "audio" : "quiz",
-    tutorialPlaying: !!g.tutorialPlaying,
-    tutorialStarted: g.tutorialStarted || 0,
-    tutorialVideoPlaying: !!g.tutorialVideoPlaying,
-    tutorialVideo: g.tutorialVideo || { playing: false, currentTime: 0 },
-    tutorialAudio: g.tutorialAudio || {
-      playing: false,
-      muted: false,
-      volume: 1,
-      currentTime: 0,
-    },
   };
   if (reverse)
     return {
@@ -923,7 +934,7 @@ http
             ? "screen.html"
             : u === "/"
               ? "index.html"
-              : u.slice(1);
+              : STATIC_ALIASES.get(u) || u.slice(1);
       f = path.join(P, path.normalize(f));
       if (
         !f.startsWith(P) ||

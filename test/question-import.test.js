@@ -1,8 +1,8 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const ExcelJS = require("exceljs");
-const { parseQuestionFile } = require("../question-import");
-const { exportQuestionFile } = require("../question-export");
+const { parseQuestionFile } = require("../server/questions/import");
+const { exportQuestionFile } = require("../server/questions/export");
 
 test("parses labeled Arabic text questions with choices", async () => {
   const source = [

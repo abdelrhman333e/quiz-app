@@ -1,18 +1,21 @@
-const CACHE_NAME = "quiz-app-v6";
+const CACHE_NAME = "quiz-app-v8";
 const APP_SHELL = [
   "/",
   "/tablet",
   "/screen",
-  "/style.css",
-  "/tablet.css",
-  "/common.js",
-  "/pwa.js",
-  "/sfx.js",
+  "/css/style.css",
+  "/css/tablet.css",
+  "/js/common.js",
+  "/js/index.js",
+  "/js/tablet.js",
+  "/js/screen.js",
+  "/js/pwa.js",
+  "/js/sfx.js",
   "/manifest.json",
-  "/favicon.svg",
-  "/favicon.png",
-  "/icon-192-v2.png",
-  "/icon-512-v2.png",
+  "/assets/icons/favicon.svg",
+  "/assets/icons/favicon.png",
+  "/assets/icons/icon-192-v2.png",
+  "/assets/icons/icon-512-v2.png",
 ];
 
 self.addEventListener("install", (event) => {
@@ -78,17 +81,13 @@ self.addEventListener("fetch", (event) => {
   }
 
   // الملفات الثابتة: الشبكة أولاً (مع إعادة تحقق) بدل الكاش أولاً،
-  // عشان أي تعديل في style.css أو الجافاسكريبت يظهر من أول تحميل
+  // عشان أي تعديل في ملفات الواجهة يظهر من أول تحميل
   if (
-    url.pathname === "/style.css" ||
-    url.pathname === "/tablet.css" ||
-    url.pathname === "/common.js" ||
-    url.pathname === "/pwa.js" ||
-    url.pathname === "/sfx.js" ||
-    url.pathname === "/manifest.json" ||
-    url.pathname === "/favicon.svg" ||
-    url.pathname === "/favicon.png" ||
-    /^\/icon-(192|512)(-v2)?\.png$/.test(url.pathname)
+    url.pathname.startsWith("/css/") ||
+    url.pathname.startsWith("/js/") ||
+    url.pathname.startsWith("/assets/icons/") ||
+    url.pathname.startsWith("/assets/audio/") ||
+    url.pathname === "/manifest.json"
   ) {
     event.respondWith(
       fetch(request, { cache: "no-cache" })

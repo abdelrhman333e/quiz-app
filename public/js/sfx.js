@@ -4,8 +4,8 @@ try {
   if (localStorage.getItem("sfxEnabled") === "0") sfxEnabled = false;
 } catch (error) {}
 var resultSounds = {
-  correct: new Audio("/sound/correct.wav"),
-  wrong: new Audio("/sound/lose.wav"),
+  correct: new Audio("/assets/audio/sfx/correct.wav"),
+  wrong: new Audio("/assets/audio/sfx/lose.wav"),
 };
 var sfxPrompt = null;
 
