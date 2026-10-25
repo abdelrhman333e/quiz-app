@@ -5,6 +5,8 @@
       }
       function render() {
         if (!G) return;
+        // صحّح العدادات القديمة/غير المكتملة قبل إنشاء HTML، حتى لا تظهر
+        // قيم غير صالحة أو يتعطل العرض عند تحميل حالة لعبة قديمة.
         if (!G.stats || typeof G.stats !== "object")
           G.stats = { correct: 0, wrong: 0 };
         G.stats.correct = Number.isSafeInteger(G.stats.correct)
@@ -316,6 +318,8 @@
         const used = G.used;
         let available = questions.filter((q) => !used.includes(q.id));
         if (!available.length && questions.length > 1) {
+          // عند اكتمال الدورة صفّر سجل الاستخدام لهذه المجموعة، مع إبقاء
+          // السؤال الحالي مستبعدًا لمنع ظهوره مرتين متتاليتين.
           const questionIds = new Set(questions.map((q) => q.id));
           G.used = used.filter((id) => !questionIds.has(id));
           if (questions.some((q) => q.id === G.cur?.id))
@@ -330,6 +334,8 @@
         const f = availableQuestions(l);
         if (!f.length) return toast("لا يوجد سؤال آخر في هذا التصنيف", 1);
         const chosen = f[Math.floor(Math.random() * f.length)];
+        // الإطارات مؤثر بصري فقط؛ السؤال النهائي يظل واحدًا محددًا ومحفوظًا،
+        // وتؤخر بداية المؤقت حتى تنتهي حركة الاختيار على الشاشة.
         const frames = [];
         let offset = 0;
         for (let i = 0; i < 16; i++) {
@@ -359,12 +365,16 @@
         if (!available.length)
           return toast("لا يوجد سؤال آخر في هذا التصنيف", 1);
         const currentIndex = questions.findIndex((q) => q.id === G.cur?.id);
+        // التالي يتبع ترتيب القائمة بعد تخطي المستخدم منها، ويلتف للبداية
+        // عند الوصول لآخر سؤال متاح في التصنيف.
         const next =
           available.find((q) => questions.indexOf(q) > currentIndex) ||
           available[0];
         sel(next.id, true);
       }
       function sel(id, show = false, roulette = null) {
+        // اختيار سؤال جديد يعيد أعلام العرض والإجابة والجرس الخاصة بالجولة
+        // السابقة، ويسجل السؤال ضمن الدورة الحالية قبل بث الحالة.
         G.cur = {
           id,
           q: show ? 1 : 0,

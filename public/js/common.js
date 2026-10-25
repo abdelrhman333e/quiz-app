@@ -18,6 +18,8 @@ async function api(p, m = "GET", b) {
   if (!r.ok) throw new Error(j.error || "خطأ");
   return j;
 }
+// يرسل الخادم حالتين منفصلتين إلى لوحة التحكم: قائمة الأسئلة وحالة الجولة.
+// إعادة الرسم بعد كل حدث تجعل التابلت متزامنًا مع أي تحديث محفوظ.
 function connect(cb) {
   const es = new EventSource("/events");
   es.addEventListener("q", (e) => {
@@ -45,6 +47,7 @@ function board(cs = G.cs) {
 }
 
 let V = null;
+// رابط الغرفة لا يرسل بيانات الدخول؛ الخادم يرسل للشاشة إسقاط العرض العام فقط.
 function connectView(room, cb) {
   const es = new EventSource("/events?room=" + encodeURIComponent(room));
   es.addEventListener("view", (e) => {

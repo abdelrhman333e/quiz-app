@@ -13,6 +13,8 @@ const columns = [
 ];
 
 async function exportQuestionFile(questions, format) {
+  // صيغ الجداول/النص مصممة للتبادل البسيط للأسئلة العادية؛ JSON وحده
+  // يحافظ على أنواع الأسئلة الخاصة وبيانات الصوت.
   const normalQuestions = questions.filter(
       (question) => (question.kind || "normal") === "normal",
     ),

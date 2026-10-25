@@ -138,6 +138,9 @@
       }
       function render() {
         if (!V) return;
+        // كل حدث SSE يعيد بناء المشهد من نسخة العرض الآمنة التي جهزها الخادم.
+        // مفاتيح السؤال أدناه تميّز السؤال الجديد عن تحديث النقاط/المؤقت،
+        // حتى لا تتكرر الحركة أو المؤثرات عند كل تحديث لحظي.
         clearTimeout(rouletteTimer);
         clearTimeout(reverseTimer);
         const b = V.buz != null ? V.cs[V.buz] : null;

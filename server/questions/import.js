@@ -1,6 +1,8 @@
 const ExcelJS = require("exceljs");
 const mammoth = require("mammoth");
 
+// توحيد الكتابة العربية والإنجليزية يجعل مطابقة عناوين الأعمدة والإجابة
+// متسامحة مع اختلاف الهمزات والتشكيل والمسافات وعلامات الترقيم.
 const normalize = (value) =>
   String(value ?? "")
     .normalize("NFKC")
@@ -193,6 +195,8 @@ function buildQuestion(record) {
       throw new Error(`${record.source}: الإجابة يجب أن تطابق اختيارًا أو حرفه (أ/ب/ج/د)`);
   }
 
+  // صيغة التخزين موحّدة مع بقية التطبيق: الإجابة إما فهرس اختيار من 0 إلى 3،
+  // أو نص مستقل عندما لا توجد اختيارات.
   return {
     t: category,
     x: question,

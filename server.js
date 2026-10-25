@@ -55,6 +55,8 @@ const NEWGAME = () => ({
   used: [],
   v: 0,
 });
+// يحتفظ كل حساب بحالة لعب واحدة؛ إنشاء هذا الهيكل عند غياب سجل محفوظ
+// يجعل التابلت يبدأ بحالة صالحة من دون إعداد يدوي في قاعدة البيانات.
 async function init() {
   await q(
     `CREATE TABLE IF NOT EXISTS users(id SERIAL PRIMARY KEY,username TEXT UNIQUE NOT NULL,pass TEXT NOT NULL,room TEXT UNIQUE NOT NULL)`,
@@ -155,6 +157,8 @@ function view(g, qs) {
     res: c.res,
     mode: reverse ? "reverse" : visual ? "visual" : x?.kind === "audio" ? "audio" : "quiz",
   };
+  // هذه هي واجهة الجمهور، وليست نسخة من حالة المشرف: لا نضيف نص الإجابة
+  // أو الاختيارات الصحيحة إلا بعد تغيّر أعلام الكشف في حالة الجولة.
   if (reverse)
     return {
       ...v,
@@ -200,6 +204,7 @@ async function pushAll(u) {
   const set = rooms.get(u);
   if (!set || !set.size) return;
   const [qs, g] = await Promise.all([getQs(u), getGame(u)]);
+  // شاشة العرض تحصل على إسقاط محدود، بينما التابلت يحتاج حالة اللعبة الكاملة.
   for (const c of set) {
     if (c.screen) send(c.res, "view", view(g, qs));
     else {
@@ -550,6 +555,8 @@ http
           "X-Accel-Buffering": "no",
         });
         const c = { res, screen };
+        // الغرفة تربط عدة شاشات/تابلتات بحساب واحد؛ إزالة الاتصال عند إغلاقه
+        // تمنع الاحتفاظ باتصالات SSE المنتهية في الذاكرة.
         if (!rooms.has(uid)) rooms.set(uid, new Set());
         rooms.get(uid).add(c);
         req.on("close", () => rooms.get(uid)?.delete(c));
@@ -792,6 +799,8 @@ http
           }
           const client = await db.connect();
           try {
+            // السؤال وملفاته الصوتية وحدة واحدة: لا نترك نسخة جزئية إذا فشل
+            // إدخال أحدهما أثناء استيراد النسخة الاحتياطية.
             await client.query("BEGIN");
             const importedAudio = new Map();
             for (const { question, audio, audioId } of imported) {
