@@ -1,4 +1,4 @@
-const CACHE_NAME = "quiz-app-v4";
+const CACHE_NAME = "quiz-app-v5";
 const APP_SHELL = [
   "/",
   "/tablet",
@@ -38,6 +38,13 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+function shellKey(path) {
+  if (path === "/") return "/";
+  if (path === "/tablet") return "/tablet";
+  if (path.startsWith("/screen")) return "/screen";
+  return null;
+}
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
@@ -45,25 +52,32 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/audio/"))
     return;
 
+  // الصفحات: الشبكة أولاً، والكاش للعمل بدون إنترنت فقط
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request).catch(async () => {
-        const cache = await caches.open(CACHE_NAME);
-        const path = url.pathname;
-        const fallback =
-          path === "/"
-            ? "/"
-            : path === "/tablet"
-              ? "/tablet"
-              : path.startsWith("/screen")
-                ? "/screen"
-                : "/";
-        return (await cache.match(fallback)) || Response.error();
-      }),
+      fetch(request)
+        .then(async (response) => {
+          const key = shellKey(url.pathname);
+          if (key && response.ok) {
+            const copy = response.clone();
+            const cache = await caches.open(CACHE_NAME);
+            await cache.put(key, copy);
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cache = await caches.open(CACHE_NAME);
+          return (
+            (await cache.match(shellKey(url.pathname) || "/")) ||
+            Response.error()
+          );
+        }),
     );
     return;
   }
 
+  // الملفات الثابتة: الشبكة أولاً (مع إعادة تحقق) بدل الكاش أولاً،
+  // عشان أي تعديل في style.css أو الجافاسكريبت يظهر من أول تحميل
   if (
     url.pathname === "/style.css" ||
     url.pathname === "/common.js" ||
@@ -75,17 +89,19 @@ self.addEventListener("fetch", (event) => {
     /^\/icon-(192|512)(-v2)?\.png$/.test(url.pathname)
   ) {
     event.respondWith(
-      caches.match(request, { ignoreSearch: true }).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).then(async (response) => {
+      fetch(request, { cache: "no-cache" })
+        .then(async (response) => {
           if (response.ok) {
             const copy = response.clone();
             const cache = await caches.open(CACHE_NAME);
             await cache.put(request, copy);
           }
           return response;
-        });
-      }),
+        })
+        .catch(async () => {
+          const cached = await caches.match(request, { ignoreSearch: true });
+          return cached || Response.error();
+        }),
     );
   }
 });
