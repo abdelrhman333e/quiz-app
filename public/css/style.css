@@ -289,9 +289,30 @@ html[data-theme="light"] .pl {
   top: clamp(76px, 12vh, 112px);
   left: clamp(12px, 2vw, 24px);
   z-index: 2;
-  width: min(280px, 24vw);
+  width: min(160px, 32vw);
   min-width: 0;
   align-self: auto;
+  padding: 8px 10px;
+}
+.scr.round-screen .screen-board h3 {
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+.scr.round-screen .board {
+  gap: 4px;
+}
+.scr.round-screen .pl {
+  gap: 4px;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+.scr.round-screen .pl .rk {
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+}
+.scr.round-screen .pl .sc {
+  min-width: 16px;
 }
 .game-timer {
   display: flex;
