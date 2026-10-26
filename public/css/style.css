@@ -259,16 +259,22 @@ html[data-theme="light"] .pl {
 /* الشاشة */
 .scr {
   display: grid;
-  grid-template-columns: 1fr 240px;
-  gap: 18px;
-  padding: 22px;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: clamp(12px, 2vw, 24px);
+  padding: clamp(12px, 2vw, 24px);
   min-height: 100vh;
 }
 .stage {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: clamp(12px, 2vh, 20px);
   justify-content: center;
+  min-width: 0;
+}
+.screen-board {
+  align-self: center;
+  width: 100%;
+  min-width: 0;
 }
 .game-timer {
   display: flex;
@@ -1183,15 +1189,18 @@ html[data-theme="black"] .screen-sfx-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px 18px;
+  gap: 6px 12px;
   flex-wrap: wrap;
-  margin: 0 auto 12px;
-  padding: 12px 18px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 7px 14px;
   border: 1px solid rgba(125, 167, 218, 0.3);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(16, 28, 49, 0.92);
   color: var(--t);
   text-align: center;
+  font-size: clamp(13px, 1.2vw, 17px);
 }
 .round-screen-banner strong {
   color: var(--ok);

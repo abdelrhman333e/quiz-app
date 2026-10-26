@@ -218,7 +218,7 @@
           ? `<div class="round-screen-banner"><b>🏁 ${esc(V.round.name)}</b><span>الهدف: ${V.round.target} نقطة</span>${V.round.winner ? `<strong>🏆 الفائز: ${esc(V.round.winner)} · ${V.round.finished ? "انتهت الجولة" : "الجولة مستمرة"}</strong>` : ""}${V.round.finished && !V.round.winner ? "<span>انتهت الجولة</span>" : ""}</div>`
           : "";
         document.getElementById("app").innerHTML =
-          `<button id="screenSfxToggle" class="screen-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx()">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><div class="scr">${roundBanner}<div class="stage">
+          `<button id="screenSfxToggle" class="screen-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx()">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><div class="scr"><div class="stage">${roundBanner}
 ${
   V.showStats
     ? statisticsStage()
@@ -238,7 +238,7 @@ ${
 }
  ${!V.showStats && V.timer && V.timer.phase !== "done" ? `<div class="game-timer ${timerSeconds(V.timer) <= 5 ? "timer-ending" : ""}"><div class="timer-readout"><span>${V.timer.phase === "question" ? "السؤال" : "الاختيارات"}${V.timer.paused ? " · متوقف" : ""}</span><b id="screenTimerCountdown">${timerSeconds(V.timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="screenTimerProgress" style="width:${timerProgress(V.timer)}%"></i></div></div>` : ""}
  ${!V.showStats && V.mode !== "reverse" && b ? `<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res === "ok" ? "✅" : V.res === "no" ? "❌" : ""}</div>` : ""}</div>
- <div class="card" style="align-self:start"><h3>🏆 ${V.round ? `ترتيب ${esc(V.round.name)}` : "الترتيب"}</h3><div class="board">${board(V.round ? V.cs.filter((contestant) => contestant.roundParticipant) : V.cs)}</div></div></div>`;
+ <div class="card screen-board"><h3>🏆 ${V.round ? `ترتيب ${esc(V.round.name)}` : "الترتيب"}</h3><div class="board">${board(V.round ? V.cs.filter((contestant) => contestant.roundParticipant) : V.cs)}</div></div></div>`;
         if (scoreNotice) {
           const amount = Math.abs(scoreNotice.delta),
             pointLabel = amount === 1 ? "نقطة" : "نقاط",

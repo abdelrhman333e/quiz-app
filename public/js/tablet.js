@@ -149,7 +149,7 @@
           timerActive = timer && timer.phase !== "done";
         const keepName = $("cn") ? $("cn").value : "";
         const ctx = { T, list, duplicates, q, cu, hasO, top, reverse, visual, audioQuestion, reverseCount, reverseIndex, timer, timerActive };
-        $("app").innerHTML = `<div class="tb2">${hdrHTML()}${tabSel === "manage" ? manageHTML(ctx) : playHTML(ctx)}<input id="importQuestionsFile" type="file" accept="${IMPORT_ACCEPT}" hidden onchange="handleQuestionsImport(this)"></div>`;
+        $("app").innerHTML = `<div class="tb2">${hdrHTML()}${tabSel === "manage" ? manageHTML(ctx) : tabSel === "contact" ? contactHTML() : playHTML(ctx)}<input id="importQuestionsFile" type="file" accept="${IMPORT_ACCEPT}" hidden onchange="handleQuestionsImport(this)"></div>`;
         if (searchHasFocus && $("questionSearch")) {
           $("questionSearch").focus();
           $("questionSearch").setSelectionRange(searchCursor, searchCursor);
@@ -163,8 +163,21 @@
       }
       const IMPORT_ACCEPT =
         ".json,.txt,.xlsx,.docx,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      const CONTACT_EMAIL = "abdo267895@gmail.com";
+      function contactHTML() {
+        return `<section class="contact-panel card"><h2>تواصل معنا</h2><p>واجهت مشكلة أو عندك اقتراح؟ اكتب رسالتك وسيفتح تطبيق البريد لإرسالها.</p><form class="contact-form" onsubmit="sendContact(event)"><label for="contactSubject">موضوع الرسالة</label><input id="contactSubject" maxlength="120" placeholder="مثال: مشكلة في الجولة"><label for="contactMessage">رسالتك</label><textarea id="contactMessage" rows="7" required maxlength="5000" placeholder="اكتب تفاصيل المشكلة أو اقتراحك هنا"></textarea><button class="primary" type="submit">✉️ إرسال بالبريد</button></form><div class="contact-links"><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><a href="https://abdelrhman333e-web.vercel.app/" target="_blank" rel="noopener noreferrer">موقعي الشخصي</a></div><small>سيتم فتح برنامج البريد على جهازك، ولن تُرسل الرسالة إلا بعد تأكيدها هناك.</small></section>`;
+      }
+      function sendContact(event) {
+        event.preventDefault();
+        const subject =
+          $("contactSubject").value.trim() || "رسالة من موقع المسابقة";
+        const body = $("contactMessage").value.trim();
+        if (!body) return toast("اكتب رسالتك أولًا", 1);
+        const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailto;
+      }
       function hdrHTML() {
-        return `<div class="hdr"><div class="tabs" role="tablist"><button role="tab" aria-selected="${tabSel === "play"}" class="${tabSel === "play" ? "act" : ""}" onclick="setTab('play')">اللعب</button><button role="tab" aria-selected="${tabSel === "manage"}" class="${tabSel === "manage" ? "act" : ""}" onclick="setTab('manage')">الأسئلة والإعدادات</button></div><div class="hdr-acts"><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="showStats()">📊 الإحصائيات</button><button onclick="undoPointChange()" ${G.pointUndo ? "" : "disabled"}>↶ تراجع عن النقاط</button></div></div>`;
+        return `<div class="hdr"><div class="tabs" role="tablist"><button role="tab" aria-selected="${tabSel === "play"}" class="${tabSel === "play" ? "act" : ""}" onclick="setTab('play')">اللعب</button><button role="tab" aria-selected="${tabSel === "manage"}" class="${tabSel === "manage" ? "act" : ""}" onclick="setTab('manage')">الأسئلة والإعدادات</button><button role="tab" aria-selected="${tabSel === "contact"}" class="${tabSel === "contact" ? "act" : ""}" onclick="setTab('contact')">التواصل</button></div><div class="hdr-acts"><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="showStats()">📊 الإحصائيات</button><button onclick="undoPointChange()" ${G.pointUndo ? "" : "disabled"}>↶ تراجع عن النقاط</button></div></div>`;
       }
       function catsHTML(T) {
         return `<div class="cats" aria-label="التصنيف">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}<span class="cnt">${t === "الكل" ? Qs.length : Qs.filter((x) => x.t === t).length}</span></button>`).join("")}</div>`;
