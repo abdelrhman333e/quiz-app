@@ -134,23 +134,15 @@ function view(g, qs) {
     sh = !!(x && c.q),
     top = x?.kind === "top5" || x?.kind === "top10",
     reverse = x?.kind === "reverse",
-    visual = x?.kind === "visual";
+    visual = x?.kind === "visual",
+    activePlayers =
+      g.mode === "rounds" ? activeRound?.players || [] : g.cs || [];
   const v = {
-    cs: (g.cs || []).map(
-      ({ id, n, s, correct, wrong, deductedPoints }) => ({
+    cs: activePlayers.map(
+      ({ n, s, score, correct, wrong, deductedPoints }) => ({
         n,
-        roundParticipant:
-          !!activeRound &&
-          Array.isArray(activeRound.contestants) &&
-          activeRound.contestants.includes(id),
-        s:
-          activeRound && Array.isArray(activeRound.contestants)
-            ? activeRound.contestants.includes(id)
-              ? Number.isSafeInteger(activeRound.scores?.[id])
-                ? activeRound.scores[id]
-                : 0
-              : 0
-            : s,
+        roundParticipant: !!activeRound,
+        s: activeRound ? (Number.isSafeInteger(score) ? score : 0) : s,
         correct: Number.isSafeInteger(correct) ? Math.max(0, correct) : 0,
         wrong: Number.isSafeInteger(wrong) ? Math.max(0, wrong) : 0,
         deductedPoints: Number.isSafeInteger(deductedPoints)
@@ -190,7 +182,7 @@ function view(g, qs) {
             ? activeRound.target
             : 0,
           winner:
-            (g.cs || []).find(
+            activePlayers.find(
               (contestant) => contestant.id === activeRound.winnerId,
             )?.n || null,
           finished: !!activeRound.finished,

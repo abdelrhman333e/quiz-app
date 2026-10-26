@@ -495,6 +495,8 @@
   overflow-y: auto;
 }
 .tb2 .round-item {
+  display: flex;
+  align-items: stretch;
   border: 1px solid var(--bd);
   border-radius: 10px;
 }
@@ -503,9 +505,20 @@
 }
 .tb2 .round-select {
   display: grid;
+  flex: 1;
   width: 100%;
   min-height: 46px;
   text-align: start;
+  border: 0;
+  background: transparent;
+}
+.tb2 .round-delete {
+  flex: none;
+  align-self: center;
+  min-height: 38px;
+  margin-inline-end: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
 }
 .tb2 .round-select span,
 .tb2 .round-select strong {
