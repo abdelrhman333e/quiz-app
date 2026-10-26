@@ -3,8 +3,14 @@
       function types() {
         return [...new Set(Qs.map((q) => q.t))];
       }
+      let questionSearch = "",
+        questionDifficulty = "all",
+        questionKind = "all",
+        duplicateQuestionsOnly = false;
       function render() {
         if (!G) return;
+        const searchHasFocus = $("questionSearch") === document.activeElement,
+          searchCursor = searchHasFocus ? $("questionSearch").selectionStart : null;
         // صحّح العدادات القديمة/غير المكتملة قبل إنشاء HTML، حتى لا تظهر
         // قيم غير صالحة أو يتعطل العرض عند تحميل حالة لعبة قديمة.
         if (!G.stats || typeof G.stats !== "object")
@@ -79,6 +85,7 @@
         }
         const T = ["الكل", ...types()],
           list = Qs.filter((q) => G.f === "الكل" || q.t === G.f),
+          duplicates = duplicateQuestionIds(),
           q = cq(),
           cu = G.cur,
           hasO = q?.o?.length,
@@ -91,8 +98,12 @@
           timer = cu.timer,
           timerActive = timer && timer.phase !== "done";
         const keepName = $("cn") ? $("cn").value : "";
-        const ctx = { T, list, q, cu, hasO, top, reverse, visual, audioQuestion, reverseCount, reverseIndex, timer, timerActive };
+        const ctx = { T, list, duplicates, q, cu, hasO, top, reverse, visual, audioQuestion, reverseCount, reverseIndex, timer, timerActive };
         $("app").innerHTML = `<div class="tb2">${hdrHTML()}${tabSel === "manage" ? manageHTML(ctx) : playHTML(ctx)}<input id="importQuestionsFile" type="file" accept="${IMPORT_ACCEPT}" hidden onchange="handleQuestionsImport(this)"></div>`;
+        if (searchHasFocus && $("questionSearch")) {
+          $("questionSearch").focus();
+          $("questionSearch").setSelectionRange(searchCursor, searchCursor);
+        }
         if (keepName && $("cn")) $("cn").value = keepName;
       }
       let tabSel = "play";
@@ -103,7 +114,7 @@
       const IMPORT_ACCEPT =
         ".json,.txt,.xlsx,.docx,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
       function hdrHTML() {
-        return `<div class="hdr"><div class="tabs" role="tablist"><button role="tab" aria-selected="${tabSel === "play"}" class="${tabSel === "play" ? "act" : ""}" onclick="setTab('play')">اللعب</button><button role="tab" aria-selected="${tabSel === "manage"}" class="${tabSel === "manage" ? "act" : ""}" onclick="setTab('manage')">الأسئلة والإعدادات</button></div><div class="hdr-acts"><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="showStats()">📊 الإحصائيات</button></div></div>`;
+        return `<div class="hdr"><div class="tabs" role="tablist"><button role="tab" aria-selected="${tabSel === "play"}" class="${tabSel === "play" ? "act" : ""}" onclick="setTab('play')">اللعب</button><button role="tab" aria-selected="${tabSel === "manage"}" class="${tabSel === "manage" ? "act" : ""}" onclick="setTab('manage')">الأسئلة والإعدادات</button></div><div class="hdr-acts"><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="showStats()">📊 الإحصائيات</button><button onclick="undoPointChange()" ${G.pointUndo ? "" : "disabled"}>↶ تراجع عن النقاط</button></div></div>`;
       }
       function catsHTML(T) {
         return `<div class="cats" aria-label="التصنيف">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}<span class="cnt">${t === "الكل" ? Qs.length : Qs.filter((x) => x.t === t).length}</span></button>`).join("")}</div>`;
@@ -124,15 +135,74 @@
           ? optsHTML(q)
           : `<div class="tbans">الإجابة: ${esc(q.a)}</div>`;
       }
-      function qListHTML(list, cu, withActions) {
+      function qListHTML(
+        list,
+        cu,
+        withActions,
+        duplicates = new Set(),
+        emptyText = "لا توجد أسئلة في هذا التصنيف",
+      ) {
         return `<div class="qs">${
           list
             .map(
               (x) =>
-                `<div class="qi ${x.id === cu.id ? "sel" : ""} ${G.used?.includes(x.id) ? "used" : ""}" onclick="tabSel='play';sel('${x.id}')"><span class="qt">${esc(x.x)}</span><span class="bdg ${x.kind === "reverse" ? "rev" : x.d === "h" ? "hard" : "easy"}">${x.kind === "reverse" ? "معكوسة" : x.d === "h" ? "صعب" : "سهل"}</span>${withActions ? `<button class="icon" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation();openForm('${x.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button>` : ""}</div>`,
+                `<div class="qi ${x.id === cu.id ? "sel" : ""} ${G.used?.includes(x.id) ? "used" : ""}" onclick="tabSel='play';sel('${x.id}')"><span class="qt">${esc(x.x)}</span>${duplicates.has(x.id) ? '<span class="bdg duplicate" title="يتكرر نص السؤال">مكرر</span>' : ""}<span class="bdg ${x.kind === "reverse" ? "rev" : x.d === "h" ? "hard" : "easy"}">${x.kind === "reverse" ? "معكوسة" : x.d === "h" ? "صعب" : "سهل"}</span>${withActions ? `<button class="icon" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation();openForm('${x.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button>` : ""}</div>`,
             )
-            .join("") || "<small>لا توجد أسئلة في هذا التصنيف</small>"
+            .join("") || `<small>${emptyText}</small>`
         }</div>`;
+      }
+      function normalizedQuestionText(text) {
+        return String(text ?? "")
+          .normalize("NFKC")
+          .toLocaleLowerCase("ar")
+          .replace(/[أإآ]/g, "ا")
+          .replace(/ى/g, "ي")
+          .replace(/[\u064B-\u065F\u0670]/g, "")
+          .replace(/[^\p{L}\p{N}]/gu, "");
+      }
+      function duplicateQuestionIds() {
+        const groups = new Map();
+        Qs.forEach((question) => {
+          const key = normalizedQuestionText(question.x);
+          if (!key) return;
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(question.id);
+        });
+        return new Set(
+          [...groups.values()].filter((ids) => ids.length > 1).flat(),
+        );
+      }
+      function filteredManageQuestions(list, duplicates) {
+        const query = normalizedQuestionText(questionSearch);
+        return list.filter((question) => {
+          const text = normalizedQuestionText(
+            [
+              question.x,
+              question.a,
+              question.t,
+              ...(question.o || []),
+              ...(question.r || []),
+            ].join(" "),
+          );
+          return (
+            (!query || text.includes(query)) &&
+            (questionDifficulty === "all" ||
+              question.d === questionDifficulty) &&
+            (questionKind === "all" ||
+              (question.kind || "normal") === questionKind) &&
+            (!duplicateQuestionsOnly || duplicates.has(question.id))
+          );
+        });
+      }
+      function updateQuestionSearch(value) {
+        questionSearch = value;
+        render();
+      }
+      function updateQuestionFilter(filter, value) {
+        if (filter === "difficulty") questionDifficulty = value;
+        else if (filter === "kind") questionKind = value;
+        else duplicateQuestionsOnly = value;
+        render();
       }
       function emptyHTML() {
         if (!Qs.length)
@@ -192,15 +262,24 @@
         }<div class="foot"><button class="danger" onclick="resetScores()">تصفير النقاط</button></div></div>`;
       }
       function playHTML(c) {
-        const { T, list, q, cu, timer, audioQuestion } = c;
+        const { T, list, q, cu, timer, audioQuestion, duplicates } = c;
         const picker = Qs.length
-          ? `<details class="pick"><summary>اختيار سؤال محدد · ${list.length}</summary>${qListHTML(list, cu)}</details>`
+          ? `<details class="pick"><summary>اختيار سؤال محدد · ${list.length}</summary>${qListHTML(list, cu, false, duplicates)}</details>`
           : "";
         return `<div class="play"><div class="main">${T.length > 1 ? catsHTML(T) : ""}${picker}${questionCardHTML(c)}${q && timer ? `<div class="card">${timerHTML(c)}</div>` : ""}${q && audioQuestion ? audioHTML(c) : ""}${q ? whoHTML(c) : ""}${dockHTML(c)}</div>${playersHTML(c)}</div>`;
       }
       function manageHTML(c) {
-        const { T, list, cu } = c;
-        return `<div class="mg"><div class="card"><h3>الأسئلة · ${Qs.length}</h3><div class="row"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد أسئلة</button><button onclick="exportQuestions()">⬇ تصدير الأسئلة</button></div><details class="import-hint"><summary>طريقة تجهيز ملف الاستيراد</summary><small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><div dir="rtl" class="sample">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>${T.length > 1 ? catsHTML(T) : ""}${qListHTML(list, cu, true)}</div><div class="card"><h3>الثيم والوضع</h3><p class="theme-description">اختار الألوان المناسبة لك. الثيم بيتحفظ على هذا الجهاز والمتصفح.</p>${themeOptionsHTML()}</div><div class="card"><h3>المؤثرات الصوتية</h3><div class="row"><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button></div></div><div class="card"><h3>الحساب</h3><div class="row"><button class="danger" onclick="logout()">🚪 خروج</button></div></div></div>`;
+        const { T, list, cu, duplicates } = c,
+          filtered = filteredManageQuestions(list, duplicates),
+          kindLabels = {
+            normal: "عادي",
+            audio: "صوتي",
+            top5: "توب 5",
+            top10: "توب 10",
+            reverse: "معكوسة",
+            visual: "بصري",
+          };
+        return `<div class="mg"><div class="card"><h3>الأسئلة · ${Qs.length} <small>· ${duplicates.size} سؤال مكرر</small></h3><div class="row"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد أسئلة</button><button onclick="exportQuestions()">⬇ تصدير الأسئلة</button></div><div class="question-filters"><input id="questionSearch" type="search" placeholder="ابحث في السؤال والإجابة والاختيارات" value="${esc(questionSearch)}" oninput="updateQuestionSearch(this.value)"><select aria-label="تصفية حسب الصعوبة" onchange="updateQuestionFilter('difficulty',this.value)"><option value="all" ${questionDifficulty === "all" ? "selected" : ""}>كل الصعوبات</option><option value="e" ${questionDifficulty === "e" ? "selected" : ""}>سهل</option><option value="h" ${questionDifficulty === "h" ? "selected" : ""}>صعب</option></select><select aria-label="تصفية حسب النوع" onchange="updateQuestionFilter('kind',this.value)"><option value="all" ${questionKind === "all" ? "selected" : ""}>كل الأنواع</option>${Object.entries(kindLabels).map(([kind, label]) => `<option value="${kind}" ${questionKind === kind ? "selected" : ""}>${label}</option>`).join("")}</select><label class="duplicate-filter"><input type="checkbox" ${duplicateQuestionsOnly ? "checked" : ""} onchange="updateQuestionFilter('duplicates',this.checked)"> المكررة فقط</label></div><small class="filter-count">عرض ${filtered.length} من ${list.length} في التصنيف المختار</small><details class="import-hint"><summary>طريقة تجهيز ملف الاستيراد</summary><small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><div dir="rtl" class="sample">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>${T.length > 1 ? catsHTML(T) : ""}${qListHTML(filtered, cu, true, duplicates, "لا توجد أسئلة مطابقة للفلاتر")}</div><div class="card"><h3>الثيم والوضع</h3><p class="theme-description">اختار الألوان المناسبة لك. الثيم بيتحفظ على هذا الجهاز والمتصفح.</p>${themeOptionsHTML()}</div><div class="card"><h3>المؤثرات الصوتية</h3><div class="row"><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button></div></div><div class="card"><h3>الحساب</h3><div class="row"><button class="danger" onclick="logout()">🚪 خروج</button></div></div></div>`;
       }
       const TIMER_DURATION = 30000;
       function timerEnabled(q) {
@@ -319,7 +398,63 @@
         }
         save();
       }
-      function save() {
+      function recordPointUndo(action) {
+        G.pointUndo = {
+          action,
+          players: G.cs.map((contestant) => ({
+            s: contestant.s,
+            correct: contestant.correct || 0,
+            wrong: contestant.wrong || 0,
+            deductedPoints: contestant.deductedPoints || 0,
+            categoryStats: JSON.parse(
+              JSON.stringify(contestant.categoryStats || []),
+            ),
+          })),
+          stats: JSON.parse(JSON.stringify(G.stats || {})),
+          scoreChange: G.scoreChange
+            ? JSON.parse(JSON.stringify(G.scoreChange))
+            : null,
+          current:
+            action === "grade"
+              ? {
+                  id: G.cur.id,
+                  res: G.cur.res,
+                  a: G.cur.a,
+                  timer: G.cur.timer
+                    ? JSON.parse(JSON.stringify(G.cur.timer))
+                    : null,
+                  awards: JSON.parse(JSON.stringify(G.cur.awards || [])),
+                }
+              : null,
+        };
+      }
+      function undoPointChange() {
+        const undo = G?.pointUndo;
+        if (!undo) return;
+        G.cs.forEach((contestant, index) => {
+          const previous = undo.players[index];
+          if (!previous) return;
+          contestant.s = previous.s;
+          contestant.correct = previous.correct;
+          contestant.wrong = previous.wrong;
+          contestant.deductedPoints = previous.deductedPoints;
+          contestant.categoryStats = previous.categoryStats;
+        });
+        G.stats = undo.stats;
+        if (undo.scoreChange) G.scoreChange = undo.scoreChange;
+        else delete G.scoreChange;
+        if (undo.current && G.cur.id === undo.current.id) {
+          G.cur.res = undo.current.res;
+          G.cur.a = undo.current.a;
+          G.cur.timer = undo.current.timer;
+          G.cur.awards = undo.current.awards;
+        }
+        delete G.pointUndo;
+        save();
+        toast("تم التراجع عن آخر تغيير نقاط");
+      }
+      function save(preservePointUndo = false) {
+        if (!preservePointUndo) delete G.pointUndo;
         G.v = Date.now();
         render();
         api("/api/game", "POST", G).catch(() =>
@@ -512,12 +647,23 @@
         const key = top && ok ? `${G.cur.buz}:${rank}` : null;
         if (key && G.cur.awards?.includes(key))
           return toast("تم احتساب نقاط هذا الترتيب للاعب", 1);
+        recordPointUndo("grade");
         playSfx(ok ? "correct" : "wrong");
-        G.cs[G.cur.buz].s += ok ? (top ? rank + 1 : pts(q)) : -1;
         const contestant = G.cs[G.cur.buz];
+        contestant.s += ok ? (top ? rank + 1 : pts(q)) : -1;
         contestant[ok ? "correct" : "wrong"]++;
         if (!G.stats) G.stats = { correct: 0, wrong: 0 };
         G.stats[ok ? "correct" : "wrong"]++;
+        G.stats.categories = updateCategoryStats(
+          G.stats.categories,
+          q?.t || "غير مصنف",
+          ok,
+        );
+        contestant.categoryStats = updateCategoryStats(
+          contestant.categoryStats,
+          q?.t || "غير مصنف",
+          ok,
+        );
         if (!ok) recordPointDeduction(contestant, 1);
         if (key) {
           if (!G.cur.awards) G.cur.awards = [];
@@ -526,7 +672,36 @@
         G.cur.res = ok ? "ok" : "no";
         if (ok) G.cur.a = 1;
         if (ok && G.cur.timer) G.cur.timer.phase = "done";
-        save();
+        save(true);
+      }
+      function updateCategoryStats(categories, category, correct) {
+        const result = Array.isArray(categories) ? categories : [];
+        let entry = result.find((item) => item.category === category);
+        if (!entry) {
+          entry = { category, correct: 0, wrong: 0 };
+          result.push(entry);
+        }
+        entry[correct ? "correct" : "wrong"]++;
+        return result;
+      }
+      function categoryPerformanceHTML(contestant) {
+        const categories = (contestant.categoryStats || [])
+          .filter((item) => item.correct + item.wrong >= 2)
+          .map((item) => ({
+            ...item,
+            accuracy: Math.round(
+              (item.correct / (item.correct + item.wrong)) * 100,
+            ),
+          }));
+        if (!categories.length)
+          return '<span class="category-performance">أداء الفئات: يلزم إجابتان على الأقل في الفئة</span>';
+        if (categories.length === 1)
+          return `<span class="category-performance">الأداء في ${esc(categories[0].category)}: ${categories[0].accuracy}% (${categories[0].correct} صح، ${categories[0].wrong} خطأ)</span>`;
+        const best = [...categories].sort((a, b) => b.accuracy - a.accuracy)[0],
+          weakest = [...categories].sort(
+            (a, b) => a.accuracy - b.accuracy,
+          )[0];
+        return `<span class="category-performance">الأفضل: ${esc(best.category)} (${best.accuracy}%) · يحتاج تحسين: ${esc(weakest.category)} (${weakest.accuracy}%)</span>`;
       }
       function showStats() {
         const correct = G.stats?.correct || 0,
@@ -534,6 +709,16 @@
           deductedPoints = G.stats?.deductedPoints || 0,
           answered = correct + wrong,
           accuracy = answered ? Math.round((correct / answered) * 100) : 0;
+        const leaders = G.cs.length
+          ? [...G.cs]
+              .sort((a, b) => b.s - a.s)
+              .slice(0, 3)
+              .map(
+                (contestant, index) =>
+                  `<div class="stats-leader"><span>${index + 1}</span><b>${esc(contestant.n)}</b><strong>${contestant.s} نقطة</strong></div>`,
+              )
+              .join("")
+          : "<small>لا يوجد متسابقون مسجلون.</small>";
         const contestants = G.cs.length
           ? G.cs
               .map((contestant) => {
@@ -544,12 +729,12 @@
                   playerAccuracy = playerAnswered
                     ? Math.round((playerCorrect / playerAnswered) * 100)
                     : 0;
-                return `<div class="stats-player"><b>${esc(contestant.n)}</b><span class="stats-correct">صح: ${playerCorrect}</span><span class="stats-wrong">خطأ: ${playerWrong}</span><span>النقاط المخصومة: ${playerDeductions}</span><span>الإجمالي: ${playerAnswered} · نسبة الصح: ${playerAccuracy}%</span></div>`;
+                return `<div class="stats-player"><b>${esc(contestant.n)}</b><span class="stats-correct">صح: ${playerCorrect}</span><span class="stats-wrong">خطأ: ${playerWrong}</span><span>النقاط المخصومة: ${playerDeductions}</span><span>الإجمالي: ${playerAnswered} · نسبة الصح: ${playerAccuracy}%</span>${categoryPerformanceHTML(contestant)}</div>`;
               })
               .join("")
           : "<small>لا يوجد متسابقون مسجلون.</small>";
         $("statsModal").innerHTML =
-          `<div class="modal stats-modal" onclick="if(event.target===this)closeStats()"><div class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><div class="stats-header"><h3 id="statsTitle">📊 إحصائيات الإجابات</h3><button onclick="closeStats()">إغلاق</button></div><div class="stats-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="stats-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div><div class="stats-item stats-deductions"><span>إجمالي النقاط المخصومة</span><b>${deductedPoints}</b></div></div><h3 class="stats-subtitle">إحصائيات كل متسابق</h3><div class="stats-players">${contestants}</div><div class="stats-actions"><button class="on" onclick="toggleStatsOnScreen()">${G.showStats ? "إخفاء الإحصائيات من شاشة العرض" : "إظهار الإحصائيات على شاشة العرض"}</button><button class="no" onclick="resetStats()">إعادة تسجيل الإحصائيات</button></div><small class="stats-note">إعادة التسجيل تصفّر الإحصائيات فقط، ولا تغيّر النقاط.</small></div></div>`;
+          `<div class="modal stats-modal" onclick="if(event.target===this)closeStats()"><div class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><div class="stats-header"><h3 id="statsTitle">📊 إحصائيات الإجابات</h3><button onclick="closeStats()">إغلاق</button></div><div class="stats-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="stats-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div><div class="stats-item stats-deductions"><span>إجمالي النقاط المخصومة</span><b>${deductedPoints}</b></div></div><h3 class="stats-subtitle">🏆 أفضل المتسابقين بالنقاط</h3><div class="stats-leaders">${leaders}</div><h3 class="stats-subtitle">إحصائيات كل متسابق</h3><div class="stats-players">${contestants}</div><div class="stats-actions"><button class="on" onclick="toggleStatsOnScreen()">${G.showStats ? "إخفاء الإحصائيات من شاشة العرض" : "إظهار الإحصائيات على شاشة العرض"}</button><button class="no" onclick="resetStats()">إعادة تسجيل الإحصائيات</button></div><small class="stats-note">إعادة التسجيل تصفّر الإحصائيات فقط، ولا تغيّر النقاط. أداء الفئات يُسجّل من الإجابات الجديدة؛ وتظهر المقارنة بعد إجابتين في الفئة.</small></div></div>`;
       }
       function toggleStatsOnScreen() {
         G.showStats = !G.showStats;
@@ -573,11 +758,12 @@
           ))
         )
           return;
-        G.stats = { correct: 0, wrong: 0, deductedPoints: 0 };
+        G.stats = { correct: 0, wrong: 0, deductedPoints: 0, categories: [] };
         G.cs.forEach((contestant) => {
           contestant.correct = 0;
           contestant.wrong = 0;
           contestant.deductedPoints = 0;
+          contestant.categoryStats = [];
         });
         save();
         showStats();
@@ -591,6 +777,7 @@
             correct: 0,
             wrong: 0,
             deductedPoints: 0,
+            categoryStats: [],
           });
           save();
         }
@@ -624,8 +811,9 @@
           ))
         )
           return;
+        recordPointUndo("reset");
         G.cs.forEach((c) => (c.s = 0));
-        save();
+        save(true);
       }
       async function resetContestantScore(i) {
         const contestant = G.cs[i];
@@ -638,8 +826,9 @@
           ))
         )
           return;
+        recordPointUndo("reset");
         contestant.s = 0;
-        save();
+        save(true);
       }
       async function ch(i, k, d) {
         const c = G.cs[i];
@@ -649,6 +838,7 @@
           G.cs.splice(i, 1);
           G.cur.buz = null;
         } else if (k === "s") {
+          recordPointUndo("manual");
           c.s += d;
           if (d < 0) recordPointDeduction(c, -d);
           G.scoreChange = {
@@ -658,7 +848,7 @@
             score: c.s,
           };
         }
-        save();
+        save(k === "s");
       }
       function recordPointDeduction(contestant, points) {
         if (!G.stats || typeof G.stats !== "object")

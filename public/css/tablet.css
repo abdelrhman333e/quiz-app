@@ -211,6 +211,45 @@
 .tb2 .qi.used {
   opacity: 0.55;
 }
+.tb2 .bdg.duplicate {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.18);
+}
+.tb2 .question-filters {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) repeat(2, minmax(130px, 1fr)) auto;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 6px;
+}
+.tb2 .question-filters input:not([type="checkbox"]),
+.tb2 .question-filters select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 12px;
+  color: var(--txt);
+  background: var(--s3);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+}
+.tb2 .question-filters .duplicate-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  color: var(--mut2);
+}
+.tb2 .question-filters input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+.tb2 .filter-count {
+  display: block;
+  margin: 4px 0 8px;
+}
 .tb2 .qi.sel {
   background: rgba(59, 130, 246, 0.2);
   border-color: var(--blue);
@@ -545,6 +584,9 @@ html[data-theme="light"] .tb2 .bdg.easy {
 html[data-theme="light"] .tb2 .bdg.rev {
   color: #92400e;
 }
+html[data-theme="light"] .tb2 .bdg.duplicate {
+  color: #b91c1c;
+}
 html[data-theme="light"] .tb2 .dock {
   background: rgba(255, 255, 255, 0.96);
   border-color: var(--bd);
@@ -588,6 +630,14 @@ html[data-theme="black"] .tb2 .dock {
 @media (max-width: 900px) {
   .tb2 .play {
     grid-template-columns: 1fr;
+  }
+  @media (max-width: 650px) {
+    .tb2 .question-filters {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .tb2 .question-filters input:not([type="checkbox"]) {
+      grid-column: 1 / -1;
+    }
   }
   .tb2 .players {
     position: static;
