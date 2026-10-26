@@ -1179,3 +1179,29 @@ html[data-theme="black"] .screen-sfx-toggle {
   opacity: 0.8;
   text-decoration: underline;
 }
+.round-screen-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 18px;
+  flex-wrap: wrap;
+  margin: 0 auto 12px;
+  padding: 12px 18px;
+  border: 1px solid rgba(125, 167, 218, 0.3);
+  border-radius: 14px;
+  background: rgba(16, 28, 49, 0.92);
+  color: var(--t);
+  text-align: center;
+}
+.round-screen-banner strong {
+  color: var(--ok);
+}
+html[data-theme="light"] .round-screen-banner {
+  background: rgba(255, 255, 255, 0.94);
+}
+html[data-theme="green"] .round-screen-banner {
+  background: rgba(8, 31, 21, 0.96);
+}
+html[data-theme="black"] .round-screen-banner {
+  background: rgba(0, 0, 0, 0.96);
+}

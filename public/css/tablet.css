@@ -458,6 +458,104 @@
   background: var(--s3);
   border-color: var(--bd);
 }
+.tb2 .round-mode-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 10px 0;
+  padding: 4px;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+}
+.tb2 .round-mode-controls button {
+  min-height: 40px;
+  padding: 6px 8px;
+  border-color: transparent;
+}
+.tb2 .round-manager {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 12px;
+  padding: 10px;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  background: var(--s3);
+}
+.tb2 .round-manager .row {
+  gap: 6px;
+}
+.tb2 .round-manager .row button {
+  flex: 1;
+  padding-inline: 8px;
+}
+.tb2 .round-list {
+  display: grid;
+  gap: 6px;
+  max-height: 190px;
+  overflow-y: auto;
+}
+.tb2 .round-item {
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+}
+.tb2 .round-item.selected {
+  border-color: var(--blue);
+}
+.tb2 .round-select {
+  display: grid;
+  width: 100%;
+  min-height: 46px;
+  text-align: start;
+}
+.tb2 .round-select span,
+.tb2 .round-select strong {
+  font-size: 12px;
+  color: var(--mut2);
+}
+.tb2 .round-select strong {
+  color: var(--green);
+}
+.tb2 .round-summary {
+  display: grid;
+  gap: 4px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.12);
+}
+.tb2 .round-summary span {
+  color: var(--mut2);
+  font-size: 13px;
+}
+.tb2 .round-summary strong {
+  color: var(--green);
+}
+.tb2 .round-excluded {
+  opacity: 0.55;
+}
+.modal .round-form .round-player-options {
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 8px 0 14px;
+}
+.modal .round-form .round-player-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: var(--s3);
+}
+.modal .round-form .round-player-options input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+.modal .round-form input:not([type="checkbox"]) {
+  background: var(--s3);
+  border-color: var(--bd);
+}
 .tb2 .ct {
   border: 1px solid var(--bd);
   border-radius: 14px;

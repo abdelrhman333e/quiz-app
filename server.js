@@ -127,15 +127,30 @@ const getGame = async (u) =>
 function view(g, qs) {
   const c = g.cur,
     x = qs.find((a) => a.id === c.id),
+    activeRound =
+      g.mode === "rounds"
+        ? g.rounds?.find((round) => round.id === g.activeRoundId) || null
+        : null,
     sh = !!(x && c.q),
     top = x?.kind === "top5" || x?.kind === "top10",
     reverse = x?.kind === "reverse",
     visual = x?.kind === "visual";
   const v = {
     cs: (g.cs || []).map(
-      ({ n, s, correct, wrong, deductedPoints }) => ({
+      ({ id, n, s, correct, wrong, deductedPoints }) => ({
         n,
-        s,
+        roundParticipant:
+          !!activeRound &&
+          Array.isArray(activeRound.contestants) &&
+          activeRound.contestants.includes(id),
+        s:
+          activeRound && Array.isArray(activeRound.contestants)
+            ? activeRound.contestants.includes(id)
+              ? Number.isSafeInteger(activeRound.scores?.[id])
+                ? activeRound.scores[id]
+                : 0
+              : 0
+            : s,
         correct: Number.isSafeInteger(correct) ? Math.max(0, correct) : 0,
         wrong: Number.isSafeInteger(wrong) ? Math.max(0, wrong) : 0,
         deductedPoints: Number.isSafeInteger(deductedPoints)
@@ -168,6 +183,19 @@ function view(g, qs) {
           }
         : null,
     showStats: !!g.showStats,
+    round: activeRound
+      ? {
+          name: str(activeRound.name, 40),
+          target: Number.isSafeInteger(activeRound.target)
+            ? activeRound.target
+            : 0,
+          winner:
+            (g.cs || []).find(
+              (contestant) => contestant.id === activeRound.winnerId,
+            )?.n || null,
+          finished: !!activeRound.finished,
+        }
+      : null,
     shown: sh,
     displayId: c.displayId || null,
     roulette: sh ? c.roulette || null : null,
