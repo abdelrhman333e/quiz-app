@@ -218,7 +218,7 @@
           ? `<div class="round-screen-banner"><b>🏁 ${esc(V.round.name)}</b><span>الهدف: ${V.round.target} نقطة</span>${V.round.winner ? `<strong>🏆 الفائز: ${esc(V.round.winner)} · ${V.round.finished ? "انتهت الجولة" : "الجولة مستمرة"}</strong>` : ""}${V.round.finished && !V.round.winner ? "<span>انتهت الجولة</span>" : ""}</div>`
           : "";
         document.getElementById("app").innerHTML =
-          `<button id="screenSfxToggle" class="screen-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx()">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><div class="scr"><div class="stage">${roundBanner}
+          `<button id="screenSfxToggle" class="screen-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx()">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><div class="scr">${roundBanner}<div class="stage ${V.round ? "has-round" : ""}">
 ${
   V.showStats
     ? statisticsStage()

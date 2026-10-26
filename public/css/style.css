@@ -258,6 +258,7 @@ html[data-theme="light"] .pl {
 }
 /* الشاشة */
 .scr {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
   gap: clamp(12px, 2vw, 24px);
@@ -271,9 +272,17 @@ html[data-theme="light"] .pl {
   justify-content: center;
   min-width: 0;
 }
+.stage.has-round::before {
+  content: "";
+  flex: none;
+  height: 36px;
+}
 .screen-board {
-  align-self: center;
-  width: 100%;
+  position: absolute;
+  top: clamp(76px, 12vh, 112px);
+  left: clamp(12px, 2vw, 24px);
+  z-index: 2;
+  width: min(280px, 24vw);
   min-width: 0;
 }
 .game-timer {
@@ -1186,6 +1195,10 @@ html[data-theme="black"] .screen-sfx-toggle {
   text-decoration: underline;
 }
 .round-screen-banner {
+  position: absolute;
+  top: clamp(76px, 12vh, 112px);
+  left: 50%;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1193,7 +1206,7 @@ html[data-theme="black"] .screen-sfx-toggle {
   flex-wrap: wrap;
   width: fit-content;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0;
   padding: 7px 14px;
   border: 1px solid rgba(125, 167, 218, 0.3);
   border-radius: 12px;
@@ -1201,6 +1214,7 @@ html[data-theme="black"] .screen-sfx-toggle {
   color: var(--t);
   text-align: center;
   font-size: clamp(13px, 1.2vw, 17px);
+  transform: translateX(-50%);
 }
 .round-screen-banner strong {
   color: var(--ok);
