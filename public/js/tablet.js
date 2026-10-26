@@ -146,7 +146,7 @@
           list
             .map(
               (x) =>
-                `<div class="qi ${x.id === cu.id ? "sel" : ""} ${G.used?.includes(x.id) ? "used" : ""}" onclick="tabSel='play';sel('${x.id}')"><span class="qt">${esc(x.x)}</span>${duplicates.has(x.id) ? '<span class="bdg duplicate" title="يتكرر نص السؤال">مكرر</span>' : ""}<span class="bdg ${x.kind === "reverse" ? "rev" : x.d === "h" ? "hard" : "easy"}">${x.kind === "reverse" ? "معكوسة" : x.d === "h" ? "صعب" : "سهل"}</span>${withActions ? `<button class="icon" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation();openForm('${x.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button>` : ""}</div>`,
+                `<div class="qi ${x.id === cu.id ? "sel" : ""} ${G.used?.includes(x.id) ? "used" : ""}" onclick="tabSel='play';sel('${x.id}')"><span class="qt">${esc(x.x)}</span>${duplicates.has(x.id) ? '<span class="bdg duplicate" title="يتكرر نص السؤال">مكرر</span>' : ""}<span class="bdg ${x.kind === "reverse" ? "rev" : x.d === "h" ? "hard" : "easy"}">${x.kind === "reverse" ? "معكوسة" : x.d === "h" ? "صعب" : "سهل"}</span>${withActions ? `<button class="icon" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation();openForm('${x.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف" aria-label="حذف السؤال" onclick="event.stopPropagation();del('${x.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button>` : ""}</div>`,
             )
             .join("") || `<small>${emptyText}</small>`
         }</div>`;
@@ -164,7 +164,11 @@
         const groups = new Map();
         Qs.forEach((question) => {
           const key = normalizedQuestionText(question.x);
-          if (!key) return;
+          if (
+            !key ||
+            (question.kind === "visual" && key === "خمنالصورة")
+          )
+            return;
           if (!groups.has(key)) groups.set(key, []);
           groups.get(key).push(question.id);
         });
@@ -862,7 +866,16 @@
           return;
         try {
           await api("/api/questions/" + id, "DELETE");
-          G.cur = { id: null, q: 0, o: 0, a: 0, buz: null, res: null };
+          G.used = (G.used || []).filter((usedId) => usedId !== id);
+          if (G.cur.id === id)
+            G.cur = {
+              id: null,
+              q: 0,
+              o: 0,
+              a: 0,
+              buz: null,
+              res: null,
+            };
           save();
           toast("تم الحذف");
         } catch (e) {
@@ -985,13 +998,13 @@
  <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option></select>
  <div id="questionFields"><input id="fx" placeholder="نص السؤال" value="${esc(e.x)}"></div>
  <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط ملف صوتي مباشر (اختياري)" value="${esc(e.audioUrl || "")}" oninput="$('fauFile').value=''"><small>يمكنك لصق رابط مباشر لملف صوتي، أو رفع ملف من جهازك. روابط صفحات YouTube وSpotify لا تعمل كمصدر صوت؛ ارفع ملفًا صوتيًا تملك حق استخدامه. الصيغ المدعومة: MP3 وWAV وOGG وM4A وAAC، بحد أقصى 20 ميجابايت.</small><label for="fauFile">اختيار ملف صوتي من الجهاز</label><input id="fauFile" type="file" accept=".mp3,.wav,.ogg,.oga,.opus,.m4a,.aac"><small id="audioUploadStatus" aria-live="polite"></small></div>
+ <label for="fd">صعوبة السؤال</label><select id="fd"><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>
  <div id="normalFields">
- <select id="fd"><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>
  <small>الاختيارات — اتركها فارغة لو السؤال بدون اختيارات</small>
  ${[0, 1, 2, 3].map((i) => `<input id="fo${i}" placeholder="الاختيار ${LB[i]}" value="${esc(e.o?.[i])}">`).join("")}
  <select id="fc">${LB.map((l, i) => `<option value="${i}" ${e.c === i ? "selected" : ""}>الصحيح: ${l}</option>`).join("")}</select>
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
- </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fva" placeholder="الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>أضف رابط صورة أو إيموجي، أو الاثنين معًا. تجنب شعارات الأندية.</small></div>
+ </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fvp" maxlength="500" placeholder="اكتب سؤالًا يميز الصورة (مثال: من صاحب هذا الشعار؟)" value="${esc(e.x === "خمن الصورة" ? "" : e.x || "")}"><input id="fva" placeholder="الإجابة أو الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>اكتب سؤالًا خاصًا بهذه الصورة، ثم أضف رابط صورة أو إيموجي، أو الاثنين معًا.</small></div>
  <div class="row"><button id="saveQuestionBtn" class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
         toggleQuestionKind();
       }
@@ -1063,14 +1076,14 @@
           (kind === "reverse"
             ? !word
             : kind === "visual"
-              ? !g("fva") || (!image && !emoji)
+              ? !g("fvp") || !g("fva") || (!image && !emoji)
               : kind === "audio"
                 ? !audioUrl && !audioFile
                 : !g("fx"))
         )
           return toast(
             kind === "visual"
-              ? "اكتب الكلمة وأضف صورة أو إيموجي"
+              ? "اكتب نص السؤال والإجابة وأضف صورة أو إيموجي"
               : kind === "reverse"
                 ? "اكتب النوع والكلمة"
                 : kind === "audio"
@@ -1118,7 +1131,7 @@
             d: g("fd"),
             x:
               kind === "visual"
-                ? "خمن الصورة"
+                ? g("fvp")
                 : kind === "audio"
                   ? "استمع إلى الصوت"
                 : kind === "reverse"

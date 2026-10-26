@@ -23,7 +23,7 @@
       }
       function visualStage(animateQuestion, animateAnswer) {
         if (!V.shown) return '<div class="wait">هنا هيظهر السؤال ...</div>';
-        return `<div class="tag">${esc(V.t)}</div><div class="visual-clues ${animateQuestion ? "animate-options" : ""}">${V.image ? `<img class="visual-clue" src="${esc(V.image)}" alt="قرينة بصرية">` : ""}${V.emoji ? `<div class="visual-emoji">${esc(V.emoji)}</div>` : ""}</div>${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`;
+        return `<div class="tag">${esc(V.t)}</div>${V.x && V.x !== "خمن الصورة" ? `<div class="card qbox ${animateQuestion ? "animate-in" : ""}">${esc(V.x)}</div>` : ""}<div class="visual-clues ${animateQuestion ? "animate-options" : ""}">${V.image ? `<img class="visual-clue" src="${esc(V.image)}" alt="قرينة بصرية">` : ""}${V.emoji ? `<div class="visual-emoji">${esc(V.emoji)}</div>` : ""}</div>${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`;
       }
       function statisticsStage() {
         const correct = V.stats?.correct || 0,
