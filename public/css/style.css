@@ -258,32 +258,40 @@ html[data-theme="light"] .pl {
 }
 /* الشاشة */
 .scr {
-  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
-  gap: clamp(12px, 2vw, 24px);
-  padding: clamp(12px, 2vw, 24px);
+  grid-template-columns: 1fr 240px;
+  gap: 18px;
+  padding: 22px;
   min-height: 100vh;
 }
 .stage {
   display: flex;
   flex-direction: column;
-  gap: clamp(12px, 2vh, 20px);
+  gap: 18px;
   justify-content: center;
+}
+.screen-board {
+  align-self: start;
+}
+.scr.round-screen {
+  position: relative;
+}
+.scr.round-screen .stage {
   min-width: 0;
 }
-.stage.has-round::before {
+.scr.round-screen .stage.has-round::before {
   content: "";
   flex: none;
   height: 36px;
 }
-.screen-board {
+.scr.round-screen .screen-board {
   position: absolute;
   top: clamp(76px, 12vh, 112px);
   left: clamp(12px, 2vw, 24px);
   z-index: 2;
   width: min(280px, 24vw);
   min-width: 0;
+  align-self: auto;
 }
 .game-timer {
   display: flex;
@@ -1195,10 +1203,6 @@ html[data-theme="black"] .screen-sfx-toggle {
   text-decoration: underline;
 }
 .round-screen-banner {
-  position: absolute;
-  top: clamp(76px, 12vh, 112px);
-  left: 50%;
-  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1206,7 +1210,7 @@ html[data-theme="black"] .screen-sfx-toggle {
   flex-wrap: wrap;
   width: fit-content;
   max-width: 100%;
-  margin: 0;
+  margin: 0 auto 12px;
   padding: 7px 14px;
   border: 1px solid rgba(125, 167, 218, 0.3);
   border-radius: 12px;
@@ -1214,6 +1218,13 @@ html[data-theme="black"] .screen-sfx-toggle {
   color: var(--t);
   text-align: center;
   font-size: clamp(13px, 1.2vw, 17px);
+}
+.scr.round-screen .round-screen-banner {
+  position: absolute;
+  top: clamp(76px, 12vh, 112px);
+  left: 50%;
+  z-index: 2;
+  margin: 0;
   transform: translateX(-50%);
 }
 .round-screen-banner strong {
