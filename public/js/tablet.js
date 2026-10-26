@@ -986,6 +986,13 @@
           $("cn").value = "";
           save();
         } else {
+          if (
+            G.cs.some(
+              (player) =>
+                player.n.toLocaleLowerCase() === n.toLocaleLowerCase(),
+            )
+          )
+            return toast("هذا المتسابق موجود بالفعل في المسابقة الحرة", 1);
           G.cs.push({
             id: newContestantId(),
             n,
