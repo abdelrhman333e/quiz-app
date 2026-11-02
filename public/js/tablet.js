@@ -323,8 +323,10 @@
       function audioHTML(c) {
         const { q, cu } = c,
           provider = embeddedAudioProvider(q.audioUrl);
+        if (provider === "spotify")
+          return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><div class="row"><button class="big2 on" onclick="setQuestionAudio(${cu.audioControl?.playing === false ? "'play'" : "'pause'"})">${cu.audioControl?.playing === false ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت"}</button><button class="big2" onclick="setQuestionAudio('restart')">↺ إعادة من البداية</button></div><small>يمكن التحكم في التشغيل والإيقاف والإعادة من التابلت. مستوى الصوت من مشغّل Spotify على شاشة العرض.</small></div>`;
         if (provider && provider !== "youtube")
-          return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><small>استخدم أزرار مشغّل ${provider === "spotify" ? "Spotify" : "SoundCloud"} على شاشة العرض للتحكم في الصوت.</small></div>`;
+          return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><small>استخدم أزرار مشغّل SoundCloud على شاشة العرض للتحكم في الصوت.</small></div>`;
         return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><div class="row"><button class="big2 on" onclick="setQuestionAudio(${cu.audioControl?.playing === false ? "'play'" : "'pause'"})">${cu.audioControl?.playing === false ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت"}</button><button class="big2" onclick="setQuestionAudio('restart')">↺ إعادة من البداية</button></div><label for="questionAudioVolume">مستوى الصوت: <span id="questionAudioVolumeValue">${Math.round((cu.audioControl?.volume ?? 1) * 100)}%</span></label><input id="questionAudioVolume" type="range" min="0" max="100" value="${Math.round((cu.audioControl?.volume ?? 1) * 100)}" oninput="$('questionAudioVolumeValue').textContent=this.value+'%'" onchange="setQuestionAudio('volume',this.value/100)"><small>إذا منع المتصفح التشغيل عن بُعد، اضغط تشغيل على شاشة العرض مرة واحدة.</small></div>`;
       }
       function whoHTML(c) {

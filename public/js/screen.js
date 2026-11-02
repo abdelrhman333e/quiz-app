@@ -14,6 +14,11 @@
         lastAnswerKey = "",
         lastTop5Key = "",
         lastRevealedRanks = [];
+      let spotifyIframeAPI = null,
+        spotifyEmbedController = null,
+        spotifyEmbedKey = "",
+        spotifyControllerReady = false,
+        pendingSpotifyCommand = null;
       function audioEmbedSource(audioUrl) {
         try {
           const url = new URL(audioUrl),
@@ -52,9 +57,11 @@
             const embedUrl = new URL(
               `https://open.spotify.com/embed${url.pathname.slice(url.pathname.indexOf(match[0]))}`,
             );
-            embedUrl.searchParams.set("utm_source", "generator");
-            embedUrl.searchParams.set("autoplay", "true");
-            return { provider: "spotify", src: embedUrl.href };
+            return {
+              provider: "spotify",
+              src: embedUrl.href,
+              url: url.href,
+            };
           }
           if (host === "soundcloud.com" || host === "www.soundcloud.com") {
             const embedUrl = new URL("https://w.soundcloud.com/player/");
@@ -96,13 +103,102 @@
           );
       }
       function applyEmbeddedAudioControl(embed, control, questionKey) {
-        if (!embed || embed.provider !== "youtube" || !control?.seq) return;
+        if (!embed || !control?.seq) return;
         const commandKey = `${questionKey}|${control.seq}`;
         if (commandKey === lastQuestionAudioControlKey) return;
         lastQuestionAudioControlKey = commandKey;
+        if (embed.provider === "spotify") {
+          if (control.action !== "volume")
+            sendSpotifyAudioCommand(control.action);
+          return;
+        }
+        if (embed.provider !== "youtube") return;
         if (control.action === "volume")
           sendYoutubeAudioCommand("volume", control.volume);
         else sendYoutubeAudioCommand(control.action);
+      }
+      function sendSpotifyAudioCommand(action) {
+        if (!spotifyEmbedController || !spotifyControllerReady) {
+          pendingSpotifyCommand = action;
+          return;
+        }
+        const commands = {
+          pause: () => spotifyEmbedController.pause(),
+          play: () => spotifyEmbedController.resume(),
+          restart: () => spotifyEmbedController.restart(),
+        };
+        if (commands[action]) commands[action]();
+      }
+      function createSpotifyEmbed() {
+        const host = document.getElementById("questionAudioEmbed"),
+          element = document.getElementById("spotifyAudioFrame");
+        if (
+          !spotifyIframeAPI ||
+          !host ||
+          !element ||
+          host.dataset.provider !== "spotify"
+        )
+          return;
+        const questionKey = host.dataset.questionKey;
+        if (spotifyEmbedController && spotifyEmbedKey === questionKey) return;
+        if (spotifyEmbedController) spotifyEmbedController.destroy();
+        spotifyEmbedController = null;
+        spotifyControllerReady = false;
+        spotifyEmbedKey = questionKey;
+        pendingSpotifyCommand = null;
+        try {
+          spotifyIframeAPI.createController(
+            element,
+            {
+              url: host.dataset.spotifyUrl,
+              width: "100%",
+              height: 152,
+            },
+            (controller) => {
+              if (
+                document.getElementById("questionAudioEmbed") !== host ||
+                host.dataset.questionKey !== spotifyEmbedKey
+              ) {
+                controller.destroy();
+                return;
+              }
+              spotifyEmbedController = controller;
+              controller.addListener("ready", () => {
+                spotifyControllerReady = true;
+                if (!pendingSpotifyCommand) return;
+                const action = pendingSpotifyCommand;
+                pendingSpotifyCommand = null;
+                sendSpotifyAudioCommand(action);
+              });
+            },
+          );
+        } catch (error) {
+          console.error("تعذر تهيئة مشغّل Spotify:", error);
+          host.textContent = "تعذر تهيئة مشغّل Spotify. أعد تحميل الصفحة.";
+        }
+      }
+      function loadSpotifyIframeAPI() {
+        if (spotifyIframeAPI) {
+          createSpotifyEmbed();
+          return;
+        }
+        if (document.getElementById("spotifyIframeApi")) return;
+        window.onSpotifyIframeApiReady = (api) => {
+          spotifyIframeAPI = api;
+          createSpotifyEmbed();
+        };
+        const script = document.createElement("script");
+        script.id = "spotifyIframeApi";
+        script.src = "https://open.spotify.com/embed/iframe-api/v1";
+        script.async = true;
+        script.onerror = () => {
+          const element = document.getElementById("questionAudioEmbed");
+          console.error("تعذر تحميل Spotify iFrame API");
+          if (element)
+            element.textContent =
+              "تعذر تحميل مشغّل Spotify. تحقق من اتصال الإنترنت ثم أعد تحميل الصفحة.";
+        };
+        document.head.appendChild(script);
       }
       function reverseStage(animateQuestion) {
         const letter = V.reverse?.letter,
@@ -329,7 +425,7 @@ ${
           ? visualStage(animateQuestion, animateAnswer)
           : V.shown
             ? `<div class="tag">${esc(V.t)} · ${V.kind === "top5" || V.kind === "top10" ? "النقاط حسب الترتيب" : V.d === "h" ? "صعب — نقطتان" : "سهل — نقطة"}</div><div class="card qbox ${animateQuestion ? "animate-in" : ""}">${esc(V.x)}</div>
- ${V.mode === "audio" ? audioEmbed ? `<iframe id="questionAudioEmbed" class="question-audio-embed ${audioEmbed.provider}" data-question-key="${esc(questionKey)}" src="${esc(audioEmbed.src)}" title="مشغل الصوت" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><small>استخدم أزرار المشغّل للتحكم في الصوت${audioEmbed.provider === "youtube" ? "، أو أزرار التابلت" : ""}.</small>` : `<button id="playQuestionAudio" class="on" onclick="playQuestionAudio()" hidden>▶ تشغيل الصوت</button><audio id="questionAudioPlayer" class="question-audio-player" controls preload="metadata" data-question-key="${esc(questionKey)}" onerror="this.nextElementSibling.hidden=false"><source src="${esc(V.audioUrl)}"></audio><small hidden>تعذر تحميل الرابط الصوتي؛ تأكد من أن الرابط مباشر لملف صوتي.</small>` : ""}
+ ${V.mode === "audio"   ? audioEmbed ? audioEmbed.provider === "spotify" ? `<div id="questionAudioEmbed" class="question-audio-embed spotify" data-provider="spotify" data-question-key="${esc(questionKey)}" data-spotify-url="${esc(audioEmbed.url)}"><div id="spotifyAudioFrame"></div></div><small>يمكن التحكم في التشغيل والإيقاف والإعادة من التابلت.</small>` : `<iframe id="questionAudioEmbed" class="question-audio-embed ${audioEmbed.provider}" data-provider="${audioEmbed.provider}" data-question-key="${esc(questionKey)}" src="${esc(audioEmbed.src)}" title="مشغل الصوت" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><small>استخدم أزرار المشغّل للتحكم في الصوت${audioEmbed.provider === "youtube" ? "، أو أزرار التابلت" : ""}.</small>` : `<button id="playQuestionAudio" class="on" onclick="playQuestionAudio()" hidden>▶ تشغيل الصوت</button><audio id="questionAudioPlayer" class="question-audio-player" controls preload="metadata" data-question-key="${esc(questionKey)}" onerror="this.nextElementSibling.hidden=false"><source src="${esc(V.audioUrl)}"></audio><small hidden>تعذر تحميل الرابط الصوتي؛ تأكد من أن الرابط مباشر لملف صوتي.</small>` : ""}
  ${V.kind === "top5" || V.kind === "top10" ? V.revealed?.length ? `<div class="opts">${V.revealed.map((a) => `<div class="opt ok ${revealedRanks.includes(a.rank) ? "" : "animate-in"}"><b>${a.rank}</b>${esc(a.a)}</div>`).join("")}</div>` : "" : ""}
  ${V.o ? `<div class="opts ${animateOptions ? "animate-options" : ""}">${V.o.map((o, i) => `<div class="opt ${V.c === i ? "ok" : ""}"><b>${LB[i]}</b>${esc(o)}</div>`).join("")}</div>` : ""}
  ${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`
@@ -363,6 +459,14 @@ ${
             },
             { once: true },
           );
+        }
+        if (audioEmbed?.provider === "spotify") loadSpotifyIframeAPI();
+        else {
+          if (spotifyEmbedController) spotifyEmbedController.destroy();
+          spotifyEmbedController = null;
+          spotifyControllerReady = false;
+          spotifyEmbedKey = "";
+          pendingSpotifyCommand = null;
         }
         if (scoreNotice) {
           const amount = Math.abs(scoreNotice.delta),
