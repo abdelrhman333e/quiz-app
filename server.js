@@ -11,7 +11,9 @@ const db = new Pool({
   ssl: DBU && !/localhost|127\.0\.0\.1/.test(DBU) ? { rejectUnauthorized: false } : undefined
 });
 const q = (s, p) => db.query(s, p).then(r => r.rows);
-const SEED = JSON.parse(fs.readFileSync(path.join(__dirname, 'seed.json'), 'utf8'));
+const SEED = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'server', 'questions', 'seed.json'), 'utf8')
+);
 
 // ✚ جديد: ضفت p:0 جوه cur (حالة تشغيل الصوت)
 const NEWGAME = () => ({
