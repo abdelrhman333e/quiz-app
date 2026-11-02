@@ -29,8 +29,10 @@
         audioTelemetryTimer = null;
       function publishAudioTelemetry(state) {
         if (!room || !V?.shown || V.mode !== "audio" || !V.displayId) return;
+        const displayId = state.displayId || V.displayId;
+        if (displayId !== V.displayId) return;
         const now = Date.now(),
-          telemetry = { ...state, displayId: V.displayId },
+          telemetry = { ...state, displayId },
           delay = 700 - (now - lastAudioTelemetryAt);
         if (delay > 0) {
           pendingAudioTelemetry = telemetry;
@@ -77,7 +79,7 @@
                   url.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/)?.[1];
             if (!/^[\w-]{11}$/.test(videoId || "")) return null;
             const embedUrl = new URL(
-              `https://www.youtube-nocookie.com/embed/${videoId}`,
+              `https://www.youtube.com/embed/${videoId}`,
             );
             embedUrl.searchParams.set("autoplay", "1");
             embedUrl.searchParams.set("enablejsapi", "1");
@@ -115,7 +117,14 @@
         return null;
       }
       function publishYoutubeTelemetry() {
-        if (!youtubePlayerReady || !youtubePlayer || !V?.displayId) return;
+        const frame = document.getElementById("questionAudioEmbed");
+        if (
+          !youtubePlayerReady ||
+          !youtubePlayer ||
+          !V?.displayId ||
+          frame?.dataset.questionKey !== youtubeEmbedKey
+        )
+          return;
         const duration = youtubePlayer.getDuration(),
           position = youtubePlayer.getCurrentTime(),
           state = youtubePlayer.getPlayerState();
@@ -167,14 +176,15 @@
         destroyYoutubePlayer();
         youtubeEmbedKey = questionKey;
         try {
-          youtubePlayer = new window.YT.Player(frame, {
+          const player = new window.YT.Player(frame, {
             events: {
               onReady: () => {
                 if (
+                  youtubePlayer !== player ||
                   document.getElementById("questionAudioEmbed") !== frame ||
                   frame.dataset.questionKey !== youtubeEmbedKey
                 ) {
-                  destroyYoutubePlayer();
+                  player.destroy();
                   return;
                 }
                 youtubePlayerReady = true;
@@ -189,7 +199,9 @@
                   800,
                 );
               },
-              onStateChange: publishYoutubeTelemetry,
+              onStateChange: () => {
+                if (youtubePlayer === player) publishYoutubeTelemetry();
+              },
               onError: (event) => {
                 console.error(
                   `تعذر تشغيل فيديو YouTube (رمز ${event.data})`,
@@ -197,6 +209,7 @@
               },
             },
           });
+          youtubePlayer = player;
         } catch (error) {
           console.error("تعذر تهيئة مشغّل YouTube:", error);
         }
@@ -283,6 +296,7 @@
               controller.addListener("ready", () => {
                 spotifyControllerReady = true;
                 controller.addListener("playback_update", (event) => {
+                  if (spotifyEmbedKey !== questionKey) return;
                   const position = Number(event.data?.position) / 1000,
                     duration = Number(event.data?.duration) / 1000;
                   if (
@@ -581,28 +595,8 @@ ${
           document
             .getElementById("questionAudioEmbed")
             ?.replaceWith(previousQuestionEmbed);
-        const questionAudioFrame = document.getElementById(
-          "questionAudioEmbed",
-        );
-        if (
-          audioEmbed?.provider === "youtube" &&
-          questionAudioFrame &&
-          questionAudioFrame.dataset.youtubeLoadHandler !== "true"
-        ) {
-          questionAudioFrame.dataset.youtubeLoadHandler = "true";
-          questionAudioFrame.addEventListener(
-            "load",
-            () => {
-              questionAudioFrame.dataset.youtubeReady = "true";
-              const pending = questionAudioFrame.dataset.pendingYoutubeCommand;
-              if (!pending) return;
-              delete questionAudioFrame.dataset.pendingYoutubeCommand;
-              const command = JSON.parse(pending);
-              sendYoutubeAudioCommand(command.action, command.value);
-            },
-            { once: true },
-          );
-        }
+        if (audioEmbed?.provider === "youtube") loadYoutubeIframeAPI();
+        else destroyYoutubePlayer();
         if (audioEmbed?.provider === "spotify") loadSpotifyIframeAPI();
         else {
           if (spotifyEmbedController) spotifyEmbedController.destroy();
@@ -659,6 +653,8 @@ ${
               if (button) button.hidden = false;
             });
             const publishAudioPosition = () => {
+              if (document.getElementById("questionAudioPlayer") !== audio)
+                return;
               if (!Number.isFinite(audio.duration) || audio.duration <= 0)
                 return;
               publishAudioTelemetry({
@@ -666,6 +662,7 @@ ${
                 duration: audio.duration,
                 paused: audio.paused,
                 provider: "audio",
+                displayId: V.displayId,
               });
             };
             audio.addEventListener("timeupdate", publishAudioPosition);
