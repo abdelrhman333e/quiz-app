@@ -20,7 +20,7 @@ async function api(p, m = "GET", b) {
 }
 // يرسل الخادم حالتين منفصلتين إلى لوحة التحكم: قائمة الأسئلة وحالة الجولة.
 // إعادة الرسم بعد كل حدث تجعل التابلت متزامنًا مع أي تحديث محفوظ.
-function connect(cb) {
+function connect(cb, audioCb) {
   const es = new EventSource("/events");
   es.addEventListener("q", (e) => {
     Qs = JSON.parse(e.data);
@@ -30,6 +30,10 @@ function connect(cb) {
     G = JSON.parse(e.data);
     cb();
   });
+  if (audioCb)
+    es.addEventListener("audio", (e) => {
+      audioCb(JSON.parse(e.data));
+    });
 }
 function board(cs = G.cs) {
   return (

@@ -1,14 +1,14 @@
-const CACHE_NAME = "quiz-app-v27";
+const CACHE_NAME = "quiz-app-v28";
 const APP_SHELL = [
   "/",
   "/tablet",
   "/screen",
-  "/css/style.css?v=24",
+  "/css/style.css?v=25",
   "/css/tablet.css?v=19",
-  "/js/common.js?v=15",
+  "/js/common.js?v=16",
   "/js/index.js?v=15",
-  "/js/tablet.js?v=23",
-  "/js/screen.js?v=23",
+  "/js/tablet.js?v=24",
+  "/js/screen.js?v=24",
   "/js/pwa.js?v=15",
   "/js/sfx.js?v=15",
   "/js/theme.js?v=15",

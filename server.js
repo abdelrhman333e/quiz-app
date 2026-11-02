@@ -237,6 +237,7 @@ function view(g, qs) {
 }
 // ---- بث لحظي
 const rooms = new Map();
+const audioStates = new Map();
 const send = (r, ev, d) =>
   r.write(`event: ${ev}\ndata: ${JSON.stringify(d)}\n\n`);
 async function pushAll(u) {
@@ -249,6 +250,7 @@ async function pushAll(u) {
     else {
       send(c.res, "q", qs);
       send(c.res, "game", g);
+      send(c.res, "audio", audioStates.get(u) || null);
     }
   }
 }
@@ -598,8 +600,50 @@ http
         else {
           send(res, "q", qs);
           send(res, "game", g);
+          send(res, "audio", audioStates.get(uid) || null);
         }
         return;
+      }
+      if (u === "/audio-state" && req.method === "POST") {
+        const room = str(url.searchParams.get("room"), 20),
+          account = (
+            await q("SELECT id FROM users WHERE room=$1", [room])
+          )[0],
+          state = await body(req);
+        if (!account)
+          return json(res, { error: "رابط شاشة العرض غير صالح" }, 404);
+        const displayId = str(state?.displayId, 120),
+          position = Number(state?.position),
+          duration = Number(state?.duration);
+        if (
+          !displayId ||
+          !Number.isFinite(position) ||
+          !Number.isFinite(duration) ||
+          position < 0 ||
+          duration <= 0 ||
+          duration > 86400 ||
+          typeof state.paused !== "boolean" ||
+          !["spotify", "youtube", "audio"].includes(state.provider)
+        )
+          return json(res, { error: "حالة الصوت غير صالحة" }, 400);
+        const game = await getGame(account.id);
+        if (game.cur?.displayId !== displayId)
+          return json(res, { error: "السؤال الصوتي لم يعد نشطًا" }, 409);
+        const audioState = {
+          displayId,
+          position: Math.min(position, duration),
+          duration,
+          paused: state.paused,
+          provider: state.provider,
+          updatedAt: Date.now(),
+        };
+        audioStates.set(account.id, audioState);
+        const connections = rooms.get(account.id);
+        if (connections)
+          for (const connection of connections)
+            if (!connection.screen)
+              send(connection.res, "audio", audioState);
+        return json(res, { ok: 1 });
       }
       if (u.startsWith("/api/")) {
         const uid = authUid(req);

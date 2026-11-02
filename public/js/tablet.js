@@ -1,5 +1,6 @@
       const $ = (id) => document.getElementById(id);
       const pts = (q) => PT[q.d];
+      let audioPlaybackState = null;
       function types() {
         return [...new Set(Qs.map((q) => q.t))];
       }
@@ -322,12 +323,56 @@
       }
       function audioHTML(c) {
         const { q, cu } = c,
-          provider = embeddedAudioProvider(q.audioUrl);
-        if (provider === "spotify")
-          return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><div class="row"><button class="big2 on" onclick="setQuestionAudio(${cu.audioControl?.playing === false ? "'play'" : "'pause'"})">${cu.audioControl?.playing === false ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت"}</button><button class="big2" onclick="setQuestionAudio('restart')">↺ إعادة من البداية</button></div><small>يمكن التحكم في التشغيل والإيقاف والإعادة من التابلت. مستوى الصوت من مشغّل Spotify على شاشة العرض.</small></div>`;
+          provider = embeddedAudioProvider(q.audioUrl),
+          playback =
+            audioPlaybackState?.displayId === cu.displayId
+              ? audioPlaybackState
+              : null;
+        const timeLabel = (seconds) => {
+          const value = Math.max(0, Math.floor(seconds || 0));
+          return `${Math.floor(value / 60)}:${String(value % 60).padStart(2, "0")}`;
+        };
+        const progressHTML =
+          playback?.duration > 0
+            ? `<div class="audio-seek-control"><div class="audio-seek-times"><span id="questionAudioPosition">${timeLabel(playback.position)}</span><span>${timeLabel(playback.duration)}</span></div><input id="questionAudioSeek" aria-label="تقديم أو إرجاع الصوت" type="range" min="0" max="${playback.duration}" step="1" value="${Math.min(playback.duration, playback.position)}" oninput="$('questionAudioPosition').textContent=(Math.floor(this.value/60))+':'+String(Math.floor(this.value%60)).padStart(2,'0')" onchange="setQuestionAudio('seek',this.value)"></div>`
+            : "";
+        const playbackButton =
+          playback?.paused ?? cu.audioControl?.playing === false
+            ? "play"
+            : "pause";
+        if (provider === "spotify" || provider === "youtube")
+          return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><div class="row"><button id="questionAudioPlayToggle" class="big2 on" onclick="setQuestionAudio('${playbackButton}')">${playbackButton === "play" ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت"}</button><button class="big2" onclick="setQuestionAudio('restart')">↺ إعادة من البداية</button></div>${progressHTML}${provider === "spotify" && !playback?.duration ? "<small>سيظهر شريط الوقت إذا أتاح Spotify مدة المقطع؛ قد لا يدعم التقديم لبعض الأغاني.</small>" : ""}${provider === "spotify" ? "<small>مستوى الصوت من مشغّل Spotify على شاشة العرض.</small>" : `<label for="questionAudioVolume">مستوى الصوت: <span id="questionAudioVolumeValue">${Math.round((cu.audioControl?.volume ?? 1) * 100)}%</span></label><input id="questionAudioVolume" type="range" min="0" max="100" value="${Math.round((cu.audioControl?.volume ?? 1) * 100)}" oninput="$('questionAudioVolumeValue').textContent=this.value+'%'" onchange="setQuestionAudio('volume',this.value/100)">`}</div>`;
         if (provider && provider !== "youtube")
           return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><small>استخدم أزرار مشغّل SoundCloud على شاشة العرض للتحكم في الصوت.</small></div>`;
-        return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><div class="row"><button class="big2 on" onclick="setQuestionAudio(${cu.audioControl?.playing === false ? "'play'" : "'pause'"})">${cu.audioControl?.playing === false ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت"}</button><button class="big2" onclick="setQuestionAudio('restart')">↺ إعادة من البداية</button></div><label for="questionAudioVolume">مستوى الصوت: <span id="questionAudioVolumeValue">${Math.round((cu.audioControl?.volume ?? 1) * 100)}%</span></label><input id="questionAudioVolume" type="range" min="0" max="100" value="${Math.round((cu.audioControl?.volume ?? 1) * 100)}" oninput="$('questionAudioVolumeValue').textContent=this.value+'%'" onchange="setQuestionAudio('volume',this.value/100)"><small>إذا منع المتصفح التشغيل عن بُعد، اضغط تشغيل على شاشة العرض مرة واحدة.</small></div>`;
+        return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><div class="row"><button id="questionAudioPlayToggle" class="big2 on" onclick="setQuestionAudio('${playbackButton}')">${playbackButton === "play" ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت"}</button><button class="big2" onclick="setQuestionAudio('restart')">↺ إعادة من البداية</button></div>${progressHTML}<label for="questionAudioVolume">مستوى الصوت: <span id="questionAudioVolumeValue">${Math.round((cu.audioControl?.volume ?? 1) * 100)}%</span></label><input id="questionAudioVolume" type="range" min="0" max="100" value="${Math.round((cu.audioControl?.volume ?? 1) * 100)}" oninput="$('questionAudioVolumeValue').textContent=this.value+'%'" onchange="setQuestionAudio('volume',this.value/100)"><small>إذا منع المتصفح التشغيل عن بُعد، اضغط تشغيل على شاشة العرض مرة واحدة.</small></div>`;
+      }
+      function updateAudioPlaybackState(state) {
+        audioPlaybackState = state;
+        if (!state || state.displayId !== G?.cur?.displayId) return;
+        const slider = $("questionAudioSeek"),
+          position = $("questionAudioPosition");
+        if (state.duration > 0 && !slider) {
+          render();
+          return;
+        }
+        if (slider && document.activeElement !== slider) {
+          slider.max = String(state.duration);
+          slider.value = String(Math.min(state.duration, state.position));
+        }
+        if (position && document.activeElement !== slider) {
+          const seconds = Math.floor(state.position || 0);
+          position.textContent = `${Math.floor(seconds / 60)}:${String(
+            seconds % 60,
+          ).padStart(2, "0")}`;
+        }
+        const button = $("questionAudioPlayToggle");
+        if (button) {
+          button.textContent = state.paused ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت";
+          button.setAttribute(
+            "onclick",
+            `setQuestionAudio('${state.paused ? "play" : "pause"}')`,
+          );
+        }
       }
       function whoHTML(c) {
         const { q, cu, top } = c,
@@ -667,6 +712,22 @@
           playing: true,
           volume: 1,
         };
+        const requestedPosition = Number(volume);
+        if (action === "seek" && !Number.isFinite(requestedPosition))
+          return toast("موضع الصوت غير صالح", 1);
+        if (action === "seek" && audioPlaybackState?.displayId === G.cur.displayId)
+          audioPlaybackState = {
+            ...audioPlaybackState,
+            position: Math.min(
+              audioPlaybackState.duration,
+              Math.max(0, requestedPosition),
+            ),
+          };
+        if (audioPlaybackState?.displayId === G.cur.displayId) {
+          if (action === "pause") audioPlaybackState.paused = true;
+          else if (action === "play" || action === "restart")
+            audioPlaybackState.paused = false;
+        }
         G.cur.audioControl = {
           seq: (current.seq || 0) + 1,
           action,
@@ -676,6 +737,13 @@
               : action === "play" || action === "restart"
                 ? true
                 : current.playing !== false,
+          position:
+            action === "seek"
+              ? Math.min(
+                  audioPlaybackState?.duration || requestedPosition,
+                  Math.max(0, requestedPosition),
+                )
+              : current.position,
           volume:
             action === "volume"
               ? Math.max(0, Math.min(1, Number(volume)))
@@ -1491,7 +1559,7 @@
       api("/api/me")
         .then((m) => {
           ME = m;
-          connect(render);
+          connect(render, updateAudioPlaybackState);
           setInterval(advanceTimer, 200);
           setInterval(updateTimerDisplay, 200);
           setInterval(() => api("/api/ping").catch(() => {}), 240000);

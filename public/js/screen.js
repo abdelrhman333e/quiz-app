@@ -18,7 +18,43 @@
         spotifyEmbedController = null,
         spotifyEmbedKey = "",
         spotifyControllerReady = false,
-        pendingSpotifyCommand = null;
+        pendingSpotifyCommand = null,
+        youtubePlayer = null,
+        youtubeEmbedKey = "",
+        youtubePlayerReady = false,
+        pendingYoutubeCommand = null,
+        youtubeTelemetryTimer = null,
+        lastAudioTelemetryAt = 0,
+        pendingAudioTelemetry = null,
+        audioTelemetryTimer = null;
+      function publishAudioTelemetry(state) {
+        if (!room || !V?.shown || V.mode !== "audio" || !V.displayId) return;
+        const now = Date.now(),
+          telemetry = { ...state, displayId: V.displayId },
+          delay = 700 - (now - lastAudioTelemetryAt);
+        if (delay > 0) {
+          pendingAudioTelemetry = telemetry;
+          if (!audioTelemetryTimer)
+            audioTelemetryTimer = setTimeout(() => {
+              audioTelemetryTimer = null;
+              const latest = pendingAudioTelemetry;
+              pendingAudioTelemetry = null;
+              if (latest) publishAudioTelemetry(latest);
+            }, delay);
+          return;
+        }
+        lastAudioTelemetryAt = now;
+        fetch(`/audio-state?room=${encodeURIComponent(room)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(telemetry),
+        }).then((response) => {
+          if (!response.ok && response.status !== 409)
+            throw new Error(`تعذر مزامنة موضع الصوت (${response.status})`);
+        }).catch((error) => {
+          console.error(error.message || "تعذر مزامنة موضع الصوت", error);
+        });
+      }
       function audioEmbedSource(audioUrl) {
         try {
           const url = new URL(audioUrl),
@@ -57,10 +93,14 @@
             const embedUrl = new URL(
               `https://open.spotify.com/embed${url.pathname.slice(url.pathname.indexOf(match[0]))}`,
             );
+            const spotifyUrl = new URL(
+              `${url.pathname.slice(url.pathname.indexOf(match[0]))}${url.search}`,
+              url.origin,
+            );
             return {
               provider: "spotify",
               src: embedUrl.href,
-              url: url.href,
+              url: spotifyUrl.href,
             };
           }
           if (host === "soundcloud.com" || host === "www.soundcloud.com") {
@@ -74,33 +114,108 @@
         } catch {}
         return null;
       }
+      function publishYoutubeTelemetry() {
+        if (!youtubePlayerReady || !youtubePlayer || !V?.displayId) return;
+        const duration = youtubePlayer.getDuration(),
+          position = youtubePlayer.getCurrentTime(),
+          state = youtubePlayer.getPlayerState();
+        if (!Number.isFinite(duration) || duration <= 0) return;
+        publishAudioTelemetry({
+          position,
+          duration,
+          paused: state !== window.YT.PlayerState.PLAYING,
+          provider: "youtube",
+        });
+      }
       function sendYoutubeAudioCommand(action, value) {
-        const frame = document.getElementById("questionAudioEmbed");
-        if (!frame?.contentWindow) return;
-        if (frame.dataset.youtubeReady !== "true") {
-          frame.dataset.pendingYoutubeCommand = JSON.stringify({
-            action,
-            value,
-          });
+        if (!youtubePlayerReady || !youtubePlayer) {
+          pendingYoutubeCommand = { action, value };
           return;
         }
         const commands = {
-          pause: ["pauseVideo"],
-          play: ["playVideo"],
-          restart: ["seekTo", 0, true],
-          volume: ["setVolume", Math.round(value * 100)],
+          pause: () => youtubePlayer.pauseVideo(),
+          play: () => youtubePlayer.playVideo(),
+          restart: () => {
+            youtubePlayer.seekTo(0, true);
+            youtubePlayer.playVideo();
+          },
+          seek: () => youtubePlayer.seekTo(value, true),
+          volume: () => youtubePlayer.setVolume(Math.round(value * 100)),
         };
-        const [func, ...args] = commands[action] || [];
-        if (func)
-          frame.contentWindow.postMessage(
-            JSON.stringify({ event: "command", func, args }),
-            "https://www.youtube-nocookie.com",
-          );
-        if (action === "restart")
-          frame.contentWindow.postMessage(
-            JSON.stringify({ event: "command", func: "playVideo", args: [] }),
-            "https://www.youtube-nocookie.com",
-          );
+        if (commands[action]) commands[action]();
+        publishYoutubeTelemetry();
+      }
+      function destroyYoutubePlayer() {
+        clearInterval(youtubeTelemetryTimer);
+        youtubeTelemetryTimer = null;
+        if (youtubePlayer) youtubePlayer.destroy();
+        youtubePlayer = null;
+        youtubeEmbedKey = "";
+        youtubePlayerReady = false;
+        pendingYoutubeCommand = null;
+      }
+      function createYoutubePlayer() {
+        const frame = document.getElementById("questionAudioEmbed");
+        if (
+          !window.YT?.Player ||
+          !frame ||
+          frame.dataset.provider !== "youtube"
+        )
+          return;
+        const questionKey = frame.dataset.questionKey;
+        if (youtubePlayer && youtubeEmbedKey === questionKey) return;
+        destroyYoutubePlayer();
+        youtubeEmbedKey = questionKey;
+        try {
+          youtubePlayer = new window.YT.Player(frame, {
+            events: {
+              onReady: () => {
+                if (
+                  document.getElementById("questionAudioEmbed") !== frame ||
+                  frame.dataset.questionKey !== youtubeEmbedKey
+                ) {
+                  destroyYoutubePlayer();
+                  return;
+                }
+                youtubePlayerReady = true;
+                if (pendingYoutubeCommand) {
+                  const command = pendingYoutubeCommand;
+                  pendingYoutubeCommand = null;
+                  sendYoutubeAudioCommand(command.action, command.value);
+                }
+                publishYoutubeTelemetry();
+                youtubeTelemetryTimer = setInterval(
+                  publishYoutubeTelemetry,
+                  800,
+                );
+              },
+              onStateChange: publishYoutubeTelemetry,
+              onError: (event) => {
+                console.error(
+                  `تعذر تشغيل فيديو YouTube (رمز ${event.data})`,
+                );
+              },
+            },
+          });
+        } catch (error) {
+          console.error("تعذر تهيئة مشغّل YouTube:", error);
+        }
+      }
+      function loadYoutubeIframeAPI() {
+        if (window.YT?.Player) {
+          createYoutubePlayer();
+          return;
+        }
+        if (document.getElementById("youtubeIframeApi")) return;
+        window.onYouTubeIframeAPIReady = createYoutubePlayer;
+        const script = document.createElement("script");
+        script.id = "youtubeIframeApi";
+        script.src = "https://www.youtube.com/iframe_api";
+        script.async = true;
+        script.onerror = () => {
+          console.error("تعذر تحميل YouTube iFrame API");
+        };
+        document.head.appendChild(script);
       }
       function applyEmbeddedAudioControl(embed, control, questionKey) {
         if (!embed || !control?.seq) return;
@@ -109,23 +224,25 @@
         lastQuestionAudioControlKey = commandKey;
         if (embed.provider === "spotify") {
           if (control.action !== "volume")
-            sendSpotifyAudioCommand(control.action);
+            sendSpotifyAudioCommand(control.action, control.position);
           return;
         }
         if (embed.provider !== "youtube") return;
-        if (control.action === "volume")
-          sendYoutubeAudioCommand("volume", control.volume);
-        else sendYoutubeAudioCommand(control.action);
+        sendYoutubeAudioCommand(
+          control.action,
+          control.action === "volume" ? control.volume : control.position,
+        );
       }
-      function sendSpotifyAudioCommand(action) {
+      function sendSpotifyAudioCommand(action, value) {
         if (!spotifyEmbedController || !spotifyControllerReady) {
-          pendingSpotifyCommand = action;
+          pendingSpotifyCommand = { action, value };
           return;
         }
         const commands = {
           pause: () => spotifyEmbedController.pause(),
           play: () => spotifyEmbedController.resume(),
           restart: () => spotifyEmbedController.restart(),
+          seek: () => spotifyEmbedController.seek(Math.floor(value)),
         };
         if (commands[action]) commands[action]();
       }
@@ -165,10 +282,26 @@
               spotifyEmbedController = controller;
               controller.addListener("ready", () => {
                 spotifyControllerReady = true;
+                controller.addListener("playback_update", (event) => {
+                  const position = Number(event.data?.position) / 1000,
+                    duration = Number(event.data?.duration) / 1000;
+                  if (
+                    !Number.isFinite(position) ||
+                    !Number.isFinite(duration) ||
+                    duration <= 0
+                  )
+                    return;
+                  publishAudioTelemetry({
+                    position,
+                    duration,
+                    paused: !!event.data.isPaused,
+                    provider: "spotify",
+                  });
+                });
                 if (!pendingSpotifyCommand) return;
-                const action = pendingSpotifyCommand;
+                const command = pendingSpotifyCommand;
                 pendingSpotifyCommand = null;
-                sendSpotifyAudioCommand(action);
+                sendSpotifyAudioCommand(command.action, command.value);
               });
             },
           );
@@ -324,6 +457,16 @@
           if (control.action === "play") {
             audio.dataset.remotePaused = "false";
             playQuestionAudio();
+          }
+          if (
+            control.action === "seek" &&
+            Number.isFinite(control.position) &&
+            Number.isFinite(audio.duration)
+          ) {
+            audio.currentTime = Math.min(
+              Math.max(0, control.position),
+              audio.duration,
+            );
           }
         };
         run();
@@ -515,6 +658,20 @@ ${
             audio.addEventListener("pause", () => {
               if (button) button.hidden = false;
             });
+            const publishAudioPosition = () => {
+              if (!Number.isFinite(audio.duration) || audio.duration <= 0)
+                return;
+              publishAudioTelemetry({
+                position: audio.currentTime,
+                duration: audio.duration,
+                paused: audio.paused,
+                provider: "audio",
+              });
+            };
+            audio.addEventListener("timeupdate", publishAudioPosition);
+            audio.addEventListener("loadedmetadata", publishAudioPosition);
+            audio.addEventListener("play", publishAudioPosition);
+            audio.addEventListener("pause", publishAudioPosition);
             if (button) button.hidden = !audio.paused && !audio.ended;
             applyQuestionAudioControl(audio, V.audioControl, questionKey);
           }

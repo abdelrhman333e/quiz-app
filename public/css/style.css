@@ -354,6 +354,22 @@ html[data-theme="light"] .pl {
   accent-color: var(--p);
   cursor: pointer;
 }
+.audio-seek-control {
+  margin: 12px 0;
+}
+.audio-seek-times {
+  display: flex;
+  justify-content: space-between;
+  color: var(--mut);
+  font-variant-numeric: tabular-nums;
+}
+.audio-seek-control input[type="range"] {
+  display: block;
+  width: 100%;
+  margin: 6px 0;
+  accent-color: var(--p);
+  cursor: pointer;
+}
 .import-hint {
   display: block;
   margin-top: 8px;
