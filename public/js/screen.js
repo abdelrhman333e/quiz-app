@@ -14,6 +14,96 @@
         lastAnswerKey = "",
         lastTop5Key = "",
         lastRevealedRanks = [];
+      function audioEmbedSource(audioUrl) {
+        try {
+          const url = new URL(audioUrl),
+            host = url.hostname.toLowerCase();
+          if (
+            [
+              "youtube.com",
+              "www.youtube.com",
+              "m.youtube.com",
+              "music.youtube.com",
+              "youtu.be",
+              "youtube-nocookie.com",
+              "www.youtube-nocookie.com",
+            ].includes(host)
+          ) {
+            const videoId =
+              host === "youtu.be"
+                ? url.pathname.split("/")[1]
+                : url.searchParams.get("v") ||
+                  url.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/)?.[1];
+            if (!/^[\w-]{11}$/.test(videoId || "")) return null;
+            const embedUrl = new URL(
+              `https://www.youtube-nocookie.com/embed/${videoId}`,
+            );
+            embedUrl.searchParams.set("autoplay", "1");
+            embedUrl.searchParams.set("enablejsapi", "1");
+            embedUrl.searchParams.set("origin", location.origin);
+            embedUrl.searchParams.set("playsinline", "1");
+            return { provider: "youtube", src: embedUrl.href };
+          }
+          if (host === "open.spotify.com") {
+            const match = url.pathname.match(
+              /\/(?:track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/,
+            );
+            if (!match) return null;
+            const embedUrl = new URL(
+              `https://open.spotify.com/embed${url.pathname.slice(url.pathname.indexOf(match[0]))}`,
+            );
+            embedUrl.searchParams.set("utm_source", "generator");
+            embedUrl.searchParams.set("autoplay", "true");
+            return { provider: "spotify", src: embedUrl.href };
+          }
+          if (host === "soundcloud.com" || host === "www.soundcloud.com") {
+            const embedUrl = new URL("https://w.soundcloud.com/player/");
+            embedUrl.searchParams.set("url", url.href);
+            embedUrl.searchParams.set("auto_play", "true");
+            embedUrl.searchParams.set("hide_related", "true");
+            embedUrl.searchParams.set("visual", "false");
+            return { provider: "soundcloud", src: embedUrl.href };
+          }
+        } catch {}
+        return null;
+      }
+      function sendYoutubeAudioCommand(action, value) {
+        const frame = document.getElementById("questionAudioEmbed");
+        if (!frame?.contentWindow) return;
+        if (frame.dataset.youtubeReady !== "true") {
+          frame.dataset.pendingYoutubeCommand = JSON.stringify({
+            action,
+            value,
+          });
+          return;
+        }
+        const commands = {
+          pause: ["pauseVideo"],
+          play: ["playVideo"],
+          restart: ["seekTo", 0, true],
+          volume: ["setVolume", Math.round(value * 100)],
+        };
+        const [func, ...args] = commands[action] || [];
+        if (func)
+          frame.contentWindow.postMessage(
+            JSON.stringify({ event: "command", func, args }),
+            "https://www.youtube-nocookie.com",
+          );
+        if (action === "restart")
+          frame.contentWindow.postMessage(
+            JSON.stringify({ event: "command", func: "playVideo", args: [] }),
+            "https://www.youtube-nocookie.com",
+          );
+      }
+      function applyEmbeddedAudioControl(embed, control, questionKey) {
+        if (!embed || embed.provider !== "youtube" || !control?.seq) return;
+        const commandKey = `${questionKey}|${control.seq}`;
+        if (commandKey === lastQuestionAudioControlKey) return;
+        lastQuestionAudioControlKey = commandKey;
+        if (control.action === "volume")
+          sendYoutubeAudioCommand("volume", control.volume);
+        else sendYoutubeAudioCommand(control.action);
+      }
       function reverseStage(animateQuestion) {
         const letter = V.reverse?.letter,
           elapsed = Date.now() - (V.reverse?.started || 0),
@@ -163,7 +253,8 @@
             render();
           }, 3500);
         }
-        const b = V.buz != null ? V.cs[V.buz] : null;
+        const b = V.buz != null ? V.cs[V.buz] : null,
+          audioEmbed = V.mode === "audio" ? audioEmbedSource(V.audioUrl) : null;
         const questionContent =
             V.mode === "visual"
               ? `${V.image || ""}|${V.emoji || ""}`
@@ -207,8 +298,16 @@
         const previousQuestionAudio = document.getElementById(
           "questionAudioPlayer",
         );
+        const previousQuestionEmbed = document.getElementById(
+          "questionAudioEmbed",
+        );
         const keepQuestionAudio =
           previousQuestionAudio?.dataset.questionKey === questionKey;
+        const keepQuestionEmbed =
+          !!audioEmbed &&
+          !V.showStats &&
+          !rouletteHtml &&
+          previousQuestionEmbed?.dataset.questionKey === questionKey;
         const questionAudioTime = keepQuestionAudio
           ? previousQuestionAudio.currentTime
           : 0;
@@ -230,7 +329,7 @@ ${
           ? visualStage(animateQuestion, animateAnswer)
           : V.shown
             ? `<div class="tag">${esc(V.t)} · ${V.kind === "top5" || V.kind === "top10" ? "النقاط حسب الترتيب" : V.d === "h" ? "صعب — نقطتان" : "سهل — نقطة"}</div><div class="card qbox ${animateQuestion ? "animate-in" : ""}">${esc(V.x)}</div>
- ${V.mode === "audio" ? `<button id="playQuestionAudio" class="on" onclick="playQuestionAudio()" hidden>▶ تشغيل الصوت</button><audio id="questionAudioPlayer" class="question-audio-player" controls preload="metadata" data-question-key="${esc(questionKey)}" onerror="this.nextElementSibling.hidden=false"><source src="${esc(V.audioUrl)}"></audio><small hidden>تعذر تحميل الرابط الصوتي، تأكد من أنه رابط مباشر لملف صوتي.</small>` : ""}
+ ${V.mode === "audio" ? audioEmbed ? `<iframe id="questionAudioEmbed" class="question-audio-embed ${audioEmbed.provider}" data-question-key="${esc(questionKey)}" src="${esc(audioEmbed.src)}" title="مشغل الصوت" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><small>استخدم أزرار المشغّل للتحكم في الصوت${audioEmbed.provider === "youtube" ? "، أو أزرار التابلت" : ""}.</small>` : `<button id="playQuestionAudio" class="on" onclick="playQuestionAudio()" hidden>▶ تشغيل الصوت</button><audio id="questionAudioPlayer" class="question-audio-player" controls preload="metadata" data-question-key="${esc(questionKey)}" onerror="this.nextElementSibling.hidden=false"><source src="${esc(V.audioUrl)}"></audio><small hidden>تعذر تحميل الرابط الصوتي؛ تأكد من أن الرابط مباشر لملف صوتي.</small>` : ""}
  ${V.kind === "top5" || V.kind === "top10" ? V.revealed?.length ? `<div class="opts">${V.revealed.map((a) => `<div class="opt ok ${revealedRanks.includes(a.rank) ? "" : "animate-in"}"><b>${a.rank}</b>${esc(a.a)}</div>`).join("")}</div>` : "" : ""}
  ${V.o ? `<div class="opts ${animateOptions ? "animate-options" : ""}">${V.o.map((o, i) => `<div class="opt ${V.c === i ? "ok" : ""}"><b>${LB[i]}</b>${esc(o)}</div>`).join("")}</div>` : ""}
  ${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`
@@ -239,6 +338,32 @@ ${
  ${!V.showStats && V.timer && V.timer.phase !== "done" ? `<div class="game-timer ${timerSeconds(V.timer) <= 5 ? "timer-ending" : ""}"><div class="timer-readout"><span>${V.timer.phase === "question" ? "السؤال" : "الاختيارات"}${V.timer.paused ? " · متوقف" : ""}</span><b id="screenTimerCountdown">${timerSeconds(V.timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="screenTimerProgress" style="width:${timerProgress(V.timer)}%"></i></div></div>` : ""}
  ${!V.showStats && V.mode !== "reverse" && b ? `<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res === "ok" ? "✅" : V.res === "no" ? "❌" : ""}</div>` : ""}</div>
  <div class="card screen-board"><h3>🏆 ${V.round ? `ترتيب ${esc(V.round.name)}` : "الترتيب"}</h3><div class="board">${board(V.round ? V.cs.filter((contestant) => contestant.roundParticipant) : V.cs)}</div></div></div>`;
+        if (keepQuestionEmbed)
+          document
+            .getElementById("questionAudioEmbed")
+            ?.replaceWith(previousQuestionEmbed);
+        const questionAudioFrame = document.getElementById(
+          "questionAudioEmbed",
+        );
+        if (
+          audioEmbed?.provider === "youtube" &&
+          questionAudioFrame &&
+          questionAudioFrame.dataset.youtubeLoadHandler !== "true"
+        ) {
+          questionAudioFrame.dataset.youtubeLoadHandler = "true";
+          questionAudioFrame.addEventListener(
+            "load",
+            () => {
+              questionAudioFrame.dataset.youtubeReady = "true";
+              const pending = questionAudioFrame.dataset.pendingYoutubeCommand;
+              if (!pending) return;
+              delete questionAudioFrame.dataset.pendingYoutubeCommand;
+              const command = JSON.parse(pending);
+              sendYoutubeAudioCommand(command.action, command.value);
+            },
+            { once: true },
+          );
+        }
         if (scoreNotice) {
           const amount = Math.abs(scoreNotice.delta),
             pointLabel = amount === 1 ? "نقطة" : "نقاط",
@@ -251,36 +376,44 @@ ${
           );
         }
         if (!V.showStats && V.mode === "audio" && V.shown) {
-          const audio = document.getElementById("questionAudioPlayer"),
-            button = document.getElementById("playQuestionAudio"),
-            shouldPlay = keepQuestionAudio
-              ? questionAudioWasPlaying
-              : questionKey !== lastQuestionAudioKey;
-          const restoreAndPlay = () => {
-            if (
-              keepQuestionAudio &&
-              Number.isFinite(questionAudioTime) &&
-              questionAudioTime < audio.duration
-            )
-              audio.currentTime = questionAudioTime;
-            if (shouldPlay && audio.dataset.remotePaused !== "true")
-              audio.play().catch(() => {
-                if (button) button.hidden = false;
+          if (audioEmbed) {
+            applyEmbeddedAudioControl(
+              audioEmbed,
+              V.audioControl,
+              questionKey,
+            );
+          } else {
+            const audio = document.getElementById("questionAudioPlayer"),
+              button = document.getElementById("playQuestionAudio"),
+              shouldPlay = keepQuestionAudio
+                ? questionAudioWasPlaying
+                : questionKey !== lastQuestionAudioKey;
+            const restoreAndPlay = () => {
+              if (
+                keepQuestionAudio &&
+                Number.isFinite(questionAudioTime) &&
+                questionAudioTime < audio.duration
+              )
+                audio.currentTime = questionAudioTime;
+              if (shouldPlay && audio.dataset.remotePaused !== "true")
+                audio.play().catch(() => {
+                  if (button) button.hidden = false;
+                });
+            };
+            if (audio.readyState >= 1) restoreAndPlay();
+            else
+              audio.addEventListener("loadedmetadata", restoreAndPlay, {
+                once: true,
               });
-          };
-          if (audio.readyState >= 1) restoreAndPlay();
-          else
-            audio.addEventListener("loadedmetadata", restoreAndPlay, {
-              once: true,
+            audio.addEventListener("play", () => {
+              if (button) button.hidden = true;
             });
-          audio.addEventListener("play", () => {
-            if (button) button.hidden = true;
-          });
-          audio.addEventListener("pause", () => {
-            if (button) button.hidden = false;
-          });
-          if (button) button.hidden = !audio.paused && !audio.ended;
-          applyQuestionAudioControl(audio, V.audioControl, questionKey);
+            audio.addEventListener("pause", () => {
+              if (button) button.hidden = false;
+            });
+            if (button) button.hidden = !audio.paused && !audio.ended;
+            applyQuestionAudioControl(audio, V.audioControl, questionKey);
+          }
           lastQuestionAudioKey = questionKey;
         } else {
           lastQuestionAudioKey = "";

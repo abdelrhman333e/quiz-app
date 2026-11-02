@@ -185,12 +185,44 @@
       function optsHTML(q) {
         return `<div class="tbopts">${q.o.map((o, i) => `<div class="tbopt ${q.c === i ? "good" : ""}"><b>${LB[i]}</b><span>${esc(o)}</span>${q.c === i ? '<i class="chk">✓</i>' : ""}</div>`).join("")}</div>`;
       }
+      function embeddedAudioProvider(audioUrl) {
+        try {
+          const url = new URL(audioUrl),
+            host = url.hostname.toLowerCase(),
+            youtubeHosts = [
+              "youtube.com",
+              "www.youtube.com",
+              "m.youtube.com",
+              "music.youtube.com",
+              "youtu.be",
+              "youtube-nocookie.com",
+              "www.youtube-nocookie.com",
+            ];
+          if (youtubeHosts.includes(host)) {
+            const videoId =
+              host === "youtu.be"
+                ? url.pathname.split("/")[1]
+                : url.searchParams.get("v") ||
+                  url.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/)?.[1];
+            return /^[\w-]{11}$/.test(videoId || "") ? "youtube" : "invalid";
+          }
+          if (host === "open.spotify.com")
+            return /\/(?:track|album|playlist|episode|show)\/[a-zA-Z0-9]+/.test(
+              url.pathname,
+            )
+              ? "spotify"
+              : "invalid";
+          if (host === "soundcloud.com" || host === "www.soundcloud.com")
+            return url.pathname.length > 1 ? "soundcloud" : "invalid";
+        } catch {}
+        return "";
+      }
       function previewHTML(c) {
         const { q, cu, hasO, top, reverse, visual, audioQuestion } = c;
         if (visual)
           return `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div class="tbans">الإجابة: ${esc(q.a)}</div></div>`;
         if (audioQuestion)
-          return `<div class="visual-preview"><audio controls preload="none" src="${esc(q.audioUrl)}"></audio></div>${hasO ? optsHTML(q) : `<div class="tbans">الإجابة: ${esc(q.a)}</div>`}`;
+          return `<div class="visual-preview">${embeddedAudioProvider(q.audioUrl) ? `<a href="${esc(q.audioUrl)}" target="_blank" rel="noopener noreferrer">فتح مصدر الصوت</a>` : `<audio controls preload="none" src="${esc(q.audioUrl)}"></audio>`}</div>${hasO ? optsHTML(q) : `<div class="tbans">الإجابة: ${esc(q.a)}</div>`}`;
         if (reverse) return `<div class="tbans">الكلمة: ${esc(q.a)}</div>`;
         if (top)
           return `<div class="tbopts">${q.r.map((a, i) => `<div class="tbopt ${cu.revealed?.includes(i) ? "good" : ""}"><b>${i + 1}</b><span>${esc(a)}</span></div>`).join("")}</div>`;
@@ -289,7 +321,10 @@
         return `<div class="timer-controls"><div class="game-timer"><div class="timer-readout"><span>${timerPhaseLabel(timer.phase)}${timer.paused ? " · متوقف" : ""}</span><b id="tabletTimerCountdown">${timerSeconds(timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="tabletTimerProgress" style="width:${timerProgress(timer)}%"></i></div></div><button onclick="${timerActive ? "toggleTimer()" : "restartTimer()"}">${timerActive ? (timer.paused ? "▶ استكمال المؤقت" : "⏸ إيقاف المؤقت") : "↻ إعادة المؤقت"}</button>${timerActive ? `<button onclick="restartTimer()">↻ إعادة 30 ثانية</button>` : ""}</div>`;
       }
       function audioHTML(c) {
-        const { cu } = c;
+        const { q, cu } = c,
+          provider = embeddedAudioProvider(q.audioUrl);
+        if (provider && provider !== "youtube")
+          return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><small>استخدم أزرار مشغّل ${provider === "spotify" ? "Spotify" : "SoundCloud"} على شاشة العرض للتحكم في الصوت.</small></div>`;
         return `<div class="card audio-control-panel"><h3>التحكم في صوت السؤال</h3><div class="row"><button class="big2 on" onclick="setQuestionAudio(${cu.audioControl?.playing === false ? "'play'" : "'pause'"})">${cu.audioControl?.playing === false ? "▶ تشغيل الصوت" : "⏸ إيقاف مؤقت"}</button><button class="big2" onclick="setQuestionAudio('restart')">↺ إعادة من البداية</button></div><label for="questionAudioVolume">مستوى الصوت: <span id="questionAudioVolumeValue">${Math.round((cu.audioControl?.volume ?? 1) * 100)}%</span></label><input id="questionAudioVolume" type="range" min="0" max="100" value="${Math.round((cu.audioControl?.volume ?? 1) * 100)}" oninput="$('questionAudioVolumeValue').textContent=this.value+'%'" onchange="setQuestionAudio('volume',this.value/100)"><small>إذا منع المتصفح التشغيل عن بُعد، اضغط تشغيل على شاشة العرض مرة واحدة.</small></div>`;
       }
       function whoHTML(c) {
@@ -1263,7 +1298,7 @@
    .join("")}</datalist>
  <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option></select>
  <div id="questionFields"><input id="fx" placeholder="نص السؤال" value="${esc(e.x)}"></div>
- <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط ملف صوتي مباشر (اختياري)" value="${esc(e.audioUrl || "")}" oninput="$('fauFile').value=''"><small>يمكنك لصق رابط مباشر لملف صوتي، أو رفع ملف من جهازك. روابط صفحات YouTube وSpotify لا تعمل كمصدر صوت؛ ارفع ملفًا صوتيًا تملك حق استخدامه. الصيغ المدعومة: MP3 وWAV وOGG وM4A وAAC، بحد أقصى 20 ميجابايت.</small><label for="fauFile">اختيار ملف صوتي من الجهاز</label><input id="fauFile" type="file" accept=".mp3,.wav,.ogg,.oga,.opus,.m4a,.aac"><small id="audioUploadStatus" aria-live="polite"></small></div>
+ <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط YouTube أو Spotify أو ملف صوتي مباشر" value="${esc(e.audioUrl || "")}" oninput="$('fauFile').value=''"><small>الصق رابط YouTube أو Spotify أو SoundCloud، أو رابطًا مباشرًا لملف صوتي. المواقع الأخرى تعمل إذا كانت توفر رابطًا مباشرًا لملف MP3 أو WAV أو OGG أو M4A أو AAC. يمكنك أيضًا رفع ملف من جهازك بحد أقصى 20 ميجابايت.</small><label for="fauFile">اختيار ملف صوتي من الجهاز</label><input id="fauFile" type="file" accept=".mp3,.wav,.ogg,.oga,.opus,.m4a,.aac"><small id="audioUploadStatus" aria-live="polite"></small></div>
  <label for="fd">صعوبة السؤال</label><select id="fd"><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>
  <div id="normalFields">
  <small>الاختيارات — اتركها فارغة لو السؤال بدون اختيارات</small>
@@ -1312,18 +1347,15 @@
           try {
             if (!/^\/audio\/[0-9a-f-]{36}$/i.test(audioUrl)) {
               const url = new URL(audioUrl);
-              if (
-                !["http:", "https:"].includes(url.protocol) ||
-                /(^|\.)((youtube\.com)|(youtube-nocookie\.com)|(youtu\.be)|(spotify\.com)|(spotify\.link))$/i.test(
-                  url.hostname,
-                )
-              )
+              if (!["http:", "https:"].includes(url.protocol))
                 throw new Error();
             }
+            if (embeddedAudioProvider(audioUrl) === "invalid")
+              throw new Error();
             if (!audioUrl) throw new Error();
           } catch {
             return toast(
-              "أضف ملفًا صوتيًا أو رابطًا مباشرًا؛ روابط YouTube وSpotify لا تعمل هنا",
+              "أضف رابط YouTube أو Spotify أو SoundCloud أو رابط ملف صوتي مباشر",
               1,
             );
           }

@@ -337,14 +337,8 @@ function cleanAudio(v) {
   const audio = str(v, 1000);
   try {
     const url = new URL(audio),
-      host = url.hostname.toLowerCase();
-    if (
-      !["http:", "https:"].includes(url.protocol) ||
-      /(^|\.)((youtube\.com)|(youtube-nocookie\.com)|(youtu\.be)|(spotify\.com)|(spotify\.link))$/.test(
-        host,
-      )
-    )
-      return "";
+      protocol = url.protocol;
+    if (!["http:", "https:"].includes(protocol)) return "";
     return audio;
   } catch {
     return /^\/audio\/[0-9a-f-]{36}$/i.test(audio) ? audio : "";
