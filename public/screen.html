@@ -1,18 +1,91 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css"><title>شاشة العرض</title></head>
-<body><div id="app"></div>
-<div id="pl" style="position:fixed;left:-9999px;top:0;width:200px;height:200px"></div>
-<script src="/common.js"></script><script>
-const room=location.pathname.split('/')[2];
-function render(){if(!V)return;
- const pl=document.getElementById('pl'),src=V.m?embedSrc(V.m,1):'';
- if((pl.dataset.s||'')!==src){pl.dataset.s=src;pl.innerHTML=src?`<iframe src="${src}" allow="autoplay; encrypted-media" width="200" height="200" style="border:0"></iframe>`:''}
- const b=V.buz!=null?V.cs[V.buz]:null,cu=V;
- document.getElementById('app').innerHTML=`<div class="scr"><div class="stage">
- ${V.shown?`<div class="tag">${esc(V.t)} · ${V.d==='h'?'صعب — نقطتان':'سهل — نقطة'}</div><div class="card qbox">${esc(V.x)}</div>
- ${V.m?'<div class="ans">🔊 اسمع الصوت</div>':''}
- ${V.o?`<div class="opts">${V.o.map((o,i)=>`<div class="opt ${V.c===i?'ok':''}"><b>${LB[i]}</b>${esc(o)}</div>`).join('')}</div>`:''}
- ${V.ans?`<div class="ans">✔ ${esc(V.ans)}</div>`:''}`:'<div class="wait">في انتظار السؤال...</div>'}
- ${b?`<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res==='ok'?'✅':V.res==='no'?'❌':''}</div>`:''}</div>
- <div class="card" style="align-self:start"><h3>🏆 الترتيب</h3><div class="board">${board(V.cs)}</div></div></div>`}
-if(room)connectView(room,render);else document.getElementById('app').innerHTML='<div class="home"><h1>افتح رابط الشاشة من التابلت</h1></div>';
-</script></body></html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>شاشة العرض</title>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!-- مشغّل الصوت المخفي: برّه #app عشان ما يتعادش مع كل تحديث -->
+    <div
+      id="pl"
+      style="position:fixed;left:-9999px;top:0;width:200px;height:200px"
+    ></div>
+
+    <script src="/common.js"></script>
+    <script>
+      const room = location.pathname.split("/")[2];
+
+      // تشغيل/إيقاف الصوت (بيتغيّر بس لما الرابط يتغيّر)
+      function updatePlayer() {
+        const pl = document.getElementById("pl");
+        const src = V.m ? embedSrc(V.m, 1) : "";
+        if ((pl.dataset.s || "") === src) return;
+
+        pl.dataset.s = src;
+        pl.innerHTML = src
+          ? `<iframe src="${src}" allow="autoplay; encrypted-media"
+                     width="200" height="200" style="border:0"></iframe>`
+          : "";
+      }
+
+      function questionHtml() {
+        if (!V.shown) return '<div class="wait">في انتظار السؤال...</div>';
+
+        const level = V.d === "h" ? "صعب — نقطتان" : "سهل — نقطة";
+
+        const options = V.o
+          ? `<div class="opts">
+              ${V.o
+                .map(
+                  (o, i) =>
+                    `<div class="opt ${V.c === i ? "ok" : ""}"><b>${LB[i]}</b>${esc(o)}</div>`,
+                )
+                .join("")}
+            </div>`
+          : "";
+
+        return `
+          <div class="tag">${esc(V.t)} · ${level}</div>
+          <div class="card qbox">${esc(V.x)}</div>
+          ${V.m ? '<div class="ans">🔊 اسمع الصوت</div>' : ""}
+          ${options}
+          ${V.ans ? `<div class="ans">✔ ${esc(V.ans)}</div>` : ""}`;
+      }
+
+      function buzzerHtml() {
+        if (V.buz == null) return "";
+        const b = V.cs[V.buz];
+        const mark = V.res === "ok" ? "✅" : V.res === "no" ? "❌" : "";
+        return `<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${mark}</div>`;
+      }
+
+      function render() {
+        if (!V) return;
+        updatePlayer();
+
+        document.getElementById("app").innerHTML = `
+          <div class="scr">
+            <div class="stage">
+              ${questionHtml()}
+              ${buzzerHtml()}
+            </div>
+            <div class="card" style="align-self:start">
+              <h3>🏆 الترتيب</h3>
+              <div class="board">${board(V.cs)}</div>
+            </div>
+          </div>`;
+      }
+
+      if (room) {
+        connectView(room, render);
+      } else {
+        document.getElementById("app").innerHTML =
+          '<div class="home"><h1>افتح رابط الشاشة من التابلت</h1></div>';
+      }
+    </script>
+  </body>
+</html>
