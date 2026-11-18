@@ -5,16 +5,21 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#101c30" />
     <title>جرس المتسابقين</title>
-    <link rel="stylesheet" href="/css/buzzer.css?v=2" />
-    <script src="/js/buzzer.js?v=2" defer></script>
+    <link rel="stylesheet" href="/css/buzzer.css?v=3" />
+    <script src="/js/buzzer.js?v=3" defer></script>
   </head>
   <body>
     <main class="buzzer-shell">
       <header class="buzzer-brand">
-        <span class="brand-icon" aria-hidden="true">🔔</span>
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img">
+            <path d="M18 16H6l1.4-1.7V10a4.6 4.6 0 0 1 9.2 0v4.3L18 16Z"></path>
+            <path d="M10 18.2h4M12 3V1.8"></path>
+          </svg>
+        </span>
         <div>
           <h1>جرس المتسابقين</h1>
-          <p>خليك جاهز واضغط أول ما تعرف الإجابة</p>
+          <p>اختار اسمك واستعد للضغط أولًا</p>
         </div>
       </header>
       <form id="roomForm" class="room-form">
@@ -48,8 +53,14 @@
           استنى مقدم المسابقة يعرض السؤال
         </p>
         <button id="buzzButton" class="buzz-button" type="button" disabled>
-          <span aria-hidden="true">🔔</span>
+          <span class="buzz-button-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 16H6l1.4-1.7V10a4.6 4.6 0 0 1 9.2 0v4.3L18 16Z"></path>
+              <path d="M10 18.2h4M12 3V1.8"></path>
+            </svg>
+          </span>
           <b>اضغط الجرس</b>
+          <small>سيتم تسجيل أسرع ضغطة</small>
         </button>
       </section>
       <p class="buzzer-help">

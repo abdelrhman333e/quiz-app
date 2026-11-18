@@ -37,6 +37,8 @@ function render() {
   contestants.replaceChildren();
   const players = state?.players || [];
   const claimedIds = new Set(state?.claimedIds || []);
+  buzzerPanel.dataset.state =
+    state?.buzzed ? "buzzed" : state?.active ? "ready" : "waiting";
   if (!players.some((player) => player.id === selectedContestantId))
     selectedContestantId = "";
   players.forEach((player) => {
@@ -186,6 +188,7 @@ function joinRoom(code) {
   lastDisplayId = "";
   joinedRoom.textContent = room;
   buzzerPanel.hidden = false;
+  document.body.classList.add("room-connected");
   setConnectionStatus("جاري الاتصال بالغرفة...");
   render();
   eventSource = new EventSource(
