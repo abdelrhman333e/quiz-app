@@ -1160,3 +1160,144 @@ html[data-theme="black"] .tb2 .dock {
   background: color-mix(in srgb, var(--p) 30%, transparent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--p) 30%, transparent);
 }
+
+/* ===== تحسينات شاشة الأسئلة والإعدادات ===== */
+.tb2 .hdr-acts button {
+  min-height: 38px;
+  padding: 6px 12px;
+  font-size: 13px;
+  background: transparent;
+  border-style: dashed;
+}
+.tb2 .hdr-acts button:disabled {
+  opacity: 0.6;
+}
+.tb2 .q-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tb2 .q-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.18);
+  color: #a9c8ff;
+}
+.tb2 .q-badge.dim {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--mut2);
+}
+.tb2 .question-filters .duplicate-filter {
+  min-height: 44px;
+  padding: 8px 12px;
+  background: var(--s3);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.tb2 .fdd {
+  position: relative;
+  min-width: 0;
+}
+.tb2 .fdd-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: var(--s3);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  font-size: 15px;
+}
+.tb2 .fdd.open .fdd-btn {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+.tb2 .fdd-caret {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--mut2);
+  border-bottom: 2px solid var(--mut2);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.15s;
+}
+.tb2 .fdd.open .fdd-caret {
+  transform: rotate(-135deg);
+}
+.tb2 .fdd-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: 260px;
+  max-height: 340px;
+  overflow: auto;
+  z-index: 30;
+  padding: 4px;
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+.tb2 .fdd-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 7px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.tb2 .fdd-opt:hover,
+.tb2 .fdd-opt:focus-visible {
+  background: rgba(255, 255, 255, 0.07);
+}
+.tb2 .fdd-opt.sel {
+  background: rgba(59, 130, 246, 0.2);
+  color: #cfe0ff;
+}
+.tb2 .fdd-ico {
+  width: 20px;
+  text-align: center;
+}
+.tb2 .fdd-check {
+  margin-inline-start: auto;
+  font-weight: 500;
+}
+.tb2 .fdd-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.tb2 .fdd-dot.e {
+  background: var(--green);
+}
+.tb2 .fdd-dot.h {
+  background: var(--red);
+}
+.tb2 .question-bulk-actions button {
+  min-height: 38px;
+  font-size: 14px;
+}
+.tb2 .question-bulk-actions button:disabled {
+  opacity: 0.6;
+}
+.tb2 .question-bulk-actions .filter-count {
+  display: inline;
+  margin: 0;
+  margin-inline-start: auto;
+  font-size: 13px;
+  color: var(--mut2);
+}
+.tb2 .question-bulk-actions small {
+  color: var(--mut2);
+}

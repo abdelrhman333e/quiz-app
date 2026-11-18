@@ -24,7 +24,8 @@ const $ = (id) => document.getElementById(id);
       function contestantScore(contestant) {
         return G?.mode === "rounds" ? contestant.score || 0 : contestant.s;
       }
-      let questionSearch = "",
+      let openFilterMenu = null,
+        questionSearch = "",
         questionDifficulty = "all",
         questionKind = "all",
         duplicateQuestionsOnly = false,
@@ -470,11 +471,33 @@ const $ = (id) => document.getElementById(id);
         render();
       }
       function updateQuestionFilter(filter, value) {
+        openFilterMenu = null;
         if (filter === "difficulty") questionDifficulty = value;
         else if (filter === "kind") questionKind = value;
         else duplicateQuestionsOnly = value;
         render();
       }
+      function toggleFilterMenu(name) {
+        openFilterMenu = openFilterMenu === name ? null : name;
+        render();
+      }
+      function filterDropdownHTML(name, label, options, current) {
+        const open = openFilterMenu === name,
+          cur = options.find((o) => o.v === current) || options[0];
+        return `<div class="fdd ${open ? "open" : ""}"><button type="button" class="fdd-btn" aria-haspopup="listbox" aria-expanded="${open}" aria-label="${label}" onclick="event.stopPropagation();toggleFilterMenu('${name}')"><span>${cur.l}</span><i class="fdd-caret" aria-hidden="true"></i></button>${open ? `<div class="fdd-menu" role="listbox" aria-label="${label}">${options.map((o) => `<div class="fdd-opt ${o.v === current ? "sel" : ""}" role="option" tabindex="0" aria-selected="${o.v === current}" onclick="event.stopPropagation();updateQuestionFilter('${name}','${o.v}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();updateQuestionFilter('${name}','${o.v}')}">${o.i ? `<span class="fdd-ico" aria-hidden="true">${o.i}</span>` : ""}<span>${o.l}</span>${o.v === current ? '<b class="fdd-check" aria-hidden="true">✓</b>' : ""}</div>`).join("")}</div>` : ""}</div>`;
+      }
+      document.addEventListener("click", () => {
+        if (openFilterMenu) {
+          openFilterMenu = null;
+          render();
+        }
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && openFilterMenu) {
+          openFilterMenu = null;
+          render();
+        }
+      });
       function emptyHTML() {
         if (!Qs.length)
           return `<div class="card empty"><div class="big">ابدأ بإضافة أول سؤال</div><p>الأسئلة والتصنيفات بتتعمل من عندك. أضف سؤالًا جديدًا أو استورد ملف أسئلة جاهزًا.</p><div class="row c"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد أسئلة</button></div></div>`;
@@ -701,8 +724,11 @@ const $ = (id) => document.getElementById(id);
             visual: "بصري",
             career: "مسيرة لاعب",
           };
+        const kindIcons = { normal: "📝", audio: "🎵", top5: "🏆", top10: "🏆", reverse: "🔄", visual: "🖼️", career: "⚽" },
+          kindOptions = [{ v: "all", l: "كل الأنواع" }, ...Object.entries(kindLabels).map(([v, l]) => ({ v, l, i: kindIcons[v] }))],
+          diffOptions = [{ v: "all", l: "كل الصعوبات" }, { v: "e", l: "سهل", i: '<span class="fdd-dot e"></span>' }, { v: "h", l: "صعب", i: '<span class="fdd-dot h"></span>' }];
         visibleManageQuestionIds = filtered.map((question) => question.id);
-        return `<div class="mg"><div class="card"><h3>الأسئلة · ${Qs.length} <small>· ${duplicates.size} سؤال مكرر</small></h3><div class="row"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد أسئلة</button><button onclick="exportQuestions()">⬇ تصدير الأسئلة</button></div><div class="question-filters"><input id="questionSearch" type="search" placeholder="ابحث في نص السؤال والإجابة والاختيارات" value="${esc(questionSearch)}" oninput="updateQuestionSearch(this.value)"><select aria-label="تصفية حسب الصعوبة" onchange="updateQuestionFilter('difficulty',this.value)"><option value="all" ${questionDifficulty === "all" ? "selected" : ""}>كل الصعوبات</option><option value="e" ${questionDifficulty === "e" ? "selected" : ""}>سهل</option><option value="h" ${questionDifficulty === "h" ? "selected" : ""}>صعب</option></select><select aria-label="تصفية حسب النوع" onchange="updateQuestionFilter('kind',this.value)"><option value="all" ${questionKind === "all" ? "selected" : ""}>كل الأنواع</option>${Object.entries(kindLabels).map(([kind, label]) => `<option value="${kind}" ${questionKind === kind ? "selected" : ""}>${label}</option>`).join("")}</select><label class="duplicate-filter"><input type="checkbox" ${duplicateQuestionsOnly ? "checked" : ""} onchange="updateQuestionFilter('duplicates',this.checked)"> المكررة فقط</label></div><div class="row question-bulk-actions"><button onclick="toggleVisibleQuestionSelection()" ${filtered.length ? "" : "disabled"}>${allVisibleSelected ? "إلغاء تحديد المعروض" : "تحديد المعروض"}</button><button class="danger" onclick="deleteSelectedQuestions()" ${selectedQuestionIds.size ? "" : "disabled"}>🗑 حذف المحدد (${selectedQuestionIds.size})</button><button onclick="clearQuestionSelection()" ${selectedQuestionIds.size ? "" : "disabled"}>إلغاء التحديد</button><small>«تحديد المعروض» يحدد نتائج الفلاتر الحالية فقط.</small></div><small class="filter-count">عرض ${filtered.length} من ${list.length} في التصنيف المختار</small><details class="import-hint"><summary>طريقة تجهيز ملف الاستيراد</summary><small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><div dir="rtl" class="sample">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>${T.length > 1 ? catsHTML(T) : ""}${qListHTML(filtered, cu, true, duplicates, "لا توجد أسئلة مطابقة للفلاتر")}</div><div class="card"><h3>الثيم والوضع</h3><p class="theme-description">اختار الألوان المناسبة لك. الثيم بيتحفظ على هذا الجهاز والمتصفح.</p>${themeOptionsHTML()}</div><div class="card"><h3>المؤثرات الصوتية</h3><div class="row"><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button></div></div><div class="card"><h3>الحساب</h3><div class="row"><button class="danger" onclick="logout()">🚪 خروج</button></div></div></div>`;
+        return `<div class="mg"><div class="card"><h3 class="q-title">الأسئلة <span class="q-badge">${Qs.length} سؤال</span><span class="q-badge dim">${duplicates.size} مكرر</span></h3><div class="row"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد</button><button onclick="exportQuestions()">⬇ تصدير</button></div><div class="question-filters"><input id="questionSearch" type="search" placeholder="ابحث في نص السؤال والإجابة والاختيارات" value="${esc(questionSearch)}" oninput="updateQuestionSearch(this.value)">${filterDropdownHTML("difficulty", "تصفية حسب الصعوبة", diffOptions, questionDifficulty)}${filterDropdownHTML("kind", "تصفية حسب النوع", kindOptions, questionKind)}<label class="duplicate-filter"><input type="checkbox" ${duplicateQuestionsOnly ? "checked" : ""} onchange="updateQuestionFilter('duplicates',this.checked)"> المكررة فقط</label></div><div class="row question-bulk-actions"><button onclick="toggleVisibleQuestionSelection()" ${filtered.length ? "" : "disabled"}>${allVisibleSelected ? "إلغاء تحديد المعروض" : "تحديد المعروض"}</button><button onclick="clearQuestionSelection()" ${selectedQuestionIds.size ? "" : "disabled"}>إلغاء التحديد</button><button class="danger" onclick="deleteSelectedQuestions()" ${selectedQuestionIds.size ? "" : "disabled"}>🗑 حذف المحدد (${selectedQuestionIds.size})</button><span class="filter-count">عرض ${filtered.length} من ${list.length} في التصنيف المختار</span><small>«تحديد المعروض» يحدد نتائج الفلاتر الحالية فقط.</small></div><details class="import-hint"><summary>طريقة تجهيز ملف الاستيراد</summary><small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><div dir="rtl" class="sample">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>${T.length > 1 ? catsHTML(T) : ""}${qListHTML(filtered, cu, true, duplicates, "لا توجد أسئلة مطابقة للفلاتر")}</div><div class="card"><h3>الثيم والوضع</h3><p class="theme-description">اختار الألوان المناسبة لك. الثيم بيتحفظ على هذا الجهاز والمتصفح.</p>${themeOptionsHTML()}</div><div class="card"><h3>المؤثرات الصوتية</h3><div class="row"><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button></div></div><div class="card"><h3>الحساب</h3><div class="row"><button class="danger" onclick="logout()">🚪 خروج</button></div></div></div>`;
       }
       const TIMER_DURATION = 30000;
       function timerEnabled(q) {
