@@ -6,6 +6,12 @@ const connectionStatus = document.getElementById("connectionStatus");
 const contestants = document.getElementById("contestants");
 const questionStatus = document.getElementById("questionStatus");
 const buzzButton = document.getElementById("buzzButton");
+const passwordModal = document.getElementById("contestantPasswordModal");
+const passwordForm = document.getElementById("contestantPasswordForm");
+const passwordInput = document.getElementById("contestantPassword");
+const passwordContestantName = document.getElementById("passwordContestantName");
+const passwordError = document.getElementById("passwordError");
+const cancelPasswordButton = document.getElementById("cancelContestantPassword");
 let room = "";
 let state = null;
 let selectedContestantId = "";
@@ -27,6 +33,7 @@ let eventSource = null;
 let submitting = false;
 let requestMessage = "";
 let lastDisplayId = "";
+let passwordContestantId = "";
 
 function setConnectionStatus(message, kind = "") {
   connectionStatus.textContent = message;
@@ -36,7 +43,6 @@ function setConnectionStatus(message, kind = "") {
 function render() {
   contestants.replaceChildren();
   const players = state?.players || [];
-  const claimedIds = new Set(state?.claimedIds || []);
   buzzerPanel.dataset.state =
     state?.buzzed ? "buzzed" : state?.active ? "ready" : "waiting";
   if (!players.some((player) => player.id === selectedContestantId))
@@ -44,17 +50,14 @@ function render() {
   players.forEach((player) => {
     const option = document.createElement("button");
     option.type = "button";
-    const occupiedByOther =
-      claimedIds.has(player.id) && player.id !== claimedContestantId;
-    option.className = `contestant-option${player.id === selectedContestantId ? " selected" : ""}${occupiedByOther ? " occupied" : ""}`;
+    option.className = `contestant-option${player.id === selectedContestantId ? " selected" : ""}`;
     option.textContent = player.n;
-    option.disabled = occupiedByOther;
     option.setAttribute(
       "aria-pressed",
       String(player.id === selectedContestantId),
     );
     option.addEventListener("click", () => {
-      claimContestant(player.id);
+      openPasswordDialog(player);
     });
     contestants.append(option);
   });
@@ -86,12 +89,26 @@ function render() {
     !state?.displayId;
 }
 
-async function claimContestant(contestantId) {
+function openPasswordDialog(player) {
+  passwordContestantId = player.id;
+  passwordContestantName.textContent = player.n;
+  passwordError.textContent = "";
+  passwordInput.value = "";
+  passwordModal.hidden = false;
+  setTimeout(() => passwordInput.focus(), 0);
+}
+
+function closePasswordDialog() {
+  passwordModal.hidden = true;
+  passwordContestantId = "";
+  passwordInput.value = "";
+  passwordError.textContent = "";
+}
+
+async function claimContestant(contestantId, password) {
   if (
     !contestantId ||
-    selectionClaimInFlight === contestantId ||
-    !state?.displayId ||
-    !state?.active
+    selectionClaimInFlight === contestantId
   )
     return;
   selectionClaimInFlight = contestantId;
@@ -104,22 +121,24 @@ async function claimContestant(contestantId) {
         room,
         contestantId,
         clientId: buzzerClientId,
-        displayId: state.displayId,
+        password,
+        displayId: state?.displayId || "",
       }),
     });
     const result = await response.json();
     if (!response.ok) {
       requestMessage = result.error || "تعذر اختيار اسم المتسابق";
       if (response.status === 409) {
-        selectedContestantId = "";
-        claimedContestantId = "";
-        localStorage.removeItem(`quizBuzzerSelected:${room}`);
+        passwordError.textContent =
+          result.error || "الرمز غير صحيح أو الاسم غير متاح";
+        return;
       }
     } else {
       selectedContestantId = contestantId;
       claimedContestantId = contestantId;
       localStorage.setItem(`quizBuzzerSelected:${room}`, contestantId);
       requestMessage = "";
+      closePasswordDialog();
     }
   } catch {
     requestMessage = "تعذر الاتصال، تحقق من الإنترنت وحاول مجددًا";
@@ -182,8 +201,7 @@ function joinRoom(code) {
   eventSource?.close();
   room = normalizedRoom;
   state = null;
-  selectedContestantId =
-    localStorage.getItem(`quizBuzzerSelected:${room}`) || "";
+  selectedContestantId = "";
   claimedContestantId = "";
   lastDisplayId = "";
   joinedRoom.textContent = room;
@@ -204,13 +222,6 @@ function joinRoom(code) {
       lastDisplayId = state.displayId || "";
       claimedContestantId = "";
     }
-    if (
-      state.active &&
-      state.displayId &&
-      selectedContestantId &&
-      claimedContestantId !== selectedContestantId
-    )
-      claimContestant(selectedContestantId);
     render();
   });
   eventSource.onerror = () =>
@@ -222,17 +233,15 @@ roomForm.addEventListener("submit", (event) => {
   joinRoom(roomCodeInput.value);
 });
 buzzButton.addEventListener("click", submitBuzz);
-window.addEventListener("pagehide", () => {
-  if (!room || !claimedContestantId) return;
-  const body = JSON.stringify({
-    room,
-    contestantId: claimedContestantId,
-    clientId: buzzerClientId,
-    release: true,
-  });
-  navigator.sendBeacon?.("/api/buzzer/claim", new Blob([body], {
-    type: "application/json",
-  }));
+passwordForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!passwordContestantId) return;
+  passwordError.textContent = "";
+  claimContestant(passwordContestantId, passwordInput.value.trim());
+});
+cancelPasswordButton.addEventListener("click", closePasswordDialog);
+passwordModal.addEventListener("click", (event) => {
+  if (event.target === passwordModal) closePasswordDialog();
 });
 roomCodeInput.value = new URLSearchParams(location.search).get("room") || "";
 if (roomCodeInput.value) joinRoom(roomCodeInput.value);

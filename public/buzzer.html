@@ -67,5 +67,18 @@
         لازم يكون اسمك مضافًا في قائمة المتسابقين عند مقدم المسابقة.
       </p>
     </main>
+    <div id="contestantPasswordModal" class="password-modal" hidden>
+      <form id="contestantPasswordForm" class="password-dialog" role="dialog" aria-modal="true" aria-labelledby="passwordTitle">
+        <h2 id="passwordTitle">تأكيد هوية المتسابق</h2>
+        <p id="passwordContestantName"></p>
+        <label for="contestantPassword">الرمز الخاص بك</label>
+        <input id="contestantPassword" type="password" inputmode="numeric" autocomplete="off" maxlength="20" />
+        <p id="passwordError" class="password-error" role="alert"></p>
+        <div class="password-actions">
+          <button type="submit" class="primary">تأكيد الاسم</button>
+          <button type="button" id="cancelContestantPassword">إلغاء</button>
+        </div>
+      </form>
+    </div>
   </body>
 </html>

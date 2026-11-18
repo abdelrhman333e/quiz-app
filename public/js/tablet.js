@@ -75,6 +75,27 @@ const $ = (id) => document.getElementById(id);
         visibleManageQuestionIds = [];
       function render() {
         if (!G) return;
+        let contestantCodesChanged = false;
+        G.cs.forEach((player) => {
+          if (!/^[0-9A-Za-z]{4,20}$/.test(player.buzzerCode || "")) {
+            player.buzzerCode =
+              String(Math.floor(1000 + Math.random() * 9000));
+            contestantCodesChanged = true;
+          }
+        });
+        G.rounds?.forEach((round) => {
+          round.players?.forEach((player) => {
+            if (!/^[0-9A-Za-z]{4,20}$/.test(player.buzzerCode || "")) {
+              player.buzzerCode =
+                String(Math.floor(1000 + Math.random() * 9000));
+              contestantCodesChanged = true;
+            }
+          });
+        });
+        if (contestantCodesChanged) {
+          advanceGameVersion();
+          persistGame("تعذر حفظ رموز المتسابقين");
+        }
         const availableQuestionIds = new Set(Qs.map((question) => question.id));
         selectedQuestionIds.forEach((id) => {
           if (!availableQuestionIds.has(id)) selectedQuestionIds.delete(id);
@@ -679,10 +700,11 @@ const $ = (id) => document.getElementById(id);
           roundSummary = round
             ? `<div class="round-summary"><b>${esc(round.name)} · الهدف ${round.target} نقطة</b><span>${round.finished ? "انتهت الجولة" : "الجولة مستمرة"}</span>${round.winnerId ? `<strong>🏆 الفائز: ${esc(round.players.find((p) => p.id === round.winnerId)?.n || "متسابق")}</strong>` : ""}</div>`
             : "";
-        return `<div class="card players"><h3>${G.mode === "rounds" ? "مشاركو الجولة" : `المتسابقون · ${esc(ME.u)}`}</h3><div class="addrow"><input id="cn" placeholder="${G.mode === "rounds" ? "اسم مشارك جديد في الجولة" : "اسم المتسابق"}" onkeydown="if(event.key==='Enter')addC()"><button class="primary" type="button" aria-label="إضافة متسابق" title="إضافة متسابق" onclick="addC()">+</button></div><div class="round-mode-controls"><button class="${G.mode !== "rounds" ? "on" : ""}" onclick="setGameMode('free')">مسابقة حرة</button><button class="${G.mode === "rounds" ? "on" : ""}" onclick="setGameMode('rounds')">وضع الجولات</button></div>${G.mode === "rounds" ? `<div class="round-manager"><div class="row"><button class="primary" onclick="openRoundForm()">＋ إنشاء جولة</button>${round && !round.finished ? `<button class="danger" onclick="finishRound()">إنهاء الجولة</button>` : ""}</div>${G.rounds.length ? `<div class="round-list">${G.rounds.map((item, index) => `<div class="round-item ${item.id === G.activeRoundId ? "selected" : ""}"><button class="round-select" onclick="activateRound('${item.id}')"><b>${esc(item.name || `الجولة ${index + 1}`)}</b><span>${item.target} نقطة · ${(item.players || []).length} مشاركين${item.finished ? " · منتهية" : ""}</span>${item.winnerId ? `<strong>🏆 ${esc(item.players.find((player) => player.id === item.winnerId)?.n || "فائز")}</strong>` : ""}</button><button class="round-delete danger" title="حذف الجولة" aria-label="حذف ${esc(item.name || `الجولة ${index + 1}`)}" onclick="deleteRound('${item.id}')">🗑</button></div>`).join("")}</div>` : "<small>أنشئ جولة وابدأ بإضافة المشاركين إليها.</small>"}</div>${roundSummary}` : ""}${players.length ? players.map((p, i) => {
+        return `<div class="card players"><h3>${G.mode === "rounds" ? "مشاركو الجولة" : `المتسابقون · ${esc(ME.u)}`}</h3><div class="addrow"><input id="cn" placeholder="${G.mode === "rounds" ? "اسم مشارك جديد في الجولة" : "اسم المتسابق"}" onkeydown="if(event.key==='Enter')addC()"><input id="cp" type="text" inputmode="text" maxlength="20" placeholder="رمز الدخول (اختياري)" onkeydown="if(event.key==='Enter')addC()"><button class="primary" type="button" aria-label="إضافة متسابق" title="إضافة متسابق" onclick="addC()">+</button></div><div class="round-mode-controls"><button class="${G.mode !== "rounds" ? "on" : ""}" onclick="setGameMode('free')">مسابقة حرة</button><button class="${G.mode === "rounds" ? "on" : ""}" onclick="setGameMode('rounds')">وضع الجولات</button></div>${G.mode === "rounds" ? `<div class="round-manager"><div class="row"><button class="primary" onclick="openRoundForm()">＋ إنشاء جولة</button>${round && !round.finished ? `<button class="danger" onclick="finishRound()">إنهاء الجولة</button>` : ""}</div>${G.rounds.length ? `<div class="round-list">${G.rounds.map((item, index) => `<div class="round-item ${item.id === G.activeRoundId ? "selected" : ""}"><button class="round-select" onclick="activateRound('${item.id}')"><b>${esc(item.name || `الجولة ${index + 1}`)}</b><span>${item.target} نقطة · ${(item.players || []).length} مشاركين${item.finished ? " · منتهية" : ""}</span>${item.winnerId ? `<strong>🏆 ${esc(item.players.find((player) => player.id === item.winnerId)?.n || "فائز")}</strong>` : ""}</button><button class="round-delete danger" title="حذف الجولة" aria-label="حذف ${esc(item.name || `الجولة ${index + 1}`)}" onclick="deleteRound('${item.id}')">🗑</button></div>`).join("")}</div>` : "<small>أنشئ جولة وابدأ بإضافة المشاركين إليها.</small>"}</div>${roundSummary}` : ""}${players.length ? players.map((p, i) => {
           const score = contestantScore(p),
             disabled = !!round?.finished;
-          return `<div class="ct ${cu.buz === i ? "tbbuz" : ""}"><div class="top"><b>${esc(p.n)}</b><span class="sc">${score}</span></div><div class="acts"><button aria-label="زيادة نقطة" onclick="ch(${i},'s',1)" ${disabled ? "disabled" : ""}>＋</button><button aria-label="خصم نقطة" onclick="ch(${i},'s',-1)" ${disabled ? "disabled" : ""}>−</button><button class="contestant-reset" onclick="resetContestantScore(${i})" ${disabled ? "disabled" : ""}>تصفير</button><button class="contestant-delete" title="إزالة متسابق" aria-label="إزالة المتسابق" onclick="ch(${i},'x')" ${disabled ? "disabled" : ""}><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div></div>`;
+          const code = esc(p.buzzerCode || "غير محدد");
+          return `<div class="ct ${cu.buz === i ? "tbbuz" : ""}"><div class="top"><b>${esc(p.n)}</b><span class="sc">${score}</span></div><div class="contestant-code"><span>رمز الدخول:</span><b>${code}</b><button type="button" onclick="changeContestantCode(${i})" ${disabled ? "disabled" : ""}>تغيير الرمز</button></div><div class="acts"><button aria-label="زيادة نقطة" onclick="ch(${i},'s',1)" ${disabled ? "disabled" : ""}>＋</button><button aria-label="خصم نقطة" onclick="ch(${i},'s',-1)" ${disabled ? "disabled" : ""}>−</button><button class="contestant-reset" onclick="resetContestantScore(${i})" ${disabled ? "disabled" : ""}>تصفير</button><button class="contestant-delete" title="إزالة متسابق" aria-label="إزالة المتسابق" onclick="ch(${i},'x')" ${disabled ? "disabled" : ""}><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div></div>`;
         }).join("") : '<div class="empty-mini">أضف أسماء المتسابقين عشان تقدر تختار مين جاوب.</div>'}<div class="foot"><button class="danger" onclick="resetScores()" ${G.mode === "rounds" && (!round || round.finished) ? "disabled" : ""}>${G.mode === "rounds" ? "تصفير نقاط الجولة" : "تصفير النقاط"}</button></div></div>`;
       }
       function setGameMode(mode) {
@@ -1478,9 +1500,32 @@ const $ = (id) => document.getElementById(id);
         save();
         showStats();
       }
+      function changeContestantCode(index) {
+        const round = activeRound();
+        const player =
+          G.mode === "rounds" ? round?.players?.[index] : G.cs[index];
+        if (!player) return;
+        const code = prompt(
+          `اكتب رمز الدخول الجديد لـ «${player.n}» (4 إلى 20 حرفًا أو رقمًا):`,
+          player.buzzerCode || "",
+        );
+        if (code === null) return;
+        const nextCode = code.trim();
+        if (!/^[0-9A-Za-z]{4,20}$/.test(nextCode))
+          return toast("الرمز من 4 إلى 20 رقمًا أو حرفًا إنجليزيًا", 1);
+        player.buzzerCode = nextCode;
+        save();
+        toast(`تم تغيير رمز «${player.n}»`);
+      }
       function addC() {
         const n = $("cn").value.trim();
+        const enteredCode = $("cp")?.value.trim() || "";
+        const code =
+          enteredCode ||
+          String(Math.floor(1000 + Math.random() * 9000));
         if (!n) return;
+        if (!/^[0-9A-Za-z]{4,20}$/.test(code))
+          return toast("الرمز من 4 إلى 20 رقمًا أو حرفًا إنجليزيًا", 1);
         const round = activeRound();
         if (G.mode === "rounds") {
           if (!round) return toast("أنشئ جولة أو اختر جولة أولًا", 1);
@@ -1495,6 +1540,7 @@ const $ = (id) => document.getElementById(id);
           round.players.push({
             id: newContestantId(),
             n,
+            buzzerCode: code,
             score: 0,
             correct: 0,
             wrong: 0,
@@ -1503,7 +1549,9 @@ const $ = (id) => document.getElementById(id);
           });
           G.cur.buz = null;
           $("cn").value = "";
+          if ($("cp")) $("cp").value = "";
           save();
+          toast(`تم إضافة ${n} — رمزه ${code}`);
         } else {
           if (
             G.cs.some(
@@ -1515,6 +1563,7 @@ const $ = (id) => document.getElementById(id);
           G.cs.push({
             id: newContestantId(),
             n,
+            buzzerCode: code,
             s: 0,
             correct: 0,
             wrong: 0,
@@ -1522,7 +1571,9 @@ const $ = (id) => document.getElementById(id);
             categoryStats: [],
           });
           $("cn").value = "";
+          if ($("cp")) $("cp").value = "";
           save();
+          toast(`تم إضافة ${n} — رمزه ${code}`);
         }
       }
       let confirmResolve = null;
