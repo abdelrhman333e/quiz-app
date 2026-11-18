@@ -186,11 +186,14 @@ test("showing a manually selected question activates a fresh buzzer round", () =
   assert.equal(vm.runInContext("G.cur.q", context), 1);
   assert.match(String(vm.runInContext("G.cur.displayId", context)), /^\d+-/);
   assert.equal(vm.runInContext("G.cur.buz", context), null);
+  assert.equal(vm.runInContext("G.cur.timer.phase", context), "question");
+  assert.equal(vm.runInContext("G.cur.timer.remaining", context), 30000);
 
   vm.runInContext("G.cur.buz = 0; G.cur.res = 'ok'; tg('q')", context);
   assert.equal(vm.runInContext("G.cur.q", context), 0);
   assert.equal(vm.runInContext("G.cur.displayId", context), null);
   assert.equal(vm.runInContext("G.cur.buz", context), null);
+  assert.equal(vm.runInContext("G.cur.timer", context), null);
 });
 
 test("tablet statistics render the requested groups and controls", () => {

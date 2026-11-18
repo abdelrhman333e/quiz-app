@@ -1169,6 +1169,7 @@ const $ = (id) => document.getElementById(id);
           a: 0,
           displayId: show ? `${Date.now()}-${Math.random()}` : null,
           roulette,
+          timer: null,
           buz: null,
           res: null,
           revealed: [],
@@ -1249,6 +1250,7 @@ const $ = (id) => document.getElementById(id);
           G.cur.buz = null;
           G.cur.res = null;
           G.cur.a = 0;
+          G.cur.timer = null;
           if (cq()?.kind === "career") G.cur.clubIndex = 0;
           startQuestionTimer(cq());
           playSfx("question");
