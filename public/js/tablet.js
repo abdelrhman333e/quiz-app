@@ -684,6 +684,16 @@ const $ = (id) => document.getElementById(id);
           : "";
         return `<div class="play"><div class="main">${T.length > 1 ? catsHTML(T) : ""}${picker}${questionCardHTML(c)}${q && timer ? `<div class="card">${timerHTML(c)}</div>` : ""}${q && audioQuestion ? audioHTML(c) : ""}${q ? whoHTML(c) : ""}${dockHTML(c)}</div>${playersHTML(c)}</div>`;
       }
+      function manageFilterMenuHTML(filter, label, value, options) {
+        const selectedLabel =
+          options.find(([option]) => option === value)?.[1] || options[0][1];
+        return `<details class="filter-menu"><summary aria-label="${esc(label)}"><span>${esc(selectedLabel)}</span><span class="filter-menu-chevron" aria-hidden="true">⌄</span></summary><div class="filter-menu-options" role="group" aria-label="${esc(label)}">${options
+          .map(
+            ([option, text]) =>
+              `<button type="button" class="filter-option ${option === value ? "on" : ""}" aria-pressed="${option === value}" onclick="updateQuestionFilter('${filter}','${option}')"><span class="filter-option-check" aria-hidden="true">${option === value ? "✓" : ""}</span>${esc(text)}</button>`,
+          )
+          .join("")}</div></details>`;
+      }
       function manageHTML(c) {
         const { T, list, cu, duplicates } = c,
           filtered = filteredManageQuestions(list, duplicates),
@@ -702,7 +712,42 @@ const $ = (id) => document.getElementById(id);
             career: "مسيرة لاعب",
           };
         visibleManageQuestionIds = filtered.map((question) => question.id);
-        return `<div class="mg"><div class="card"><h3>الأسئلة · ${Qs.length} <small>· ${duplicates.size} سؤال مكرر</small></h3><div class="row"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد أسئلة</button><button onclick="exportQuestions()">⬇ تصدير الأسئلة</button></div><div class="question-filters"><input id="questionSearch" type="search" placeholder="ابحث في نص السؤال والإجابة والاختيارات" value="${esc(questionSearch)}" oninput="updateQuestionSearch(this.value)"><select aria-label="تصفية حسب الصعوبة" onchange="updateQuestionFilter('difficulty',this.value)"><option value="all" ${questionDifficulty === "all" ? "selected" : ""}>كل الصعوبات</option><option value="e" ${questionDifficulty === "e" ? "selected" : ""}>سهل</option><option value="h" ${questionDifficulty === "h" ? "selected" : ""}>صعب</option></select><select aria-label="تصفية حسب النوع" onchange="updateQuestionFilter('kind',this.value)"><option value="all" ${questionKind === "all" ? "selected" : ""}>كل الأنواع</option>${Object.entries(kindLabels).map(([kind, label]) => `<option value="${kind}" ${questionKind === kind ? "selected" : ""}>${label}</option>`).join("")}</select><label class="duplicate-filter"><input type="checkbox" ${duplicateQuestionsOnly ? "checked" : ""} onchange="updateQuestionFilter('duplicates',this.checked)"> المكررة فقط</label></div><div class="row question-bulk-actions"><button onclick="toggleVisibleQuestionSelection()" ${filtered.length ? "" : "disabled"}>${allVisibleSelected ? "إلغاء تحديد المعروض" : "تحديد المعروض"}</button><button class="danger" onclick="deleteSelectedQuestions()" ${selectedQuestionIds.size ? "" : "disabled"}>🗑 حذف المحدد (${selectedQuestionIds.size})</button><button onclick="clearQuestionSelection()" ${selectedQuestionIds.size ? "" : "disabled"}>إلغاء التحديد</button><small>«تحديد المعروض» يحدد نتائج الفلاتر الحالية فقط.</small></div><small class="filter-count">عرض ${filtered.length} من ${list.length} في التصنيف المختار</small><details class="import-hint"><summary>طريقة تجهيز ملف الاستيراد</summary><small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><div dir="rtl" class="sample">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>${T.length > 1 ? catsHTML(T) : ""}${qListHTML(filtered, cu, true, duplicates, "لا توجد أسئلة مطابقة للفلاتر")}</div><div class="card"><h3>الثيم والوضع</h3><p class="theme-description">اختار الألوان المناسبة لك. الثيم بيتحفظ على هذا الجهاز والمتصفح.</p>${themeOptionsHTML()}</div><div class="card"><h3>المؤثرات الصوتية</h3><div class="row"><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button></div></div><div class="card"><h3>الحساب</h3><div class="row"><button class="danger" onclick="logout()">🚪 خروج</button></div></div></div>`;
+        const kindOptions = [
+          ["all", "كل الأنواع"],
+          ...Object.entries(kindLabels),
+        ];
+        const difficultyOptions = [
+          ["all", "كل الصعوبات"],
+          ["e", "سهل"],
+          ["h", "صعب"],
+        ];
+        return `<div class="mg">
+          <section class="card questions-panel">
+            <div class="manage-head">
+              <div class="manage-title"><h3>الأسئلة</h3><span class="manage-count">${Qs.length} سؤال</span><span class="manage-duplicates">${duplicates.size} مكرر</span></div>
+              <div class="manage-actions"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد</button><button onclick="exportQuestions()">⬇ تصدير</button></div>
+            </div>
+            <div class="question-filters">
+              <input id="questionSearch" type="search" aria-label="ابحث في الأسئلة" placeholder="ابحث في السؤال أو الإجابة" value="${esc(questionSearch)}" oninput="updateQuestionSearch(this.value)">
+              ${manageFilterMenuHTML("difficulty", "تصفية حسب الصعوبة", questionDifficulty, difficultyOptions)}
+              ${manageFilterMenuHTML("kind", "تصفية حسب نوع السؤال", questionKind, kindOptions)}
+              <label class="duplicate-filter"><input type="checkbox" ${duplicateQuestionsOnly ? "checked" : ""} onchange="updateQuestionFilter('duplicates',this.checked)"><span>المكررة فقط</span></label>
+            </div>
+            <div class="row question-bulk-actions">
+              <button onclick="toggleVisibleQuestionSelection()" ${filtered.length ? "" : "disabled"}>${allVisibleSelected ? "إلغاء تحديد المعروض" : "تحديد المعروض"}</button>
+              <button onclick="clearQuestionSelection()" ${selectedQuestionIds.size ? "" : "disabled"}>إلغاء التحديد</button>
+              <button class="danger" onclick="deleteSelectedQuestions()" ${selectedQuestionIds.size ? "" : "disabled"}>🗑 حذف المحدد (${selectedQuestionIds.size})</button>
+              <small>«تحديد المعروض» يحدد نتائج الفلاتر الحالية فقط.</small>
+            </div>
+            <small class="filter-count">عرض ${filtered.length} من ${list.length} في التصنيف المختار</small>
+            <details class="import-hint"><summary>طريقة تجهيز ملف الاستيراد</summary><small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><div dir="rtl" class="sample">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>
+            ${T.length > 1 ? `<div class="manage-categories"><span class="manage-caption">التصنيفات</span>${catsHTML(T)}</div>` : ""}
+            ${qListHTML(filtered, cu, true, duplicates, "لا توجد أسئلة مطابقة للفلاتر")}
+          </section>
+          <section class="card"><h3>الثيم والوضع</h3><p class="theme-description">اختار الألوان المناسبة لك. الثيم بيتحفظ على هذا الجهاز والمتصفح.</p>${themeOptionsHTML()}</section>
+          <section class="card"><h3>المؤثرات الصوتية</h3><div class="row"><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button></div></section>
+          <section class="card"><h3>الحساب</h3><div class="row"><button class="danger" onclick="logout()">🚪 خروج</button></div></section>
+        </div>`;
       }
       const TIMER_DURATION = 30000;
       function timerEnabled(q) {
@@ -1604,6 +1649,8 @@ const $ = (id) => document.getElementById(id);
           .join("")}</div>`;
       }
       function pickQuestionKind(kind) {
+        if ($("fk").value === "career" && kind !== "career")
+          syncCareerClubFields();
         $("fk").value = kind;
         document.querySelectorAll("#form .ktype").forEach((b) => {
           const on = b.dataset.kind === kind;
@@ -1628,6 +1675,7 @@ const $ = (id) => document.getElementById(id);
               : [];
         $("form").innerHTML =
           `<div class="modal"><div class="card qform"><h3>${id ? "تعديل سؤال" : "سؤال جديد"}</h3>
+ <div class="qform-layout"><div class="qform-main">
  <div class="qf-label">نوع السؤال</div>${kindPickerHTML(e.kind || "normal")}<div class="qf-label">التصنيف</div>
  <input id="ft" placeholder="اكتب تصنيفًا جديدًا أو اختر من الموجودة" autocomplete="off" value="${esc(e.t)}" oninput="syncCategoryChips()">${categoryChipsHTML(e.t)}
  <select id="fk" hidden onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option><option value="career" ${e.kind === "career" ? "selected" : ""}>مسيرة لاعب — شعارات الأندية</option></select>
@@ -1641,10 +1689,38 @@ const $ = (id) => document.getElementById(id);
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
  </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fvp" maxlength="500" placeholder="اكتب سؤالًا يميز الصورة (مثال: من صاحب هذا الشعار؟)" value="${esc(e.x === "خمن الصورة" ? "" : e.x || "")}"><input id="fva" placeholder="الإجابة أو الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>اكتب سؤالًا خاصًا بهذه الصورة، ثم أضف رابط صورة أو إيموجي، أو الاثنين معًا.</small></div>
  <div id="careerFields" hidden><label>شعارات الأندية بالترتيب من الأقدم إلى الأحدث (2–10)</label><div id="careerClubList"></div><button type="button" class="big2" onclick="addCareerClub()">＋ إضافة نادي</button><input id="fca" maxlength="300" placeholder="اسم اللاعب (الإجابة)" value="${esc(e.kind === "career" ? e.a || "" : "")}"><small>أضف رابط صورة مباشر أو صورة Base64 (PNG/JPEG/WebP/GIF، حتى 100KB لكل شعار)، واكتب اسم النادي اختياريًا. سيظهر شعار واحد في كل مرة، ويتحكم الهوست في الانتقال بينها.</small></div>
- <div class="row"><button id="saveQuestionBtn" class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
+ </div><aside id="careerEditorPreview" class="career-editor-preview" aria-label="معاينة السؤال" hidden></aside></div>
+ <div class="row qform-actions"><button id="saveQuestionBtn" class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
+        $("form").oninput = updateCareerPreview;
+        $("form").onchange = updateCareerPreview;
         toggleQuestionKind();
+        updateCareerPreview();
       }
       let questionClubs = [];
+      function updateCareerPreview() {
+        const preview = $("careerEditorPreview");
+        const kind = $("fk")?.value;
+        if (!preview || !kind) return;
+        const qform = preview.closest(".qform");
+        if (qform) qform.dataset.kind = kind;
+        preview.hidden = kind !== "career";
+        if (kind !== "career") {
+          preview.innerHTML = "";
+          return;
+        }
+        syncCareerClubFields();
+        const player = $("fca")?.value.trim() || "اسم اللاعب";
+        const clubs = questionClubs
+          .map((club, index) => {
+            const name = club.n || `النادي ${index + 1}`;
+            const logo = validClubImage(club.image)
+              ? `<img src="${esc(club.image)}" alt="" onerror="this.remove()">`
+              : `<span class="career-preview-placeholder">؟</span>`;
+            return `<div class="career-preview-club"><span class="career-preview-logo">${logo}</span><small>${esc(name)}</small></div>${index < questionClubs.length - 1 ? '<span class="career-preview-arrow" aria-hidden="true">←</span>' : ""}`;
+          })
+          .join("");
+        preview.innerHTML = `<div class="career-editor-preview-title"><strong>معاينة حيّة</strong><small>شكل السؤال في اللعبة</small></div><div class="career-preview-card"><small class="career-preview-type">مسيرة لاعب · ${questionClubs.length} أندية</small><strong class="career-preview-player">${esc(player)}</strong><span class="career-preview-prompt">مين اللاعب؟</span><div class="career-preview-route">${clubs}</div><small class="career-preview-hint">تظهر الشعارات بالتتابع حسب ترتيب الأندية.</small></div>`;
+      }
       function syncCareerClubFields() {
         questionClubs = questionClubs.map((club, i) => ({
           n: $(`careerClubName${i}`)?.value.trim() || "",
@@ -1658,6 +1734,7 @@ const $ = (id) => document.getElementById(id);
               `<div class="career-club-form-row"><b>النادي ${i + 1}</b><input id="careerClubName${i}" maxlength="80" placeholder="اسم النادي (اختياري)" value="${esc(club.n)}"><input id="careerClubImage${i}" type="text" maxlength="100000" dir="ltr" placeholder="رابط الصورة أو data:image/...;base64" value="${esc(club.image)}"><button type="button" class="danger" onclick="removeCareerClub(${i})">حذف</button></div>`,
           )
           .join("");
+        updateCareerPreview();
       }
       function addCareerClub() {
         syncCareerClubFields();
@@ -1688,7 +1765,13 @@ const $ = (id) => document.getElementById(id);
         $("reverseFields").hidden = kind !== "reverse";
         $("visualFields").hidden = kind !== "visual";
         $("careerFields").hidden = kind !== "career";
-        if (kind === "career") renderCareerClubFields();
+        if (kind === "career") {
+          if (!questionClubs.length)
+            questionClubs = [{ n: "", image: "" }, { n: "", image: "" }];
+          renderCareerClubFields();
+        } else {
+          updateCareerPreview();
+        }
       }
       async function saveQ(id) {
         const g = (k) => $(k).value.trim(),
