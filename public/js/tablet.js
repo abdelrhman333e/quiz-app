@@ -1241,7 +1241,14 @@ const $ = (id) => document.getElementById(id);
           G.cur.roulette = null;
           G.cur.timer = null;
           G.cur.clubIndex = -1;
+          G.cur.displayId = null;
+          G.cur.buz = null;
+          G.cur.res = null;
         } else if (k === "q") {
+          G.cur.displayId = `${Date.now()}-${Math.random()}`;
+          G.cur.buz = null;
+          G.cur.res = null;
+          G.cur.a = 0;
           if (cq()?.kind === "career") G.cur.clubIndex = 0;
           startQuestionTimer(cq());
           playSfx("question");

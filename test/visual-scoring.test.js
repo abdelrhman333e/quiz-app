@@ -56,6 +56,7 @@ function createContext() {
     clearInterval() {},
     setTimeout: () => 1,
     clearTimeout() {},
+    playSfx: () => {},
     console,
     prompt: () => "",
   });
@@ -152,6 +153,44 @@ test("selected visual questions use the clarity step and remaining points", () =
   const markup = context.document.getElementById("app").innerHTML;
   assert.match(markup, /filter:blur\(19\.2px\)/);
   assert.match(markup, /1 نقطة متبقية/);
+});
+
+test("showing a manually selected question activates a fresh buzzer round", () => {
+  const context = createContext();
+  vm.runInContext(
+    `G = ${JSON.stringify({
+      cs: [],
+      cur: { id: "q1", q: 0, o: 0, a: 0, buz: null, res: null, displayId: null },
+      f: "الكل",
+      used: ["q1"],
+      stats: { correct: 0, wrong: 0, deductedPoints: 0 },
+      rounds: [],
+      cardStatsMigrated: true,
+      v: 1,
+      mode: "free",
+    })}; Qs = ${JSON.stringify([
+      {
+        id: "q1",
+        kind: "normal",
+        d: "e",
+        x: "اختبار",
+        a: "إجابة",
+        t: "عام",
+        o: [],
+      },
+    ])}; ME = ${JSON.stringify({ u: "test", room: "12345678" })};`,
+    context,
+  );
+
+  vm.runInContext("tg('q')", context);
+  assert.equal(vm.runInContext("G.cur.q", context), 1);
+  assert.match(String(vm.runInContext("G.cur.displayId", context)), /^\d+-/);
+  assert.equal(vm.runInContext("G.cur.buz", context), null);
+
+  vm.runInContext("G.cur.buz = 0; G.cur.res = 'ok'; tg('q')", context);
+  assert.equal(vm.runInContext("G.cur.q", context), 0);
+  assert.equal(vm.runInContext("G.cur.displayId", context), null);
+  assert.equal(vm.runInContext("G.cur.buz", context), null);
 });
 
 test("tablet statistics render the requested groups and controls", () => {
