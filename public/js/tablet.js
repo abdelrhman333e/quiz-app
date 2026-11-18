@@ -134,6 +134,16 @@
             toast("تعذر الاتصال بالسيرفر", 1),
           );
         }
+        if (tabSel === "intro" && $("tabletIntroVideoFrame")) {
+          const introControls = document.querySelectorAll(
+            ".tablet-intro-controls button",
+          );
+          if (introControls.length === 2) {
+            introControls[0].disabled = !!G.introVideoVisible;
+            introControls[1].disabled = !G.introVideoVisible;
+          }
+          return;
+        }
         const T = ["الكل", ...types()],
           list = Qs.filter((q) => G.f === "الكل" || q.t === G.f),
           duplicates = duplicateQuestionIds(),
@@ -152,7 +162,7 @@
           timerActive = timer && timer.phase !== "done";
         const keepName = $("cn") ? $("cn").value : "";
         const ctx = { T, list, duplicates, q, cu, hasO, top, reverse, visual, audioQuestion, career, clubIndex, reverseCount, reverseIndex, timer, timerActive };
-        $("app").innerHTML = `<div class="tb2">${hdrHTML()}${tabSel === "manage" ? manageHTML(ctx) : tabSel === "contact" ? contactHTML() : playHTML(ctx)}<input id="importQuestionsFile" type="file" accept="${IMPORT_ACCEPT}" hidden onchange="handleQuestionsImport(this)"></div>`;
+        $("app").innerHTML = `<div class="tb2">${hdrHTML()}${tabSel === "manage" ? manageHTML(ctx) : tabSel === "contact" ? contactHTML() : tabSel === "intro" ? introHTML() : playHTML(ctx)}<input id="importQuestionsFile" type="file" accept="${IMPORT_ACCEPT}" hidden onchange="handleQuestionsImport(this)"></div>`;
         if (searchHasFocus && $("questionSearch")) {
           $("questionSearch").focus();
           $("questionSearch").setSelectionRange(searchCursor, searchCursor);
@@ -179,8 +189,20 @@
         const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         window.location.href = mailto;
       }
+      function introHTML() {
+        return `<section class="card tablet-intro"><h2>الفيديو التعريفي</h2><p>شاهد شرح اللعبة هنا، أو اعرضه على شاشة المسابقة المتصلة.</p><div class="row tablet-intro-controls"><button class="primary" onclick="setIntroVideoOnScreen(true)" ${G.introVideoVisible ? "disabled" : ""}>▶ عرض على شاشة المسابقة</button><button onclick="setIntroVideoOnScreen(false)" ${G.introVideoVisible ? "" : "disabled"}>إيقاف العرض على الشاشة</button></div><iframe id="tabletIntroVideoFrame" src="/code_artifact.html?embed=tablet" title="الفيديو التعريفي" allow="autoplay; fullscreen"></iframe></section>`;
+      }
+      function setIntroVideoOnScreen(visible) {
+        G.introVideoVisible = visible;
+        save();
+        toast(
+          visible
+            ? "تم عرض الفيديو على شاشة المسابقة"
+            : "تم إيقاف الفيديو على شاشة المسابقة",
+        );
+      }
       function hdrHTML() {
-        return `<div class="hdr"><div class="tabs" role="tablist"><button role="tab" aria-selected="${tabSel === "play"}" class="${tabSel === "play" ? "act" : ""}" onclick="setTab('play')">اللعب</button><button role="tab" aria-selected="${tabSel === "manage"}" class="${tabSel === "manage" ? "act" : ""}" onclick="setTab('manage')">الأسئلة والإعدادات</button><button role="tab" aria-selected="${tabSel === "contact"}" class="${tabSel === "contact" ? "act" : ""}" onclick="setTab('contact')">التواصل</button></div><div class="hdr-acts"><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="showStats()">📊 الإحصائيات</button><button onclick="undoPointChange()" ${G.pointUndo ? "" : "disabled"}>↶ تراجع عن النقاط</button></div></div>`;
+        return `<div class="hdr"><div class="tabs" role="tablist"><button role="tab" aria-selected="${tabSel === "play"}" class="${tabSel === "play" ? "act" : ""}" onclick="setTab('play')">اللعب</button><button role="tab" aria-selected="${tabSel === "manage"}" class="${tabSel === "manage" ? "act" : ""}" onclick="setTab('manage')">الأسئلة والإعدادات</button><button role="tab" aria-selected="${tabSel === "intro"}" class="${tabSel === "intro" ? "act" : ""}" onclick="setTab('intro')">الفيديو التعريفي</button><button role="tab" aria-selected="${tabSel === "contact"}" class="${tabSel === "contact" ? "act" : ""}" onclick="setTab('contact')">التواصل</button></div><div class="hdr-acts"><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="showStats()">📊 الإحصائيات</button><button onclick="undoPointChange()" ${G.pointUndo ? "" : "disabled"}>↶ تراجع عن النقاط</button></div></div>`;
       }
       function catsHTML(T) {
         return `<div class="cats" aria-label="التصنيف">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}<span class="cnt">${t === "الكل" ? Qs.length : Qs.filter((x) => x.t === t).length}</span></button>`).join("")}</div>`;
@@ -219,6 +241,21 @@
             return url.pathname.length > 1 ? "soundcloud" : "invalid";
         } catch {}
         return "";
+      }
+      function validClubImage(value) {
+        const image = value.trim();
+        if (image.length > 100_000) return false;
+        if (image.startsWith("data:"))
+          return /^data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/i.test(
+            image,
+          );
+        if (image.length > 1000) return false;
+        if (image.startsWith("/") && !image.startsWith("//")) return true;
+        try {
+          return ["http:", "https:"].includes(new URL(image).protocol);
+        } catch {
+          return false;
+        }
       }
       function previewHTML(c) {
         const { q, cu, hasO, top, reverse, visual, audioQuestion, career } = c;
@@ -1413,7 +1450,7 @@
  <select id="fc">${LB.map((l, i) => `<option value="${i}" ${e.c === i ? "selected" : ""}>الصحيح: ${l}</option>`).join("")}</select>
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
  </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fvp" maxlength="500" placeholder="اكتب سؤالًا يميز الصورة (مثال: من صاحب هذا الشعار؟)" value="${esc(e.x === "خمن الصورة" ? "" : e.x || "")}"><input id="fva" placeholder="الإجابة أو الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>اكتب سؤالًا خاصًا بهذه الصورة، ثم أضف رابط صورة أو إيموجي، أو الاثنين معًا.</small></div>
- <div id="careerFields" hidden><label>شعارات الأندية بالترتيب من الأقدم إلى الأحدث (2–10)</label><div id="careerClubList"></div><button type="button" class="big2" onclick="addCareerClub()">＋ إضافة نادي</button><input id="fca" maxlength="300" placeholder="اسم اللاعب (الإجابة)" value="${esc(e.kind === "career" ? e.a || "" : "")}"><small>أضف رابط صورة مباشر لكل شعار، واكتب اسم النادي اختياريًا. سيظهر شعار واحد في كل مرة، ويتحكم الهوست في الانتقال بينها.</small></div>
+ <div id="careerFields" hidden><label>شعارات الأندية بالترتيب من الأقدم إلى الأحدث (2–10)</label><div id="careerClubList"></div><button type="button" class="big2" onclick="addCareerClub()">＋ إضافة نادي</button><input id="fca" maxlength="300" placeholder="اسم اللاعب (الإجابة)" value="${esc(e.kind === "career" ? e.a || "" : "")}"><small>أضف رابط صورة مباشر أو صورة Base64 (PNG/JPEG/WebP/GIF، حتى 100KB لكل شعار)، واكتب اسم النادي اختياريًا. سيظهر شعار واحد في كل مرة، ويتحكم الهوست في الانتقال بينها.</small></div>
  <div class="row"><button id="saveQuestionBtn" class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
         toggleQuestionKind();
       }
@@ -1428,7 +1465,7 @@
         $("careerClubList").innerHTML = questionClubs
           .map(
             (club, i) =>
-              `<div class="career-club-form-row"><b>النادي ${i + 1}</b><input id="careerClubName${i}" maxlength="80" placeholder="اسم النادي (اختياري)" value="${esc(club.n)}"><input id="careerClubImage${i}" type="url" dir="ltr" placeholder="رابط صورة الشعار" value="${esc(club.image)}"><button type="button" class="danger" onclick="removeCareerClub(${i})">حذف</button></div>`,
+              `<div class="career-club-form-row"><b>النادي ${i + 1}</b><input id="careerClubName${i}" maxlength="80" placeholder="اسم النادي (اختياري)" value="${esc(club.n)}"><input id="careerClubImage${i}" type="text" maxlength="100000" dir="ltr" placeholder="رابط الصورة أو data:image/...;base64" value="${esc(club.image)}"><button type="button" class="danger" onclick="removeCareerClub(${i})">حذف</button></div>`,
           )
           .join("");
       }
@@ -1483,7 +1520,7 @@
           kind === "career"
             ? questionClubs.map((club) => ({
                 n: club.n.slice(0, 80),
-                image: club.image.slice(0, 1000),
+                  image: club.image,
               }))
             : [];
         const image = kind === "visual" ? g("fi") : "",
@@ -1526,15 +1563,7 @@
                 ? !g("fca") ||
                   clubs.length < 2 ||
                   clubs.length > 10 ||
-                  clubs.some((club) => {
-                    try {
-                      return !["http:", "https:"].includes(
-                        new URL(club.image).protocol,
-                      );
-                    } catch {
-                      return true;
-                    }
-                  })
+                  clubs.some((club) => !validClubImage(club.image))
               : kind === "audio"
                 ? !audioUrl && !audioFile
                 : !g("fx"))
@@ -1543,7 +1572,7 @@
             kind === "visual"
               ? "اكتب نص السؤال والإجابة وأضف صورة أو إيموجي"
               : kind === "career"
-                ? "اكتب اسم اللاعب وأضف رابط شعار صحيح لكل نادٍ (ناديان على الأقل)"
+                ? "اكتب اسم اللاعب وأضف شعارين على الأقل كرابط صورة أو Base64 صالح (حتى 100KB لكل شعار)"
               : kind === "reverse"
                 ? "اكتب النوع والكلمة"
                 : kind === "audio"

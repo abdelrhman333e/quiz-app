@@ -50,9 +50,26 @@
   height: 54px;
   object-fit: contain;
 }
+.tb2 .tablet-intro {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.tb2 .tablet-intro iframe {
+  display: block;
+  width: 100%;
+  height: min(82vh, 900px);
+  min-height: 560px;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  background: #000;
+}
 @media (max-width: 600px) {
   .tb2 .career-club-form-row {
     grid-template-columns: 1fr;
+  }
+  .tb2 .tablet-intro iframe {
+    height: 75vh;
+    min-height: 420px;
   }
 }
 .tb2 h3 {

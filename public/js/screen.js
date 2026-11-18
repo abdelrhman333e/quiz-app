@@ -507,6 +507,12 @@
       }
       function render() {
         if (!V) return;
+        if (
+          V.mode === "intro" &&
+          document.getElementById("introVideoScreenFrame")?.dataset.source ===
+            V.introVideoUrl
+        )
+          return;
         // كل حدث SSE يعيد بناء المشهد من نسخة العرض الآمنة التي جهزها الخادم.
         // مفاتيح السؤال أدناه تميّز السؤال الجديد عن تحديث النقاط/المؤقت،
         // حتى لا تتكرر الحركة أو المؤثرات عند كل تحديث لحظي.
@@ -580,6 +586,12 @@
         const previousQuestionEmbed = document.getElementById(
           "questionAudioEmbed",
         );
+        const previousIntroVideoFrame = document.getElementById(
+          "introVideoScreenFrame",
+        );
+        const keepIntroVideoFrame =
+          V.mode === "intro" &&
+          previousIntroVideoFrame?.dataset.source === V.introVideoUrl;
         const keepQuestionAudio =
           previousQuestionAudio?.dataset.questionKey === questionKey;
         const keepQuestionEmbed =
@@ -596,10 +608,12 @@
           ? `<div class="round-screen-banner"><b>🏁 ${esc(V.round.name)}</b><span>الهدف: ${V.round.target} نقطة</span>${V.round.winner ? `<strong>🏆 الفائز: ${esc(V.round.winner)} · ${V.round.finished ? "انتهت الجولة" : "الجولة مستمرة"}</strong>` : ""}${V.round.finished && !V.round.winner ? "<span>انتهت الجولة</span>" : ""}</div>`
           : "";
         document.getElementById("app").innerHTML =
-          `<button id="screenSfxToggle" class="screen-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx()">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button><div class="scr ${V.round ? "round-screen" : ""}">${roundBanner}<div class="stage ${V.round ? "has-round" : ""}">
+          `${V.mode === "intro" ? "" : `<button id="screenSfxToggle" class="screen-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx()">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button>`}<div class="scr ${V.mode === "intro" ? "intro-screen" : ""} ${V.round ? "round-screen" : ""}">${roundBanner}<div class="stage ${V.round ? "has-round" : ""}">
 ${
   V.showStats
     ? statisticsStage()
+    : V.mode === "intro"
+      ? `<iframe id="introVideoScreenFrame" class="screen-intro-video-frame" data-source="${esc(V.introVideoUrl)}" src="${esc(V.introVideoUrl)}" title="الفيديو التعريفي" allow="autoplay; fullscreen"></iframe>`
     : rouletteHtml
       ? rouletteHtml
       : V.mode === "reverse"
@@ -619,6 +633,10 @@ ${
  ${!V.showStats && V.timer && V.timer.phase !== "done" ? `<div class="game-timer ${timerSeconds(V.timer) <= 5 ? "timer-ending" : ""}"><div class="timer-readout"><span>${V.timer.phase === "question" ? "السؤال" : "الاختيارات"}${V.timer.paused ? " · متوقف" : ""}</span><b id="screenTimerCountdown">${timerSeconds(V.timer)}</b><small>ثانية</small></div><div class="timer-track"><i id="screenTimerProgress" style="width:${timerProgress(V.timer)}%"></i></div></div>` : ""}
  ${!V.showStats && V.mode !== "reverse" && b ? `<div class="buz">🔔 ${esc(b.n)} · ${b.s} نقطة ${V.res === "ok" ? "✅" : V.res === "no" ? "❌" : ""}</div>` : ""}</div>
  <div class="card screen-board"><h3>🏆 ${V.round ? `ترتيب ${esc(V.round.name)}` : "الترتيب"}</h3><div class="board">${board(V.round ? V.cs.filter((contestant) => contestant.roundParticipant) : V.cs)}</div></div></div>`;
+        if (keepIntroVideoFrame)
+          document
+            .getElementById("introVideoScreenFrame")
+            ?.replaceWith(previousIntroVideoFrame);
         if (keepQuestionEmbed)
           document
             .getElementById("questionAudioEmbed")

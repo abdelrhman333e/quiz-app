@@ -517,6 +517,7 @@
         // 1. إعداد المتغيرات والعناصر الأساسية
         // =========================================================================
         const TOTAL_DURATION = 58.0; // المدة الكلية 58 ثانية حسب السكريبت
+        const screenEmbed = new URLSearchParams(location.search).get('embed') === 'screen';
         let currentTime = 0;
         let isPlaying = false;
         let lastFrameTime = null;
@@ -1082,6 +1083,11 @@
         // رسم الإطار الأول عند التحميل
         window.onload = () => {
             renderFrame(0);
+            if (screenEmbed) {
+                toggleCleanMode(true);
+                exitCleanModeBtn.classList.add('hidden');
+                startPlayback();
+            }
         };
     </script>
 </body>

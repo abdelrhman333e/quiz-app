@@ -51,6 +51,7 @@ const SEED = JSON.parse(
 const NEWGAME = () => ({
   cs: [],
   cur: { id: null, q: 0, o: 0, a: 0, buz: null, res: null },
+  introVideoVisible: false,
   f: "الكل",
   used: [],
   v: 0,
@@ -205,6 +206,21 @@ function view(g, qs) {
             ? "audio"
             : "quiz",
   };
+  if (g.introVideoVisible)
+    return {
+      ...v,
+      shown: true,
+      displayId: "intro-video",
+      roulette: null,
+      timer: null,
+      buz: null,
+      res: null,
+      scoreChange: null,
+      showStats: false,
+      round: null,
+      mode: "intro",
+      introVideoUrl: "/code_artifact.html?embed=screen",
+    };
   // هذه هي واجهة الجمهور، وليست نسخة من حالة المشرف: لا نضيف نص الإجابة
   // أو الاختيارات الصحيحة إلا بعد تغيّر أعلام الكشف في حالة الجولة.
   if (reverse)
@@ -296,7 +312,12 @@ const body = (req) =>
       }
     });
   });
-const readJsonBody = (req, limit) =>
+const readJsonBody = (
+  req,
+  limit,
+  tooLargeMessage = "حجم ملف النسخة الاحتياطية أكبر من المسموح",
+  invalidJsonMessage = "ملف النسخة الاحتياطية ليس JSON صالحًا",
+) =>
   new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0,
@@ -311,7 +332,7 @@ const readJsonBody = (req, limit) =>
     req.on("end", () => {
       if (oversized)
         return reject(
-          Object.assign(new Error("حجم ملف النسخة الاحتياطية أكبر من المسموح"), {
+          Object.assign(new Error(tooLargeMessage), {
             status: 413,
           }),
         );
@@ -319,7 +340,7 @@ const readJsonBody = (req, limit) =>
         resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));
       } catch {
         reject(
-          Object.assign(new Error("ملف النسخة الاحتياطية ليس JSON صالحًا"), {
+          Object.assign(new Error(invalidJsonMessage), {
             status: 400,
           }),
         );
@@ -348,8 +369,35 @@ const T = {
   ".wav": "audio/wav",
 };
 const str = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+const MAX_IMAGE_DATA_URL_LENGTH = 100_000;
 function cleanImage(v) {
-  const image = str(v, 1000);
+  const image = typeof v === "string" ? v.trim() : "";
+  if (image.length > MAX_IMAGE_DATA_URL_LENGTH) return "";
+  if (image.startsWith("data:")) {
+    const match =
+      /^data:image\/(png|jpeg|webp|gif);base64,([A-Za-z0-9+/]+={0,2})$/i.exec(
+        image,
+      );
+    if (!match || match[2].length % 4 === 1) return "";
+    const base64 =
+      match[2] + "=".repeat((4 - (match[2].length % 4)) % 4);
+    if (Buffer.from(base64, "base64").toString("base64") !== base64) return "";
+    const data = Buffer.from(base64, "base64"),
+      mime = match[1].toLowerCase(),
+      validImage =
+        mime === "png"
+          ? data.subarray(0, 8).equals(
+              Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+            )
+          : mime === "jpeg"
+            ? data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff
+            : mime === "gif"
+              ? ["GIF87a", "GIF89a"].includes(data.subarray(0, 6).toString())
+              : data.subarray(0, 4).toString() === "RIFF" &&
+                data.subarray(8, 12).toString() === "WEBP";
+    return validImage ? `data:image/${mime};base64,${base64}` : "";
+  }
+  if (image.length > 1000) return "";
   if (image.startsWith("/") && !image.startsWith("//")) return image;
   try {
     return ["http:", "https:"].includes(new URL(image).protocol) ? image : "";
@@ -991,7 +1039,13 @@ http
           return json(res, { ok: 1 });
         }
         if (u === "/api/questions" && req.method === "POST") {
-          const x = cleanQ((await body(req)) || {});
+          const questionBody = await readJsonBody(
+            req,
+            1_100_000,
+            "حجم بيانات السؤال أكبر من المسموح",
+            "بيانات السؤال ليست JSON صالحًا",
+          );
+          const x = cleanQ(questionBody || {});
           if (!x) return json(res, { error: "بيانات السؤال ناقصة" }, 400);
           const assetId = /^\/audio\/([0-9a-f-]{36})$/i.exec(x.audioUrl)?.[1];
           if (
