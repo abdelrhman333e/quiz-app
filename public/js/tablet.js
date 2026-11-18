@@ -1,13 +1,6 @@
 const $ = (id) => document.getElementById(id);
       const pts = (q) => PT[q.d];
       const MAX_VISUAL_CLARITY = 5;
-function visualQuestionPoints(difficulty, claritySteps = 0) {
-  const points = PT[difficulty] || 0,
-    penalty = Number.isSafeInteger(claritySteps)
-      ? Math.min(points, Math.max(0, claritySteps))
-      : 0;
-  return Math.max(0, points - penalty);
-}
       function visualClarityLevel(cu = G?.cur) {
         return Number.isSafeInteger(cu?.visualClarity)
           ? Math.max(0, Math.min(MAX_VISUAL_CLARITY, cu.visualClarity))
@@ -574,10 +567,10 @@ function visualQuestionPoints(difficulty, claritySteps = 0) {
           ? `<div class="reveal">${q.r.map((a, i) => `<button class="${cu.revealed?.includes(i) ? "on" : ""}" onclick="revealRank(${i})">${cu.revealed?.includes(i) ? "تم كشف" : "كشف"} رقم ${i + 1}</button>`).join("")}</div>`
           : "";
         const availablePoints =
-          visual && q.image
+          q.kind === "visual" && q.image
             ? visualQuestionPoints(q.d, visualClarityLevel(cu))
             : pts(q);
-        return `<div class="card qcard"><div class="qhead"><span class="bdg">${esc(q.t)}</span><span class="mut">${visual && q.image ? `${availablePoints} نقطة متبقية` : `${pts(q)} نقطة`}</span>${reverse ? '<span class="bdg rev">كلمة معكوسة</span>' : ""}${career ? '<span class="bdg">مسيرة لاعب</span>' : ""}<span class="sp"></span><span class="mut note">معاينة · لا تظهر على الشاشة</span><button class="icon" title="تعديل السؤال" aria-label="تعديل السؤال" onclick="openForm('${q.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف السؤال" aria-label="حذف السؤال" onclick="del('${q.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div><div class="qtext">${esc(q.x)}</div>${previewHTML(c)}${reveal}</div>`;
+        return `<div class="card qcard"><div class="qhead"><span class="bdg">${esc(q.t)}</span><span class="mut">${q.kind === "visual" && q.image ? `${availablePoints} نقطة متبقية` : `${pts(q)} نقطة`}</span>${reverse ? '<span class="bdg rev">كلمة معكوسة</span>' : ""}${career ? '<span class="bdg">مسيرة لاعب</span>' : ""}<span class="sp"></span><span class="mut note">معاينة · لا تظهر على الشاشة</span><button class="icon" title="تعديل السؤال" aria-label="تعديل السؤال" onclick="openForm('${q.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف السؤال" aria-label="حذف السؤال" onclick="del('${q.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div><div class="qtext">${esc(q.x)}</div>${previewHTML(c)}${reveal}</div>`;
       }
       function timerHTML(c) {
         const { timer, timerActive } = c;
