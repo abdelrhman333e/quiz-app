@@ -1469,7 +1469,8 @@ html[data-theme="black"] .tb2 .dock {
 
 /* ===== تصميم نافذة سؤال جديد / تعديل سؤال ===== */
 .modal .card.qform {
-  width: min(880px, 100%);
+  width: min(880px, calc(100vw - 28px));
+  max-width: 100%;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -1499,23 +1500,24 @@ html[data-theme="black"] .tb2 .dock {
   font-size: 14px;
 }
 .modal .ktypes {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
   padding: 12px 18px;
-  overflow-x: auto;
   border-bottom: 1px solid var(--line);
-  scrollbar-width: thin;
 }
 .modal .ktype {
-  flex: none;
+  min-width: 0;
+  width: 100%;
+  min-height: 40px;
+  justify-content: center;
   flex-direction: row;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 7px 6px;
   white-space: nowrap;
   border-width: 1px;
-  border-radius: 999px;
+  border-radius: 11px;
   font-size: 13px;
 }
 .modal .ktype:hover {
@@ -1746,12 +1748,15 @@ html[data-theme="black"] .tb2 .dock {
 .modal .qf-ft #saveQuestionBtn {
   flex: 1;
 }
-@media (max-width: 720px) {
+@media (max-width: 860px) {
   .modal .qf-body {
     grid-template-columns: 1fr;
   }
   .modal .qf-preview {
     position: static;
+  }
+  .modal .ktypes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .modal .career-club-form-row {
     grid-template-columns: 30px minmax(0, 1fr) 36px;
@@ -1771,5 +1776,19 @@ html[data-theme="black"] .tb2 .dock {
   .modal .career-club-form-row input:nth-of-type(2) {
     grid-row: 2;
     grid-column: 2 / -1;
+  }
+}
+@media (max-width: 480px) {
+  .modal .qf-hd,
+  .modal .qf-ft {
+    padding-inline: 12px;
+  }
+  .modal .ktypes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 10px 12px;
+  }
+  .modal .qf-body {
+    gap: 12px;
+    padding: 12px;
   }
 }
