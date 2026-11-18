@@ -31,6 +31,17 @@ html[data-theme="green"] {
   --p: #34d399;
   --gold: #fcd34d;
 }
+html[data-theme="orange"] {
+  color-scheme: dark;
+  --bg1: #2a1b10;
+  --bg2: #1a1008;
+  --card: rgba(251, 146, 60, 0.1);
+  --line: rgba(251, 191, 36, 0.22);
+  --t: #fff3e5;
+  --mut: #d6b995;
+  --p: #fb923c;
+  --gold: #fbbf24;
+}
 html[data-theme="black"] {
   color-scheme: dark;
   --bg1: #111114;
@@ -1307,6 +1318,35 @@ html[data-theme="green"] .site-footer {
 }
 html[data-theme="green"] .screen-sfx-toggle {
   background: rgba(9, 35, 23, 0.94);
+}
+html[data-theme="orange"] .game-timer,
+html[data-theme="orange"] .stats-item,
+html[data-theme="orange"] .stats-player,
+html[data-theme="orange"] .stats-leader {
+  background: #24170d;
+}
+html[data-theme="orange"] .modal .card,
+html[data-theme="orange"] .modal .stats-card {
+  color: var(--t);
+  border-color: var(--line);
+  background: #24170d;
+}
+html[data-theme="orange"] .screen-stats-overlay {
+  background: rgba(20, 12, 5, 0.9);
+}
+html[data-theme="orange"] .screen-stats-panel,
+html[data-theme="orange"] .screen-stat {
+  border-color: var(--line);
+  background: #24170d;
+}
+html[data-theme="orange"] .screen-stat-player {
+  border-color: var(--line);
+  background: rgba(26, 16, 8, 0.88);
+}
+html[data-theme="orange"] .site-footer,
+html[data-theme="orange"] .screen-sfx-toggle,
+html[data-theme="orange"] .round-screen-banner {
+  background: rgba(26, 16, 8, 0.96);
 }
 html[data-theme="black"] .game-timer,
 html[data-theme="black"] .stats-item,

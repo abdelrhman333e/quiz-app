@@ -2,6 +2,7 @@ const THEME_KEY = "quizTheme";
 const THEMES = [
   { id: "light", label: "نهاري", icon: "☀️" },
   { id: "green", label: "أخضر", icon: "🌿" },
+  { id: "orange", label: "برتقالي", icon: "🟠" },
 ];
 let currentTheme = "light";
 

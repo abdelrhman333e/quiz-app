@@ -773,6 +773,18 @@ html[data-theme="green"] .tb2 {
   --red: #fb7185;
   --amber: #fcd34d;
 }
+html[data-theme="orange"] .tb2 {
+  --s1: #2a1b10;
+  --s2: #362314;
+  --s3: #1f140b;
+  --bd: #62401f;
+  --txt: #fff3e5;
+  --mut2: #d6b995;
+  --blue: #fb923c;
+  --green: #4ade80;
+  --red: #fb7185;
+  --amber: #fbbf24;
+}
 html[data-theme="black"] .tb2 {
   --s1: #111114;
   --s2: #1c1c21;
@@ -829,6 +841,22 @@ html[data-theme="green"] .tb2 .bdg.rev {
 }
 html[data-theme="green"] .tb2 .dock {
   background: rgba(8, 31, 21, 0.96);
+  border-color: var(--bd);
+}
+html[data-theme="orange"] .tb2 .bdg {
+  color: #fed7aa;
+}
+html[data-theme="orange"] .tb2 .bdg.hard {
+  color: #fecdd3;
+}
+html[data-theme="orange"] .tb2 .bdg.easy {
+  color: #fde68a;
+}
+html[data-theme="orange"] .tb2 .bdg.rev {
+  color: #fdba74;
+}
+html[data-theme="orange"] .tb2 .dock {
+  background: rgba(26, 16, 8, 0.96);
   border-color: var(--bd);
 }
 html[data-theme="black"] .tb2 .bdg {
@@ -1491,6 +1519,13 @@ html[data-theme] .modal .card.qform {
   background: #101c30;
   border-color: rgba(59, 130, 246, 0.38);
 }
+html[data-theme="orange"] .modal .card.qform {
+  --card: #362314;
+  --line: rgba(251, 191, 36, 0.22);
+  --p: #fb923c;
+  background: #1f140b;
+  border-color: rgba(251, 146, 60, 0.45);
+}
 .modal .qf-hd {
   display: flex;
   align-items: center;
@@ -1545,6 +1580,10 @@ html[data-theme] .modal .card.qform {
   background: rgba(59, 130, 246, 0.18);
   box-shadow: none;
   font-weight: 700;
+}
+html[data-theme="orange"] .modal .ktype.on {
+  border-color: #fb923c;
+  background: rgba(251, 146, 60, 0.18);
 }
 .modal .ktype .kt-ic {
   font-size: 16px;
