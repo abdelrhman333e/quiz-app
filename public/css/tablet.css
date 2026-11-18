@@ -1,4 +1,4 @@
-/* ===== واجهة التابلت v27 (كل القواعد تحت .tb2 عشان ما تأثرش على باقي الصفحات) ===== */
+/* ===== واجهة التابلت v28 (كل القواعد تحت .tb2 عشان ما تأثرش على باقي الصفحات) ===== */
 .tb2 {
   --s1: #101c31;
   --s2: #15253f;
@@ -323,10 +323,13 @@
 }
 .tb2 .question-filters {
   display: grid;
-  grid-template-columns: minmax(180px, 2fr) repeat(2, minmax(130px, 1fr)) auto;
+  grid-template-columns:
+    minmax(190px, 2fr)
+    repeat(2, minmax(150px, 1fr))
+    auto;
   align-items: center;
   gap: 8px;
-  margin: 12px 0 6px;
+  margin: 12px 0 0;
 }
 .tb2 .question-filters input:not([type="checkbox"]),
 .tb2 .question-filters select {
@@ -855,6 +858,13 @@ html[data-theme="black"] .tb2 .dock {
     .tb2 .question-filters input:not([type="checkbox"]) {
       grid-column: 1 / -1;
     }
+    .tb2 .filter-panel {
+      padding: 12px;
+    }
+    .tb2 .fdd[data-filter="kind"] .fdd-menu {
+      right: auto;
+      left: 0;
+    }
   }
   .tb2 .players {
     position: static;
@@ -1190,6 +1200,43 @@ html[data-theme="black"] .tb2 .dock {
   background: rgba(255, 255, 255, 0.07);
   color: var(--mut2);
 }
+.tb2 .filter-panel {
+  margin: 14px 0 10px;
+  padding: 14px;
+  background: linear-gradient(145deg, rgba(20, 36, 60, 0.9), rgba(13, 26, 48, 0.9));
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+}
+.tb2 .filter-panel-head,
+.tb2 .filter-panel-head > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tb2 .filter-panel-head {
+  justify-content: space-between;
+}
+.tb2 .filter-panel-head > div {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 3px;
+}
+.tb2 .filter-panel-head strong {
+  font-size: 15px;
+}
+.tb2 .filter-panel-head small {
+  color: var(--mut2);
+  font-size: 12px;
+}
+.tb2 .filter-result-count {
+  flex: none;
+  padding: 6px 10px;
+  color: #bfd6ff;
+  background: rgba(59, 130, 246, 0.14);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 999px;
+  font-size: 12px;
+}
 .tb2 .question-filters .duplicate-filter {
   min-height: 44px;
   padding: 8px 12px;
@@ -1204,16 +1251,30 @@ html[data-theme="black"] .tb2 .dock {
 }
 .tb2 .fdd-btn {
   width: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 10px;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-items: start;
+  gap: 3px 8px;
   min-height: 44px;
   padding: 8px 12px;
   background: var(--s3);
   border: 1px solid var(--bd);
-  border-radius: 10px;
-  font-size: 15px;
+  border-radius: 12px;
+  text-align: right;
+}
+.tb2 .fdd-label {
+  grid-column: 1 / 3;
+  color: var(--mut2);
+  font-size: 11px;
+}
+.tb2 .fdd-value {
+  grid-column: 1;
+  font-size: 14px;
+}
+.tb2 .fdd-caret {
+  grid-column: 3;
+  grid-row: 1 / 3;
 }
 .tb2 .fdd.open .fdd-btn {
   border-color: var(--blue);
@@ -1235,42 +1296,98 @@ html[data-theme="black"] .tb2 .dock {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  min-width: 100%;
-  width: max-content;
-  max-width: 260px;
-  max-height: 340px;
+  width: min(420px, calc(100vw - 40px));
+  max-height: min(440px, calc(100vh - 100px));
   overflow: auto;
   z-index: 30;
-  padding: 4px;
+  padding: 14px;
   background: var(--s2);
   border: 1px solid var(--bd);
-  border-radius: 10px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  border-radius: 16px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
 }
-.tb2 .fdd-opt {
+.tb2 .fdd-menu-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  padding: 10px;
-  border-radius: 7px;
-  font-size: 15px;
+  margin-bottom: 10px;
+}
+.tb2 .fdd-menu-head strong {
+  font-size: 14px;
+}
+.tb2 .fdd-menu-head small {
+  color: var(--mut2);
+  font-size: 11px;
+}
+.tb2 .fdd-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.tb2 .fdd-opt {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 9px;
+  min-height: 50px;
+  padding: 8px 10px;
+  background: var(--s3);
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  font-size: 14px;
   cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 .tb2 .fdd-opt:hover,
 .tb2 .fdd-opt:focus-visible {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: #3a5282;
+  outline: none;
+  transform: translateY(-1px);
 }
 .tb2 .fdd-opt.sel {
-  background: rgba(59, 130, 246, 0.2);
+  background: linear-gradient(110deg, rgba(59, 130, 246, 0.24), rgba(59, 130, 246, 0.1));
+  border-color: var(--blue);
   color: #cfe0ff;
 }
 .tb2 .fdd-ico {
-  width: 20px;
-  text-align: center;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  font-size: 15px;
 }
-.tb2 .fdd-check {
-  margin-inline-start: auto;
-  font-weight: 500;
+.tb2 .fdd-opt.sel .fdd-ico {
+  background: rgba(59, 130, 246, 0.22);
+}
+.tb2 .fdd-opt-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tb2 .fdd-radio {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #71839f;
+  border-radius: 50%;
+}
+.tb2 .fdd-opt.sel .fdd-radio {
+  border-color: #8dbaff;
+}
+.tb2 .fdd-opt.sel .fdd-radio::after {
+  width: 8px;
+  height: 8px;
+  background: #8dbaff;
+  border-radius: 50%;
+  content: "";
 }
 .tb2 .fdd-dot {
   display: inline-block;
@@ -1283,6 +1400,54 @@ html[data-theme="black"] .tb2 .dock {
 }
 .tb2 .fdd-dot.h {
   background: var(--red);
+}
+.tb2 .active-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(36, 54, 83, 0.75);
+}
+.tb2 .active-filters-title {
+  color: var(--mut2);
+  font-size: 12px;
+}
+.tb2 .filter-chips {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tb2 .filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 4px 9px;
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.28);
+  border-radius: 9px;
+  color: #c8dcff;
+  font-size: 12px;
+}
+.tb2 .filter-chip b {
+  color: #8fb7ff;
+  font-size: 15px;
+  font-weight: 500;
+}
+.tb2 .no-active-filters {
+  color: #8295b1;
+  font-size: 12px;
+}
+.tb2 .reset-filters {
+  min-height: 30px;
+  padding: 4px 9px;
+  background: transparent;
+  border-color: transparent;
+  color: #9eb0cc;
+  font-size: 12px;
 }
 .tb2 .question-bulk-actions button {
   min-height: 38px;
