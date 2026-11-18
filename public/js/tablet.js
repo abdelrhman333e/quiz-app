@@ -1603,6 +1603,7 @@ const $ = (id) => document.getElementById(id);
           b.classList.toggle("on", on);
           b.setAttribute("aria-checked", on);
         });
+        updateQuestionPreview();
       }
       function categoryChipsHTML(current) {
         const counts = {};
@@ -1620,12 +1621,14 @@ const $ = (id) => document.getElementById(id);
       function pickCategory(cat) {
         $("ft").value = cat;
         syncCategoryChips();
+        updateQuestionPreview();
       }
       function kindPickerHTML(current) {
+        const short = { reverse: "معكوسة", visual: "صورة" };
         return `<div class="ktypes" role="radiogroup" aria-label="نوع السؤال">${Object.entries(KIND_META)
           .map(([k, m]) => {
             const n = Qs.filter((x) => (x.kind || "normal") === k).length;
-            return `<button type="button" class="ktype ${k === current ? "on" : ""}" data-kind="${k}" role="radio" aria-checked="${k === current}" style="--k:${m.color}" onclick="pickQuestionKind('${k}')"><span class="kt-ic">${m.icon}</span><span class="kt-name">${m.name}</span><span class="kt-desc">${m.desc}</span><span class="kt-n">${n} سؤال</span></button>`;
+            return `<button type="button" class="ktype ${k === current ? "on" : ""}" data-kind="${k}" role="radio" aria-checked="${k === current}" title="${m.desc} · ${n} سؤال" style="--k:${m.color}" onclick="pickQuestionKind('${k}')"><span class="kt-ic" aria-hidden="true">${m.icon}</span><span class="kt-name">${short[k] || m.name.replace("سؤال ", "")}</span></button>`;
           })
           .join("")}</div>`;
       }
@@ -1637,6 +1640,52 @@ const $ = (id) => document.getElementById(id);
           b.setAttribute("aria-checked", on);
         });
         toggleQuestionKind();
+      }
+      function updateQuestionPreview() {
+        const box = $("qfPreview");
+        if (!box || !$("fk") || !$("fd") || !$("ft")) return;
+        const kind = $("fk").value,
+          meta = KIND_META[kind] || KIND_META.normal,
+          hard = $("fd").value === "h",
+          cat = $("ft").value.trim(),
+          val = (id) => ($(id)?.value || "").trim(),
+          isImg = (u) => /^(https?:\/\/|data:image\/)/i.test(u || "");
+        let title = "",
+          hint = "",
+          extra = "",
+          note = "";
+        if (kind === "career") {
+          syncCareerClubFields();
+          title = val("fca") || "اسم اللاعب";
+          hint = "مين اللاعب؟";
+          extra = `<div class="pv-logos">${questionClubs
+            .map((c) => (isImg(c.image) ? `<img src="${esc(c.image)}" alt="">` : `<span class="pv-lg${c.n ? "" : " empty"}">${esc((c.n || "?").slice(0, 2))}</span>`))
+            .join("")}</div>`;
+          note = questionClubs.filter((c) => c.n || c.image).length >= 2 ? "السؤال مكتمل" : "سؤال مكتمل بعد ناديين على الأقل";
+        } else if (kind === "top5" || kind === "top10") {
+          const total = kind === "top10" ? 10 : 5,
+            filled = Array.from({ length: total }, (_, i) => val("fr" + i)).filter(Boolean);
+          title = val("fx") || "نص السؤال";
+          extra = `<ol class="pv-list">${filled.map((a) => `<li>${esc(a)}</li>`).join("")}</ol>`;
+          note = `${filled.length} من ${total} إجابات`;
+        } else if (kind === "reverse") {
+          title = val("frw") || "الكلمة الأصلية";
+          hint = "تظهر معكوسة حرفًا بحرف";
+        } else if (kind === "visual") {
+          title = val("fvp") || "نص السؤال";
+          if (val("fva")) hint = "الإجابة: " + val("fva");
+          const em = val("fe");
+          extra = isImg(val("fi")) ? `<img class="pv-img" src="${esc(val("fi"))}" alt="">` : em ? `<div class="pv-emoji">${esc(em)}</div>` : "";
+        } else {
+          title = val("fx") || "نص السؤال";
+          const opts = [0, 1, 2, 3].map((i) => val("fo" + i));
+          if (opts.some(Boolean)) {
+            const ci = Number($("fc").value);
+            extra = `<ul class="pv-opts">${opts.map((o, i) => (o ? `<li class="${i === ci ? "ok" : ""}"><b>${LB[i]}</b> ${esc(o)}</li>` : "")).join("")}</ul>`;
+          } else if (val("fa")) hint = "الإجابة: " + val("fa");
+          if (kind === "audio") note = val("fau") || $("fauFile")?.files?.length ? "المقطع الصوتي جاهز" : "أضف رابطًا أو ملفًا صوتيًا";
+        }
+        box.innerHTML = `<small>معاينة حية</small><div class="pv-chips"><span class="pv-chip" style="--k:${meta.color}">${meta.icon} ${esc(meta.name.replace("سؤال ", ""))}</span><span class="pv-chip ${hard ? "h" : "e"}">${hard ? "صعب" : "سهل"}</span>${cat ? `<span class="pv-chip dim">${esc(cat)}</span>` : ""}</div><div class="pv-title">${esc(title)}</div>${hint ? `<small>${esc(hint)}</small>` : ""}${extra}${note ? `<small class="pv-note">${esc(note)}</small>` : ""}`;
       }
       function openForm(id) {
         const e = Qs.find((x) => x.id === id) || {
@@ -1653,21 +1702,20 @@ const $ = (id) => document.getElementById(id);
               ? [{ n: "", image: "" }, { n: "", image: "" }]
               : [];
         $("form").innerHTML =
-          `<div class="modal"><div class="card qform"><h3>${id ? "تعديل سؤال" : "سؤال جديد"}</h3>
- <div class="qf-label">نوع السؤال</div>${kindPickerHTML(e.kind || "normal")}<div class="qf-label">التصنيف</div>
+          `<div class="modal"><div class="card qform" oninput="updateQuestionPreview()" onchange="updateQuestionPreview()"><div class="qf-hd"><b>${id ? "تعديل سؤال" : "سؤال جديد"}</b><button type="button" class="qf-x" aria-label="إغلاق" onclick="$('form').innerHTML=''">✕</button></div>${kindPickerHTML(e.kind || "normal")}<div class="qf-body"><div class="qf-fields"><div class="qf-label">التصنيف</div>
  <input id="ft" placeholder="اكتب تصنيفًا جديدًا أو اختر من الموجودة" autocomplete="off" value="${esc(e.t)}" oninput="syncCategoryChips()">${categoryChipsHTML(e.t)}
  <select id="fk" hidden onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option><option value="career" ${e.kind === "career" ? "selected" : ""}>مسيرة لاعب — شعارات الأندية</option></select>
  <div id="questionFields"><input id="fx" placeholder="نص السؤال" value="${esc(e.x)}"></div>
  <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط YouTube أو Spotify أو ملف صوتي مباشر" value="${esc(e.audioUrl || "")}" oninput="$('fauFile').value=''"><small>الصق رابط YouTube أو Spotify أو SoundCloud، أو رابطًا مباشرًا لملف صوتي. المواقع الأخرى تعمل إذا كانت توفر رابطًا مباشرًا لملف MP3 أو WAV أو OGG أو M4A أو AAC. يمكنك أيضًا رفع ملف من جهازك بحد أقصى 20 ميجابايت.</small><label for="fauFile">اختيار ملف صوتي من الجهاز</label><input id="fauFile" type="file" accept=".mp3,.wav,.ogg,.oga,.opus,.m4a,.aac"><small id="audioUploadStatus" aria-live="polite"></small></div>
- <div class="qf-label">صعوبة السؤال</div><select id="fd" hidden><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>${segHTML("fd", [["e", "🟢 سهل · نقطة"], ["h", "🔴 صعب · نقطتان"]], e.d === "h" ? "h" : "e")}
+ 
  <div id="normalFields">
  <small>الاختيارات — اتركها فارغة لو السؤال بدون اختيارات</small>
  ${[0, 1, 2, 3].map((i) => `<input id="fo${i}" placeholder="الاختيار ${LB[i]}" value="${esc(e.o?.[i])}">`).join("")}
  <div class="qf-label">الإجابة الصحيحة</div><select id="fc" hidden>${LB.map((l, i) => `<option value="${i}" ${e.c === i ? "selected" : ""}>الصحيح: ${l}</option>`).join("")}</select>${segHTML("fc", LB.map((l, i) => [String(i), l]), String(Number.isInteger(e.c) && e.c >= 0 && e.c < 4 ? e.c : 0))}
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
  </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fvp" maxlength="500" placeholder="اكتب سؤالًا يميز الصورة (مثال: من صاحب هذا الشعار؟)" value="${esc(e.x === "خمن الصورة" ? "" : e.x || "")}"><input id="fva" placeholder="الإجابة أو الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>اكتب سؤالًا خاصًا بهذه الصورة، ثم أضف رابط صورة أو إيموجي، أو الاثنين معًا.</small></div>
- <div id="careerFields" hidden><label>شعارات الأندية بالترتيب من الأقدم إلى الأحدث (2–10)</label><div id="careerClubList"></div><button type="button" class="big2" onclick="addCareerClub()">＋ إضافة نادي</button><input id="fca" maxlength="300" placeholder="اسم اللاعب (الإجابة)" value="${esc(e.kind === "career" ? e.a || "" : "")}"><small>أضف رابط صورة مباشر أو صورة Base64 (PNG/JPEG/WebP/GIF، حتى 100KB لكل شعار)، واكتب اسم النادي اختياريًا. سيظهر شعار واحد في كل مرة، ويتحكم الهوست في الانتقال بينها.</small></div>
- <div class="row"><button id="saveQuestionBtn" class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
+ <div id="careerFields" hidden><div class="qf-label">اسم اللاعب (الإجابة)</div><input id="fca" maxlength="300" placeholder="اسم اللاعب (الإجابة)" value="${esc(e.kind === "career" ? e.a || "" : "")}"><div class="qf-label">شعارات الأندية بالترتيب من الأقدم إلى الأحدث (2–10)</div><div id="careerClubList"></div><button type="button" class="qf-add" onclick="addCareerClub()">＋ إضافة نادي</button><small>أضف رابط صورة مباشر أو صورة Base64 (PNG/JPEG/WebP/GIF، حتى 100KB لكل شعار)، واكتب اسم النادي اختياريًا. سيظهر شعار واحد في كل مرة، ويتحكم الهوست في الانتقال بينها.</small></div>
+ <div class="qf-label">الصعوبة</div><select id="fd" hidden><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>${segHTML("fd", [["e", "سهل · نقطة"], ["h", "صعب · نقطتان"]], e.d === "h" ? "h" : "e")}</div><aside class="qf-preview" id="qfPreview" aria-label="معاينة"></aside></div><div class="qf-ft"><button id="saveQuestionBtn" class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ السؤال</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
         toggleQuestionKind();
       }
       let questionClubs = [];
@@ -1681,9 +1729,10 @@ const $ = (id) => document.getElementById(id);
         $("careerClubList").innerHTML = questionClubs
           .map(
             (club, i) =>
-              `<div class="career-club-form-row"><b>النادي ${i + 1}</b><input id="careerClubName${i}" maxlength="80" placeholder="اسم النادي (اختياري)" value="${esc(club.n)}"><input id="careerClubImage${i}" type="text" maxlength="100000" dir="ltr" placeholder="رابط الصورة أو data:image/...;base64" value="${esc(club.image)}"><button type="button" class="danger" onclick="removeCareerClub(${i})">حذف</button></div>`,
+              `<div class="career-club-form-row"><span class="cb-num">${i + 1}</span><input id="careerClubName${i}" maxlength="80" placeholder="اسم النادي (اختياري)" value="${esc(club.n)}"><input id="careerClubImage${i}" type="text" maxlength="100000" dir="ltr" placeholder="رابط الصورة أو data:image/...;base64" value="${esc(club.image)}"><button type="button" class="cb-del danger" aria-label="حذف النادي ${i + 1}" title="حذف" onclick="removeCareerClub(${i})">🗑</button></div>`,
           )
           .join("");
+        updateQuestionPreview();
       }
       function addCareerClub() {
         syncCareerClubFields();
@@ -1715,6 +1764,7 @@ const $ = (id) => document.getElementById(id);
         $("visualFields").hidden = kind !== "visual";
         $("careerFields").hidden = kind !== "career";
         if (kind === "career") renderCareerClubFields();
+        updateQuestionPreview();
       }
       async function saveQ(id) {
         const g = (k) => $(k).value.trim(),

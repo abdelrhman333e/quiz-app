@@ -1301,3 +1301,310 @@ html[data-theme="black"] .tb2 .dock {
 .tb2 .question-bulk-actions small {
   color: var(--mut2);
 }
+
+/* ===== تصميم نافذة سؤال جديد / تعديل سؤال ===== */
+.modal .card.qform {
+  width: min(880px, 100%);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 16px;
+}
+.modal .qf-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.modal .qf-hd b {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--t);
+}
+.modal .qf-x {
+  width: 34px;
+  height: 34px;
+  min-height: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 14px;
+}
+.modal .ktypes {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 12px 18px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+.modal .ktype {
+  flex: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  white-space: nowrap;
+  border-width: 1px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+.modal .ktype:hover {
+  transform: none;
+}
+.modal .ktype.on {
+  box-shadow: none;
+  font-weight: 700;
+}
+.modal .ktype .kt-ic {
+  font-size: 16px;
+  line-height: 1;
+}
+.modal .ktype .kt-name {
+  font-size: 13px;
+  font-weight: inherit;
+}
+.modal .qf-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 16px;
+  align-items: start;
+  padding: 16px 18px;
+}
+.modal .qf-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.modal .qf-fields .qf-label {
+  margin: 8px 0 0;
+}
+.modal .qf-fields .qf-label:first-child {
+  margin-top: 0;
+}
+.modal #questionFields:not([hidden]),
+.modal #normalFields:not([hidden]),
+.modal #audioFields:not([hidden]),
+.modal #topFields:not([hidden]),
+.modal #reverseFields:not([hidden]),
+.modal #visualFields:not([hidden]),
+.modal #careerFields:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modal .qf-fields input,
+.modal .qf-fields select {
+  width: 100%;
+  margin: 0;
+}
+.modal .qf-fields small {
+  color: var(--mut);
+}
+.modal .qf-fields .seg {
+  margin: 0;
+}
+.modal .seg-b {
+  min-height: 40px;
+  font-size: 14px;
+}
+.modal .seg[data-for="fd"] .seg-b[data-v="e"].on {
+  border-color: #22c55e;
+  background: color-mix(in srgb, #22c55e 22%, transparent);
+  box-shadow: none;
+}
+.modal .seg[data-for="fd"] .seg-b[data-v="h"].on {
+  border-color: #ef4444;
+  background: color-mix(in srgb, #ef4444 22%, transparent);
+  box-shadow: none;
+}
+.modal .career-club-form-row {
+  display: grid;
+  grid-template-columns: 30px minmax(100px, 1fr) minmax(140px, 2fr) 36px;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+}
+.modal .cb-num {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--t);
+  background: color-mix(in srgb, #ef4444 20%, transparent);
+}
+.modal .cb-del {
+  width: 36px;
+  height: 36px;
+  min-height: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+.modal .qf-add {
+  min-height: 40px;
+  border-style: dashed;
+}
+.modal .qf-preview {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(127, 140, 160, 0.08);
+}
+.modal .qf-preview small {
+  font-size: 11px;
+  color: var(--mut);
+}
+.modal .qf-preview .pv-note {
+  margin-top: 2px;
+}
+.modal .pv-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.modal .pv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--t);
+  background: color-mix(in srgb, var(--k, #7f8ca0) 22%, transparent);
+}
+.modal .pv-chip.e {
+  --k: #22c55e;
+}
+.modal .pv-chip.h {
+  --k: #ef4444;
+}
+.modal .pv-chip.dim {
+  --k: #7f8ca0;
+  color: var(--mut);
+}
+.modal .pv-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--t);
+  overflow-wrap: anywhere;
+}
+.modal .pv-logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.modal .pv-lg,
+.modal .pv-logos img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: contain;
+}
+.modal .pv-lg {
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--t);
+  background: color-mix(in srgb, #ef4444 20%, transparent);
+}
+.modal .pv-lg.empty {
+  color: var(--mut);
+  background: transparent;
+  border: 1px dashed var(--line);
+}
+.modal .pv-img {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.modal .pv-emoji {
+  font-size: 40px;
+  line-height: 1.2;
+}
+.modal .pv-list,
+.modal .pv-opts {
+  margin: 0;
+  font-size: 13px;
+  color: var(--t);
+}
+.modal .pv-list {
+  padding-inline-start: 20px;
+}
+.modal .pv-opts {
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.modal .pv-opts li {
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+.modal .pv-opts li.ok {
+  border-color: #22c55e;
+  background: color-mix(in srgb, #22c55e 18%, transparent);
+}
+.modal .qf-ft {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--line);
+}
+.modal .qf-ft button {
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 15px;
+}
+.modal .qf-ft #saveQuestionBtn {
+  flex: 1;
+}
+@media (max-width: 720px) {
+  .modal .qf-body {
+    grid-template-columns: 1fr;
+  }
+  .modal .qf-preview {
+    position: static;
+  }
+  .modal .career-club-form-row {
+    grid-template-columns: 30px minmax(0, 1fr) 36px;
+  }
+  .modal .career-club-form-row .cb-num {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .modal .career-club-form-row input:nth-of-type(1) {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .modal .career-club-form-row .cb-del {
+    grid-row: 1;
+    grid-column: 3;
+  }
+  .modal .career-club-form-row input:nth-of-type(2) {
+    grid-row: 2;
+    grid-column: 2 / -1;
+  }
+}
