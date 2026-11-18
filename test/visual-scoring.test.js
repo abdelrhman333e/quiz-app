@@ -187,6 +187,7 @@ test("tablet statistics render the requested groups and controls", () => {
   assert.match(markup, /stats-secondary-grid/);
   assert.match(markup, /stats-podium/);
   assert.match(markup, /stats-progress/);
+  assert.equal((markup.match(/stats-podium-spacer/g) || []).length, 2);
   assert.match(markup, /toggleStatsOnScreen\(\)/);
   assert.match(markup, /resetStats\(\)/);
   assert.match(markup, /إجابات صحيحة/);

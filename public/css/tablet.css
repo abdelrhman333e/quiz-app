@@ -2079,14 +2079,6 @@ html[data-theme="black"] {
   min-width: 0;
   text-align: center;
 }
-.stats-modal .stats-podium[data-count="1"],
-.stats-modal .stats-podium[data-count="2"] {
-  justify-content: center;
-}
-.stats-modal .stats-podium[data-count="1"] .stats-podium-item,
-.stats-modal .stats-podium[data-count="2"] .stats-podium-item {
-  flex: 0 1 38%;
-}
 .stats-modal .stats-podium-name {
   overflow: hidden;
   color: var(--stats-text);
@@ -2106,6 +2098,10 @@ html[data-theme="black"] {
   border: 1px solid var(--podium-color);
   border-radius: 12px 12px 0 0;
   background: var(--stats-card);
+}
+.stats-modal .stats-podium-spacer {
+  flex: 1 1 0;
+  min-width: 0;
 }
 .stats-modal .stats-podium-block strong {
   color: var(--podium-color);
@@ -2274,7 +2270,7 @@ html[data-theme="black"] {
     padding: 10px;
   }
   .stats-modal .stats-card {
-    gap: 14px;
+    gap: 7px;
     padding: 16px;
   }
   .stats-modal .stats-header h3 {
@@ -2283,18 +2279,29 @@ html[data-theme="black"] {
   .stats-modal .stats-primary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .stats-modal .stats-item {
-    min-height: 78px;
-    padding: 12px;
+  .stats-modal .stats-grid {
+    gap: 8px;
   }
-  .stats-modal .stats-item b {
-    font-size: 28px;
+  .stats-modal .stats-card .stats-item {
+    min-height: 60px;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+  .stats-modal .stats-card .stats-item b {
+    font-size: 26px;
   }
   .stats-modal .stats-podium {
     min-height: 136px;
   }
+  .stats-modal .stats-section {
+    gap: 7px;
+  }
+  .stats-modal .stats-players {
+    max-height: 22vh;
+  }
   .stats-modal .stats-actions {
     flex-direction: column;
+    gap: 8px;
   }
   .stats-modal .stats-actions button {
     flex: 0 0 auto;

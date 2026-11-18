@@ -1395,10 +1395,12 @@ const $ = (id) => document.getElementById(id);
           }))
           .filter((entry) => entry.score !== null);
         const podiumEntries = rankedContestants.sort((a, b) => b.score - a.score).slice(0, 3),
-          podiumOrder = [podiumEntries[1], podiumEntries[0], podiumEntries[2]].filter(Boolean),
+          podiumOrder = [podiumEntries[1], podiumEntries[0], podiumEntries[2]],
           podium = podiumEntries.length
             ? `<div class="stats-podium" data-count="${podiumEntries.length}" role="list" aria-label="أفضل المتسابقين بالنقاط">${podiumOrder
                 .map((entry) => {
+                  if (!entry)
+                    return '<div class="stats-podium-spacer" aria-hidden="true"></div>';
                   const rank = podiumEntries.indexOf(entry) + 1,
                     rankName = ["", "المركز الأول", "المركز الثاني", "المركز الثالث"][rank],
                     height = [0, 116, 84, 64][rank];
