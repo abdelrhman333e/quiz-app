@@ -1857,3 +1857,459 @@ html[data-theme="orange"] .modal .ktype.on {
     padding: 12px;
   }
 }
+
+.modal .visual-blur-toggle {
+  min-height: 44px;
+  border-color: var(--p);
+  color: var(--bg2);
+  background: var(--p);
+  font-weight: 700;
+}
+.modal .visual-blur-toggle[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+.modal .visual-blur-toggle[hidden] {
+  display: none;
+}
+
+:root {
+  --stats-backdrop: rgba(5, 14, 10, 0.78);
+  --stats-surface: #0b1425;
+  --stats-border: #31486b;
+  --stats-card: #13253c;
+  --stats-text: #eaf2ff;
+  --stats-muted: #b4c3db;
+  --stats-good: #4ade80;
+  --stats-bad: #ff8a80;
+  --stats-warn: #ffd166;
+  --stats-info: #4da3ff;
+  --stats-show-bg: #4da3ff;
+  --stats-track: #07101f;
+  --stats-rank-1: #ffd166;
+  --stats-rank-2: #b4c3db;
+  --stats-rank-3: #e7a36f;
+  --stats-reset-bg: #2a1513;
+  --stats-reset-border: #8a3a36;
+  --stats-reset-text: #ffb3ab;
+}
+html[data-theme="light"] {
+  --stats-surface: #f8fafc;
+  --stats-border: #cbd5e1;
+  --stats-card: #ffffff;
+  --stats-text: #172438;
+  --stats-muted: #53657d;
+  --stats-good: #166534;
+  --stats-bad: #b42318;
+  --stats-warn: #8a5b00;
+  --stats-info: #075eb2;
+  --stats-show-bg: #4da3ff;
+  --stats-track: #e2e8f0;
+  --stats-rank-1: #8a5b00;
+  --stats-rank-2: #475569;
+  --stats-rank-3: #8a4b20;
+}
+html[data-theme="green"] {
+  --stats-surface: #0b2217;
+  --stats-border: #1f4a35;
+  --stats-card: #10291d;
+  --stats-text: #eaf7ef;
+  --stats-muted: #9cc2ae;
+  --stats-good: #3ddc97;
+  --stats-bad: #ff9a90;
+  --stats-warn: #f5c451;
+  --stats-info: #4da3ff;
+  --stats-show-bg: #4da3ff;
+  --stats-track: #0a1a13;
+  --stats-rank-1: #f5c451;
+  --stats-rank-2: #9cc2ae;
+  --stats-rank-3: #c98b5a;
+}
+html[data-theme="orange"] {
+  --stats-surface: #1a1008;
+  --stats-border: #62401f;
+  --stats-card: #2a1b10;
+  --stats-text: #fff3e5;
+  --stats-muted: #d6b995;
+  --stats-good: #4ade80;
+  --stats-bad: #ff9a90;
+  --stats-warn: #fbbf24;
+  --stats-info: #4da3ff;
+  --stats-show-bg: #4da3ff;
+  --stats-track: #120b06;
+  --stats-rank-1: #f5c451;
+  --stats-rank-2: #d6b995;
+  --stats-rank-3: #e7a36f;
+}
+html[data-theme="black"] {
+  --stats-surface: #030304;
+  --stats-border: #34343c;
+  --stats-card: #111114;
+  --stats-text: #f1f5f9;
+  --stats-muted: #c4c4cc;
+  --stats-good: #4ade80;
+  --stats-bad: #ff9a90;
+  --stats-warn: #ffd166;
+  --stats-info: #4da3ff;
+  --stats-show-bg: #4da3ff;
+  --stats-track: #08080a;
+  --stats-rank-1: #ffd166;
+  --stats-rank-2: #cbd5e1;
+  --stats-rank-3: #e7a36f;
+}
+.stats-modal {
+  background: var(--stats-backdrop);
+}
+.stats-modal .stats-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(680px, calc(100vw - 28px));
+  max-height: 92vh;
+  max-height: 92dvh;
+  min-height: 0;
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid var(--stats-border);
+  border-radius: 22px;
+  color: var(--stats-text);
+  background: var(--stats-surface);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+  font-family: Cairo, Tahoma, sans-serif;
+}
+.stats-modal .stats-header {
+  flex: 0 0 auto;
+  gap: 16px;
+}
+.stats-modal .stats-header h3 {
+  margin: 0;
+  color: var(--stats-text);
+  font-size: 24px;
+  font-weight: 800;
+}
+.stats-modal .stats-header p {
+  margin: 4px 0 0;
+  color: var(--stats-muted);
+  font-size: 13px;
+}
+.stats-modal .stats-close {
+  min-height: 44px;
+  padding: 0 20px;
+  flex: 0 0 auto;
+  border: 1px solid var(--stats-border);
+  border-radius: 12px;
+  color: var(--stats-text);
+  background: var(--stats-card);
+  font-size: 14px;
+  font-weight: 700;
+}
+.stats-modal .stats-grid {
+  display: grid;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+.stats-modal .stats-primary-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.stats-modal .stats-secondary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.stats-modal .stats-card .stats-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 88px;
+  padding: 14px;
+  border: 1px solid var(--stats-border);
+  border-radius: 14px;
+  color: var(--stats-text);
+  background: var(--stats-card);
+}
+.stats-modal .stats-item span {
+  color: var(--stats-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.stats-modal .stats-item b {
+  color: var(--stats-text);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+.stats-modal .stats-item.stats-correct b {
+  color: var(--stats-good);
+}
+.stats-modal .stats-item.stats-wrong b {
+  color: var(--stats-bad);
+}
+.stats-modal .stats-item.stats-info-item b {
+  color: var(--stats-info);
+}
+.stats-modal .stats-item.stats-deductions b {
+  color: var(--stats-warn);
+}
+.stats-modal .stats-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+.stats-modal .stats-subtitle {
+  margin: 0;
+  color: var(--stats-text);
+  font-size: 17px;
+  font-weight: 700;
+}
+.stats-modal .stats-podium {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  min-height: 146px;
+  direction: rtl;
+}
+.stats-modal .stats-podium-item {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 7px;
+  min-width: 0;
+  text-align: center;
+}
+.stats-modal .stats-podium[data-count="1"],
+.stats-modal .stats-podium[data-count="2"] {
+  justify-content: center;
+}
+.stats-modal .stats-podium[data-count="1"] .stats-podium-item,
+.stats-modal .stats-podium[data-count="2"] .stats-podium-item {
+  flex: 0 1 38%;
+}
+.stats-modal .stats-podium-name {
+  overflow: hidden;
+  color: var(--stats-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stats-modal .stats-podium-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  border: 1px solid var(--podium-color);
+  border-radius: 12px 12px 0 0;
+  background: var(--stats-card);
+}
+.stats-modal .stats-podium-block strong {
+  color: var(--podium-color);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+.stats-modal .stats-podium-block span {
+  color: var(--stats-muted);
+  font-size: 12px;
+}
+.stats-modal .stats-rank-1 {
+  --podium-color: var(--stats-rank-1);
+}
+.stats-modal .stats-rank-2 {
+  --podium-color: var(--stats-rank-2);
+}
+.stats-modal .stats-rank-3 {
+  --podium-color: var(--stats-rank-3);
+}
+.stats-modal .stats-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.stats-modal .stats-players-section {
+  flex: 1 1 auto;
+}
+.stats-modal .stats-players {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: min(20vh, 220px);
+  overflow-y: auto;
+  padding: 2px 3px 2px 2px;
+  scrollbar-color: var(--stats-muted) transparent;
+  scrollbar-width: thin;
+}
+.stats-modal .stats-card .stats-player {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--stats-border);
+  border-radius: 14px;
+  color: var(--stats-text);
+  background: var(--stats-card);
+}
+.stats-modal .stats-player-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.stats-modal .stats-player-head b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--stats-text);
+  font-size: 16px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stats-modal .stats-player-head span {
+  flex: 0 0 auto;
+  color: var(--stats-muted);
+  font-size: 13px;
+}
+.stats-modal .stats-progress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--stats-track);
+}
+.stats-modal .stats-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--stats-good);
+}
+.stats-modal .stats-player-values {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  color: var(--stats-text);
+  font-size: 13px;
+}
+.stats-modal .stats-player-values .stats-value {
+  color: var(--stats-text);
+  white-space: nowrap;
+}
+.stats-modal .stats-player-values .stats-correct {
+  color: var(--stats-good);
+}
+.stats-modal .stats-player-values .stats-wrong {
+  color: var(--stats-bad);
+}
+.stats-modal .stats-player-values .stats-deductions {
+  color: var(--stats-warn);
+}
+.stats-modal .stats-player-values b {
+  font-weight: 700;
+}
+.stats-modal .category-performance {
+  flex: 0 0 auto;
+  color: var(--stats-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.stats-modal .stats-empty {
+  padding: 14px;
+  border: 1px dashed var(--stats-border);
+  border-radius: 12px;
+  color: var(--stats-muted);
+  font-size: 13px;
+  text-align: center;
+}
+.stats-modal .stats-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12px;
+}
+.stats-modal .stats-actions button {
+  min-height: 52px;
+  border-radius: 14px;
+  font-family: inherit;
+}
+.stats-modal .stats-show-button {
+  flex: 2 1 0;
+  border: 1px solid var(--stats-show-bg);
+  color: #04131f;
+  background: var(--stats-show-bg);
+  font-size: 16px;
+  font-weight: 800;
+}
+.stats-modal .stats-reset-button {
+  flex: 1 1 0;
+  border: 1px solid var(--stats-reset-border);
+  color: var(--stats-reset-text);
+  background: var(--stats-reset-bg);
+  font-size: 15px;
+  font-weight: 700;
+}
+.stats-modal .stats-note {
+  display: block;
+  flex: 0 0 auto;
+  color: var(--stats-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+@media (max-width: 559px) {
+  .stats-modal {
+    padding: 10px;
+  }
+  .stats-modal .stats-card {
+    gap: 14px;
+    padding: 16px;
+  }
+  .stats-modal .stats-header h3 {
+    font-size: 20px;
+  }
+  .stats-modal .stats-primary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stats-modal .stats-item {
+    min-height: 78px;
+    padding: 12px;
+  }
+  .stats-modal .stats-item b {
+    font-size: 28px;
+  }
+  .stats-modal .stats-podium {
+    min-height: 136px;
+  }
+  .stats-modal .stats-actions {
+    flex-direction: column;
+  }
+  .stats-modal .stats-actions button {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+  .stats-modal .stats-player-values {
+    gap: 8px 12px;
+  }
+}
+@media (max-height: 720px) {
+  .stats-modal .stats-card {
+    gap: 12px;
+    padding-block: 16px;
+  }
+  .stats-modal .stats-players {
+    max-height: 15vh;
+  }
+}

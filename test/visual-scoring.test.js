@@ -74,7 +74,7 @@ test("visual clarity reduces correct-answer points without going below zero", ()
   assert.equal(vm.runInContext("visualQuestionPoints('h', 8)", context), 0);
 });
 
-test("tablet renders a visual question using its own scoring helper", () => {
+test("visual questions stay clear unless blur is selected", () => {
   const context = createContext();
   const game = {
     cs: [],
@@ -104,5 +104,91 @@ test("tablet renders a visual question using its own scoring helper", () => {
   );
 
   assert.doesNotThrow(() => vm.runInContext("render()", context));
-  assert.match(context.document.getElementById("app").innerHTML, /2 نقطة متبقية/);
+  const markup = context.document.getElementById("app").innerHTML;
+  assert.match(markup, /filter:blur\(0px\)/);
+  assert.match(markup, />2 نقطة</);
+  assert.doesNotMatch(markup, /وضّح أكتر/);
+});
+
+test("selected visual questions use the clarity step and remaining points", () => {
+  const context = createContext();
+  const game = {
+    cs: [],
+    cur: {
+      id: "visual-1",
+      q: 0,
+      o: 0,
+      a: 0,
+      buz: null,
+      res: null,
+      visualClarity: 1,
+    },
+    f: "الكل",
+    used: [],
+    stats: { correct: 0, wrong: 0, deductedPoints: 0 },
+    rounds: [],
+    cardStatsMigrated: true,
+    v: 1,
+    mode: "free",
+  };
+  const questions = [
+    {
+      id: "visual-1",
+      kind: "visual",
+      image: "https://example.com/image.jpg",
+      blurEnabled: true,
+      d: "h",
+      x: "اختبار",
+      a: "إجابة",
+      t: "عام",
+    },
+  ];
+  vm.runInContext(
+    `ME = ${JSON.stringify({ u: "test", room: "12345678" })}; G = ${JSON.stringify(game)}; Qs = ${JSON.stringify(questions)};`,
+    context,
+  );
+
+  assert.doesNotThrow(() => vm.runInContext("render()", context));
+  const markup = context.document.getElementById("app").innerHTML;
+  assert.match(markup, /filter:blur\(19\.2px\)/);
+  assert.match(markup, /1 نقطة متبقية/);
+});
+
+test("tablet statistics render the requested groups and controls", () => {
+  const context = createContext();
+  const game = {
+    cs: [
+      {
+        id: "player-1",
+        n: "المتسابق",
+        s: 7,
+        correct: 2,
+        wrong: 1,
+        deductedPoints: 2,
+        categoryStats: [],
+      },
+    ],
+    cur: { id: null, q: 0, o: 0, a: 0, buz: null, res: null },
+    f: "الكل",
+    used: [],
+    stats: { correct: 2, wrong: 1, deductedPoints: 2 },
+    rounds: [],
+    cardStatsMigrated: true,
+    v: 1,
+    mode: "free",
+    showStats: false,
+  };
+  vm.runInContext(
+    `ME = ${JSON.stringify({ u: "test", room: "12345678" })}; G = ${JSON.stringify(game)}; Qs = []; showStats();`,
+    context,
+  );
+  const markup = context.document.getElementById("statsModal").innerHTML;
+  assert.match(markup, /stats-primary-grid/);
+  assert.match(markup, /stats-secondary-grid/);
+  assert.match(markup, /stats-podium/);
+  assert.match(markup, /stats-progress/);
+  assert.match(markup, /toggleStatsOnScreen\(\)/);
+  assert.match(markup, /resetStats\(\)/);
+  assert.match(markup, /إجابات صحيحة/);
+  assert.doesNotMatch(markup, /🏆|📊/);
 });

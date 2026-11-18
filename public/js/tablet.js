@@ -309,7 +309,7 @@ const $ = (id) => document.getElementById(id);
         if (career)
           return `<div class="career-preview">${(q.clubs || []).map((club, i) => `<div><img src="${esc(club.image)}" alt=""><span>${esc(club.n || `النادي ${i + 1}`)}</span></div>`).join("")}</div><div class="tbans">اللاعب: ${esc(q.a)}</div>`;
         if (visual)
-          return `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة" style="filter:blur(${visualBlurAmount(cu)}px)">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div class="tbans">الإجابة: ${esc(q.a)}</div></div>`;
+          return `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة" style="filter:blur(${q.blurEnabled === true ? visualBlurAmount(cu) : 0}px)">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div class="tbans">الإجابة: ${esc(q.a)}</div></div>`;
         if (audioQuestion)
           return `<div class="visual-preview">${embeddedAudioProvider(q.audioUrl) ? `<a href="${esc(q.audioUrl)}" target="_blank" rel="noopener noreferrer">فتح مصدر الصوت</a>` : `<audio controls preload="none" src="${esc(q.audioUrl)}"></audio>`}</div>${hasO ? optsHTML(q) : `<div class="tbans">الإجابة: ${esc(q.a)}</div>`}`;
         if (reverse) return `<div class="tbans">الكلمة: ${esc(q.a)}</div>`;
@@ -567,10 +567,10 @@ const $ = (id) => document.getElementById(id);
           ? `<div class="reveal">${q.r.map((a, i) => `<button class="${cu.revealed?.includes(i) ? "on" : ""}" onclick="revealRank(${i})">${cu.revealed?.includes(i) ? "تم كشف" : "كشف"} رقم ${i + 1}</button>`).join("")}</div>`
           : "";
         const availablePoints =
-          q.kind === "visual" && q.image
+          q.kind === "visual" && q.image && q.blurEnabled === true
             ? visualQuestionPoints(q.d, visualClarityLevel(cu))
             : pts(q);
-        return `<div class="card qcard"><div class="qhead"><span class="bdg">${esc(q.t)}</span><span class="mut">${q.kind === "visual" && q.image ? `${availablePoints} نقطة متبقية` : `${pts(q)} نقطة`}</span>${reverse ? '<span class="bdg rev">كلمة معكوسة</span>' : ""}${career ? '<span class="bdg">مسيرة لاعب</span>' : ""}<span class="sp"></span><span class="mut note">معاينة · لا تظهر على الشاشة</span><button class="icon" title="تعديل السؤال" aria-label="تعديل السؤال" onclick="openForm('${q.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف السؤال" aria-label="حذف السؤال" onclick="del('${q.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div><div class="qtext">${esc(q.x)}</div>${previewHTML(c)}${reveal}</div>`;
+        return `<div class="card qcard"><div class="qhead"><span class="bdg">${esc(q.t)}</span><span class="mut">${q.kind === "visual" && q.image && q.blurEnabled === true ? `${availablePoints} نقطة متبقية` : `${pts(q)} نقطة`}</span>${reverse ? '<span class="bdg rev">كلمة معكوسة</span>' : ""}${career ? '<span class="bdg">مسيرة لاعب</span>' : ""}<span class="sp"></span><span class="mut note">معاينة · لا تظهر على الشاشة</span><button class="icon" title="تعديل السؤال" aria-label="تعديل السؤال" onclick="openForm('${q.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف السؤال" aria-label="حذف السؤال" onclick="del('${q.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div><div class="qtext">${esc(q.x)}</div>${previewHTML(c)}${reveal}</div>`;
       }
       function timerHTML(c) {
         const { timer, timerActive } = c;
@@ -646,7 +646,7 @@ const $ = (id) => document.getElementById(id);
             .join("") ||
           `<small>${G.mode === "rounds" ? "أضف مشاركين من بطاقة الجولات أولًا" : "أضف متسابقين من اللوحة الجانبية"}</small>`;
         const visualPenalty =
-            q?.kind === "visual" && q.image
+            q?.kind === "visual" && q.image && q.blurEnabled === true
               ? pts(q) - visualQuestionPoints(q.d, visualClarityLevel(cu))
               : 0,
           correctPoints = Math.max(0, pts(q) - visualPenalty),
@@ -667,7 +667,7 @@ const $ = (id) => document.getElementById(id);
           : `<button class="big2 ${cu.q ? "on" : ""}" onclick="tg('q')">${cu.q ? "إخفاء" : "عرض"} السؤال</button>${hasO ? `<button class="big2 ${cu.o ? "on" : ""}" onclick="tg('o')">${cu.o ? "إخفاء" : "عرض"} الاختيارات</button>` : ""}${top ? "" : `<button class="big2 ${cu.a ? "on" : ""}" onclick="tg('a')">${cu.a ? "إخفاء" : "عرض"} الإجابة</button>`}`;
         const clarity = visualClarityLevel(cu),
           visualClarityButton =
-            visual && q.image && cu.q && !cu.a
+            visual && q.image && q.blurEnabled === true && cu.q && !cu.a
               ? `<button class="big2 visual-clarity-button" onclick="clarifyVisual()" ${clarity >= MAX_VISUAL_CLARITY ? "disabled" : ""}>${clarity >= MAX_VISUAL_CLARITY ? "الصورة واضحة بالكامل" : `وضّح أكتر · ${clarity < pts(q) ? "خصم نقطة" : "بدون خصم إضافي"} (${clarity}/${MAX_VISUAL_CLARITY})`}</button>`
               : "";
         return `<div class="dock">${nav}<div class="dock-show">${show}${visualClarityButton}</div></div>`;
@@ -1207,7 +1207,14 @@ const $ = (id) => document.getElementById(id);
       function clarifyVisual() {
         const q = cq(),
           clarity = visualClarityLevel();
-        if (!G.cur.q || G.cur.a || q?.kind !== "visual" || !q.image) return;
+        if (
+          !G.cur.q ||
+          G.cur.a ||
+          q?.kind !== "visual" ||
+          !q.image ||
+          q.blurEnabled !== true
+        )
+          return;
         if (clarity >= MAX_VISUAL_CLARITY)
           return toast("الصورة أصبحت واضحة بالكامل");
         G.cur.visualClarity = clarity + 1;
@@ -1292,7 +1299,10 @@ const $ = (id) => document.getElementById(id);
         if (top && ok && rank == null)
           return toast("اكشف ترتيب الإجابة أولًا", 1);
         const clarityPenalty =
-            ok && q?.kind === "visual" && q.image
+            ok &&
+            q?.kind === "visual" &&
+            q.image &&
+            q.blurEnabled === true
               ? pts(q) - visualQuestionPoints(q.d, visualClarityLevel())
               : 0,
           key = top && ok ? `${G.cur.buz}:${rank}` : null;
@@ -1384,13 +1394,18 @@ const $ = (id) => document.getElementById(id);
             score: contestantScore(contestant),
           }))
           .filter((entry) => entry.score !== null);
-        const leaders = rankedContestants.length
-          ? rankedContestants
-              .sort((a, b) => b.score - a.score)
-              .slice(0, 3)
-              .map(({ contestant, score }, index) => `<div class="stats-leader"><span>${index + 1}</span><b>${esc(contestant.n)}</b><strong>${score} نقطة</strong></div>`)
-              .join("")
-          : "<small>لا يوجد متسابقون مسجلون.</small>";
+        const podiumEntries = rankedContestants.sort((a, b) => b.score - a.score).slice(0, 3),
+          podiumOrder = [podiumEntries[1], podiumEntries[0], podiumEntries[2]].filter(Boolean),
+          podium = podiumEntries.length
+            ? `<div class="stats-podium" data-count="${podiumEntries.length}" role="list" aria-label="أفضل المتسابقين بالنقاط">${podiumOrder
+                .map((entry) => {
+                  const rank = podiumEntries.indexOf(entry) + 1,
+                    rankName = ["", "المركز الأول", "المركز الثاني", "المركز الثالث"][rank],
+                    height = [0, 116, 84, 64][rank];
+                  return `<div class="stats-podium-item stats-rank-${rank}" role="listitem"><b class="stats-podium-name">${esc(entry.contestant.n)}</b><div class="stats-podium-block" style="height:${height}px"><strong>${rank}</strong><span>${entry.score} نقطة</span></div><span class="stats-sr-only">${rankName}</span></div>`;
+                })
+                .join("")}</div>`
+            : '<div class="stats-empty">لا يوجد متسابقون مسجلون.</div>';
         const currentContestants = activeContestants();
         const contestants = currentContestants.length
           ? currentContestants
@@ -1402,12 +1417,12 @@ const $ = (id) => document.getElementById(id);
                   playerAccuracy = playerAnswered
                     ? Math.round((playerCorrect / playerAnswered) * 100)
                     : 0;
-                return `<div class="stats-player"><b>${esc(contestant.n)}</b><span class="stats-correct">صح: ${playerCorrect}</span><span class="stats-wrong">خطأ: ${playerWrong}</span><span>النقاط المخصومة: ${playerDeductions}</span><span>الإجمالي: ${playerAnswered} · نسبة الصح: ${playerAccuracy}%</span>${categoryPerformanceHTML(contestant)}</div>`;
+                return `<article class="stats-player" role="listitem"><div class="stats-player-head"><b>${esc(contestant.n)}</b><span>دقة الإجابة ${playerAccuracy}%</span></div><div class="stats-progress" role="progressbar" aria-label="دقة إجابة ${esc(contestant.n)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${playerAccuracy}"><span style="width:${playerAccuracy}%"></span></div><div class="stats-player-values"><span class="stats-value stats-correct">صح <b>${playerCorrect}</b></span><span class="stats-value stats-wrong">خطأ <b>${playerWrong}</b></span><span class="stats-value stats-deductions">مخصوم <b>${playerDeductions}</b></span><span class="stats-value">الإجمالي <b>${playerAnswered}</b></span></div>${categoryPerformanceHTML(contestant)}</article>`;
               })
               .join("")
-          : "<small>لا يوجد متسابقون مسجلون.</small>";
+          : '<div class="stats-empty">لا يوجد متسابقون مسجلون.</div>';
         $("statsModal").innerHTML =
-          `<div class="modal stats-modal" onclick="if(event.target===this)closeStats()"><div class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><div class="stats-header"><h3 id="statsTitle">📊 إحصائيات الإجابات</h3><button onclick="closeStats()">إغلاق</button></div><div class="stats-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div><div class="stats-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div><div class="stats-item stats-deductions"><span>إجمالي النقاط المخصومة</span><b>${deductedPoints}</b></div></div><h3 class="stats-subtitle">🏆 أفضل المتسابقين بالنقاط</h3><div class="stats-leaders">${leaders}</div><h3 class="stats-subtitle">إحصائيات كل متسابق</h3><div class="stats-players">${contestants}</div><div class="stats-actions"><button class="on" onclick="toggleStatsOnScreen()">${G.showStats ? "إخفاء الإحصائيات من شاشة العرض" : "إظهار الإحصائيات على شاشة العرض"}</button><button class="no" onclick="resetStats()">إعادة تسجيل الإحصائيات</button></div><small class="stats-note">إعادة التسجيل تصفّر الإحصائيات فقط، ولا تغيّر النقاط. أداء الفئات يُسجّل من الإجابات الجديدة؛ وتظهر المقارنة بعد إجابتين في الفئة.</small></div></div>`;
+          `<div class="modal stats-modal" onclick="if(event.target===this)closeStats()"><section class="card stats-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle"><header class="stats-header"><div><h3 id="statsTitle">إحصائيات الإجابات</h3><p>ملخص أداء المتسابقين في هذه المسابقة</p></div><button type="button" class="stats-close" aria-label="إغلاق إحصائيات الإجابات" onclick="closeStats()">إغلاق</button></header><div class="stats-grid stats-primary-grid"><div class="stats-item stats-correct"><span>إجابات صحيحة</span><b>${correct}</b></div><div class="stats-item stats-wrong"><span>إجابات خاطئة</span><b>${wrong}</b></div><div class="stats-item"><span>إجمالي الإجابات</span><b>${answered}</b></div></div><div class="stats-grid stats-secondary-grid"><div class="stats-item stats-info-item"><span>نسبة الإجابات الصحيحة</span><b>${accuracy}%</b></div><div class="stats-item stats-deductions"><span>إجمالي النقاط المخصومة</span><b>${deductedPoints}</b></div></div><section class="stats-section"><h3 class="stats-subtitle">أفضل المتسابقين بالنقاط</h3>${podium}</section><section class="stats-section stats-players-section"><h3 class="stats-subtitle">إحصائيات كل متسابق</h3><div class="stats-players" role="list">${contestants}</div></section><div class="stats-actions"><button type="button" class="stats-show-button" onclick="toggleStatsOnScreen()">${G.showStats ? "إخفاء الإحصائيات من شاشة العرض" : "إظهار الإحصائيات على شاشة العرض"}</button><button type="button" class="stats-reset-button" onclick="resetStats()">إعادة تسجيل الإحصائيات</button></div><small class="stats-note">إعادة التسجيل تصفّر الإحصائيات فقط ولا تغيّر النقاط. أداء الفئات يُسجل من الإجابات الجديدة، وتظهر المقارنة بعد إجابتين في الفئة.</small></section></div>`;
       }
       function toggleStatsOnScreen() {
         G.showStats = !G.showStats;
@@ -1824,7 +1839,9 @@ const $ = (id) => document.getElementById(id);
           title = val("fvp") || "نص السؤال";
           if (val("fva")) hint = "الإجابة: " + val("fva");
           const em = val("fe");
-          extra = isImg(val("fi")) ? `<img class="pv-img" src="${esc(val("fi"))}" alt="">` : em ? `<div class="pv-emoji">${esc(em)}</div>` : "";
+          const imageUrl = val("fi");
+          $("visualBlurToggle").hidden = !imageUrl;
+          extra = isImg(imageUrl) ? `<img class="pv-img" src="${esc(imageUrl)}" alt="" style="filter:blur(${questionBlurEnabled ? 16 : 0}px)">` : em ? `<div class="pv-emoji">${esc(em)}</div>` : "";
         } else {
           title = val("fx") || "نص السؤال";
           const opts = [0, 1, 2, 3].map((i) => val("fo" + i));
@@ -1844,6 +1861,7 @@ const $ = (id) => document.getElementById(id);
           d: "e",
           t: G.f !== "الكل" ? G.f : "",
         };
+        questionBlurEnabled = e.blurEnabled === true;
         questionClubs =
           e.kind === "career" && Array.isArray(e.clubs) && e.clubs.length
             ? e.clubs.map((club) => ({ n: club.n || "", image: club.image || "" }))
@@ -1862,12 +1880,13 @@ const $ = (id) => document.getElementById(id);
  ${[0, 1, 2, 3].map((i) => `<input id="fo${i}" placeholder="الاختيار ${LB[i]}" value="${esc(e.o?.[i])}">`).join("")}
  <div class="qf-label">الإجابة الصحيحة</div><select id="fc" hidden>${LB.map((l, i) => `<option value="${i}" ${e.c === i ? "selected" : ""}>الصحيح: ${l}</option>`).join("")}</select>${segHTML("fc", LB.map((l, i) => [String(i), l]), String(Number.isInteger(e.c) && e.c >= 0 && e.c < 4 ? e.c : 0))}
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
- </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fvp" maxlength="500" placeholder="اكتب سؤالًا يميز الصورة (مثال: من صاحب هذا الشعار؟)" value="${esc(e.x === "خمن الصورة" ? "" : e.x || "")}"><input id="fva" placeholder="الإجابة أو الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>اكتب سؤالًا خاصًا بهذه الصورة، ثم أضف رابط صورة أو إيموجي، أو الاثنين معًا.</small></div>
+ </div> <div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fvp" maxlength="500" placeholder="اكتب سؤالًا يميز الصورة (مثال: من صاحب هذا الشعار؟)" value="${esc(e.x === "خمن الصورة" ? "" : e.x || "")}"><input id="fva" placeholder="الإجابة أو الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><button id="visualBlurToggle" type="button" class="visual-blur-toggle" aria-pressed="${questionBlurEnabled}" onclick="toggleQuestionBlur()">${questionBlurEnabled ? "إزالة الضباب" : "ضيف الضباب"}</button><small>التمويه اختياري، ويُطبّق على الصورة المختارة فقط.</small><small>اكتب سؤالًا خاصًا بهذه الصورة، ثم أضف رابط صورة أو إيموجي، أو الاثنين معًا.</small></div>
  <div id="careerFields" hidden><div class="qf-label">اسم اللاعب (الإجابة)</div><input id="fca" maxlength="300" placeholder="اسم اللاعب (الإجابة)" value="${esc(e.kind === "career" ? e.a || "" : "")}"><div class="qf-label">شعارات الأندية بالترتيب من الأقدم إلى الأحدث (2–10)</div><div id="careerClubList"></div><button type="button" class="qf-add" onclick="addCareerClub()">＋ إضافة نادي</button><small>أضف رابط صورة مباشر أو صورة Base64 (PNG/JPEG/WebP/GIF، حتى 100KB لكل شعار)، واكتب اسم النادي اختياريًا. سيظهر شعار واحد في كل مرة، ويتحكم الهوست في الانتقال بينها.</small></div>
  <div class="qf-label">الصعوبة</div><select id="fd" hidden><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>${segHTML("fd", [["e", "سهل · نقطة"], ["h", "صعب · نقطتان"]], e.d === "h" ? "h" : "e")}</div><aside class="qf-preview" id="qfPreview" aria-label="معاينة"></aside></div><div class="qf-ft"><button id="saveQuestionBtn" class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ السؤال</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
         toggleQuestionKind();
       }
-      let questionClubs = [];
+      let questionClubs = [],
+        questionBlurEnabled = false;
       function syncCareerClubFields() {
         questionClubs = questionClubs.map((club, i) => ({
           n: $(`careerClubName${i}`)?.value.trim() || "",
@@ -2059,6 +2078,8 @@ const $ = (id) => document.getElementById(id);
             emoji,
             audioUrl,
             clubs,
+            blurEnabled:
+              kind === "visual" && !!image && questionBlurEnabled,
           });
           $("form").innerHTML = "";
           toast("✔ اتحفظ في قاعدة البيانات");
@@ -2084,6 +2105,15 @@ const $ = (id) => document.getElementById(id);
         }
       }
       let ME = null;
+      function toggleQuestionBlur() {
+        if (!$("fi").value.trim())
+          return toast("أضف رابط الصورة أولًا لتفعيل الضباب", 1);
+        questionBlurEnabled = !questionBlurEnabled;
+        const button = $("visualBlurToggle");
+        button.textContent = questionBlurEnabled ? "إزالة الضباب" : "ضيف الضباب";
+        button.setAttribute("aria-pressed", String(questionBlurEnabled));
+        updateQuestionPreview();
+      }
       function copyLink() {
         const l = location.origin + "/screen/" + ME.room;
         (navigator.clipboard

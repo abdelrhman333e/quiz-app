@@ -276,6 +276,7 @@ function view(g, qs) {
           t: x.t,
           image: x.image,
           emoji: x.emoji,
+          blurEnabled: x.blurEnabled === true,
           visualClarity: Number.isSafeInteger(c.visualClarity)
             ? Math.max(0, Math.min(5, c.visualClarity))
             : 0,
@@ -569,6 +570,7 @@ function cleanQ(b) {
       c: o.length ? Math.min(3, Math.max(0, +b.c || 0)) : -1,
       a,
       image: kind === "visual" ? cleanImage(b.image) : "",
+      blurEnabled: kind === "visual" && b.blurEnabled === true,
       emoji: kind === "visual" ? str(b.emoji, 20) : "",
       audioUrl: kind === "audio" ? cleanAudio(b.audioUrl) : "",
       clubs,
