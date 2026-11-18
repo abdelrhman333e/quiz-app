@@ -1166,6 +1166,9 @@ img.action-icon {
   padding: 14px;
   z-index: 9;
 }
+#confirmModal .modal {
+  z-index: 20;
+}
 .modal .card {
   background: #172a43;
   width: min(520px, 100%);
