@@ -1959,7 +1959,7 @@ html[data-theme="black"] {
 .stats-modal {
   background: var(--stats-backdrop);
 }
-.stats-modal .stats-card {
+html[data-theme] .stats-modal .stats-card {
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -2269,7 +2269,7 @@ html[data-theme="black"] {
   .stats-modal {
     padding: 10px;
   }
-  .stats-modal .stats-card {
+  html[data-theme] .stats-modal .stats-card {
     gap: 7px;
     padding: 16px;
   }
@@ -2312,7 +2312,7 @@ html[data-theme="black"] {
   }
 }
 @media (max-height: 720px) {
-  .stats-modal .stats-card {
+  html[data-theme] .stats-modal .stats-card {
     gap: 12px;
     padding-block: 16px;
   }
