@@ -1,4 +1,4 @@
-      const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
       const pts = (q) => PT[q.d];
       let audioPlaybackState = null;
       function types() {
@@ -278,6 +278,66 @@
           ? optsHTML(q)
           : `<div class="tbans">الإجابة: ${esc(q.a)}</div>`;
       }
+      function qCardsHTML(list, cu, duplicates, emptyText) {
+        const KIND = {
+          normal: ["📝", "عادي"],
+          audio: ["🎧", "صوتي"],
+          top5: ["🏆", "توب 5"],
+          top10: ["🏆", "توب 10"],
+          reverse: ["🔄", "معكوسة"],
+          visual: ["🖼️", "بصري"],
+          career: ["⚽", "مسيرة لاعب"],
+        };
+        const answerOf = (x) => {
+          if (Array.isArray(x.o) && x.o.length && Number.isInteger(x.c) && x.c >= 0 && x.o[x.c] != null) return x.o[x.c];
+          return x.a || "";
+        };
+        const card = (x) => {
+          const kind = KIND[x.kind] ? x.kind : "normal";
+          const [icon, label] = KIND[kind];
+          let title = esc(x.x);
+          let sub = "";
+          let thumb = "";
+          let clubs = "";
+          if (kind === "career") {
+            title = esc(x.a || "—");
+            sub = esc(x.x || "مين اللاعب؟");
+            if (Array.isArray(x.clubs) && x.clubs.length)
+              clubs = `<div class="qc-clubs" aria-label="الأندية">${x.clubs.map((c) => `<span class="qc-club" title="${esc(c.n)}">${c.image ? `<img src="${esc(c.image)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</span>`).join("")}<small>${x.clubs.length} أندية</small></div>`;
+          } else if (kind === "reverse") {
+            sub = "كلمة تُعرض معكوسة";
+          } else if (kind === "top5" || kind === "top10") {
+            sub = `${(x.r || []).length} إجابات مرتبة`;
+          } else if (kind === "audio") {
+            sub = answerOf(x) ? `الإجابة: ${esc(answerOf(x))}` : "سؤال صوتي";
+          } else {
+            const a = answerOf(x);
+            sub = a ? `الإجابة: ${esc(a)}` : "";
+          }
+          if (kind === "visual") {
+            if (x.image) thumb = `<span class="qc-thumb"><img src="${esc(x.image)}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+            else if (x.emoji) thumb = `<span class="qc-thumb emoji">${esc(x.emoji)}</span>`;
+          }
+          const hard = x.d === "h";
+          const cls = ["qc", x.id === cu.id ? "sel" : "", selectedQuestionIds.has(x.id) ? "bulk-selected" : "", G.used?.includes(x.id) ? "used" : ""].join(" ");
+          return `<div class="${cls}" data-kind="${kind}" onclick="tabSel='play';sel('${x.id}')">
+            <div class="qc-top">
+              <input class="question-selection" type="checkbox" aria-label="تحديد السؤال للحذف" ${selectedQuestionIds.has(x.id) ? "checked" : ""} onclick="event.stopPropagation()" onchange="toggleQuestionSelection('${x.id}',this.checked)">
+              <span class="qc-chip qc-kind">${icon} ${label}</span>
+              <span class="qc-chip ${hard ? "qc-hard" : "qc-easy"}"><i></i>${hard ? "صعب" : "سهل"}</span>
+              ${x.t ? `<span class="qc-chip qc-cat">${esc(x.t)}</span>` : ""}
+              ${duplicates.has(x.id) ? '<span class="qc-chip qc-dup" title="يتكرر نص السؤال">مكرر</span>' : ""}
+              ${G.used?.includes(x.id) ? '<span class="qc-chip qc-used">استُخدم</span>' : ""}
+              <span class="qc-sp"></span>
+              <button class="icon" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation();openForm('${x.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button>
+              <button class="icon danger" title="حذف" aria-label="حذف السؤال" onclick="event.stopPropagation();del('${x.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button>
+            </div>
+            <div class="qc-body">${thumb}<div class="qc-main"><div class="qc-title">${title}</div>${sub ? `<div class="qc-sub">${sub}</div>` : ""}</div></div>
+            ${clubs}
+          </div>`;
+        };
+        return `<div class="qgrid">${list.map(card).join("") || `<small>${emptyText}</small>`}</div>`;
+      }
       function qListHTML(
         list,
         cu,
@@ -285,6 +345,7 @@
         duplicates = new Set(),
         emptyText = "لا توجد أسئلة في هذا التصنيف",
       ) {
+        if (withActions) return qCardsHTML(list, cu, duplicates, emptyText);
         return `<div class="qs">${
           list
             .map(
