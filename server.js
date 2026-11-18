@@ -159,10 +159,19 @@ function buzzerView(g) {
       (g.mode !== "rounds" ||
         (activeRound && !activeRound.finished && players.length))
     );
+  const claims =
+      questionShown &&
+      g?.cur?.buzzerClaims &&
+      typeof g.cur.buzzerClaims === "object"
+        ? g.cur.buzzerClaims
+        : {};
   return {
     displayId: questionShown ? g.cur.displayId : null,
     players,
     buzzed,
+    claimedIds: Object.keys(claims).filter((contestantId) =>
+      players.some((player) => player.id === contestantId),
+    ),
     active: questionActive && !buzzed && players.length > 0,
   };
 }
@@ -844,6 +853,74 @@ http
         return json(res, {
           error: "سبقك متسابق آخر أو تغيرت حالة السؤال",
         }, 409);
+      }
+      if (u === "/api/buzzer/claim") {
+        if (req.method !== "POST")
+          return json(res, { error: "الطريقة غير مدعومة" }, 405);
+        const request = await body(req),
+          room = str(request?.room, 20).toLowerCase(),
+          contestantId = str(request?.contestantId, 80),
+          clientId = str(request?.clientId, 80),
+          displayId = str(request?.displayId, 120),
+          release = request?.release === true;
+        if (!/^[a-f0-9]{8}$/.test(room) || !contestantId || !clientId)
+          return json(res, { error: "بيانات الاختيار غير مكتملة" }, 400);
+        if (!release && !displayId)
+          return json(res, { error: "بيانات الاختيار غير مكتملة" }, 400);
+        const account = (
+          await q("SELECT id FROM users WHERE room=$1", [room])
+        )[0];
+        if (!account)
+          return json(res, { error: "رمز الغرفة غير صحيح" }, 404);
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const game = await getGame(account.id),
+            buzzer = buzzerView(game);
+          if (!release && (!buzzer.displayId || buzzer.displayId !== displayId))
+            return json(res, { error: "تغير السؤال، انتظر السؤال الحالي" }, 409);
+          if (!buzzer.players.some((player) => player.id === contestantId))
+            return json(res, { error: "المتسابق غير موجود في القائمة الحالية" }, 404);
+          if (!release && !buzzer.active)
+            return json(res, { error: "لا يمكن الاختيار الآن" }, 409);
+          const claims =
+              game?.cur?.buzzerClaims &&
+              typeof game.cur.buzzerClaims === "object"
+                ? JSON.parse(JSON.stringify(game.cur.buzzerClaims))
+                : {},
+            ownedClaim = Object.entries(claims).find(
+              ([, owner]) => owner === clientId,
+            );
+          if (!release) {
+            const owner = claims[contestantId];
+            if (owner && owner !== clientId)
+              return json(res, { error: "هذا الاسم اختاره متسابق آخر" }, 409);
+          }
+          if (ownedClaim && ownedClaim[0] !== contestantId)
+            delete claims[ownedClaim[0]];
+          if (release) {
+            if (claims[contestantId] === clientId)
+              delete claims[contestantId];
+          } else
+            claims[contestantId] = clientId;
+          const revision = Number.isSafeInteger(game.v) ? game.v : 0,
+            nextRevision = Math.max(Date.now(), revision + 1),
+            saved = await q(
+              "UPDATE games SET data=jsonb_set(jsonb_set(data,'{cur,buzzerClaims}',$3::jsonb,true),'{v}',$4::jsonb,true) WHERE user_id=$1 AND COALESCE((data->>'v')::numeric,0)=$2::numeric RETURNING data",
+              [
+                account.id,
+                revision,
+                JSON.stringify(claims),
+                JSON.stringify(nextRevision),
+              ],
+            );
+          if (!saved.length) continue;
+          pushAll(account.id);
+          return json(res, {
+            ok: 1,
+            selected: !release,
+            claimant: !release ? contestantId : null,
+          });
+        }
+        return json(res, { error: "تعذر تحديث الاختيار، حاول مرة أخرى" }, 409);
       }
       if (u.startsWith("/api/")) {
         const uid = authUid(req);

@@ -1170,6 +1170,7 @@ const $ = (id) => document.getElementById(id);
           displayId: show ? `${Date.now()}-${Math.random()}` : null,
           roulette,
           timer: null,
+          buzzerClaims: {},
           buz: null,
           res: null,
           revealed: [],
@@ -1245,12 +1246,14 @@ const $ = (id) => document.getElementById(id);
           G.cur.displayId = null;
           G.cur.buz = null;
           G.cur.res = null;
+          G.cur.buzzerClaims = {};
         } else if (k === "q") {
           G.cur.displayId = `${Date.now()}-${Math.random()}`;
           G.cur.buz = null;
           G.cur.res = null;
           G.cur.a = 0;
           G.cur.timer = null;
+          G.cur.buzzerClaims = {};
           if (cq()?.kind === "career") G.cur.clubIndex = 0;
           startQuestionTimer(cq());
           playSfx("question");
