@@ -298,6 +298,22 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.tb2 .qi.bulk-selected {
+  border-color: var(--blue);
+}
+.tb2 .question-selection {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--blue);
+}
+.tb2 .question-bulk-actions {
+  align-items: center;
+}
+.tb2 .question-bulk-actions small {
+  flex-basis: 100%;
+}
 .tb2 .qi.used {
   opacity: 0.55;
 }

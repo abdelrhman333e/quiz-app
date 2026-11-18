@@ -1083,6 +1083,58 @@ http
           pushAll(uid);
           return json(res, { ok: 1, id: x.id });
         }
+        if (u === "/api/questions/bulk-delete" && req.method === "DELETE") {
+          const request = await body(req);
+          if (
+            !Array.isArray(request?.ids) ||
+            request.ids.length < 1 ||
+            request.ids.length > 3000 ||
+            request.ids.some(
+              (id) => typeof id !== "string" || !id.trim() || id.length > 40,
+            )
+          )
+            return json(
+              res,
+              { error: "قائمة الأسئلة غير صالحة أو تتجاوز 3000 سؤال" },
+              400,
+            );
+          const ids = [...new Set(request.ids.map((id) => id.trim()))],
+            client = await db.connect();
+          let deleted = 0;
+          try {
+            await client.query("BEGIN");
+            const { rows } = await client.query(
+              "SELECT id,data FROM questions WHERE user_id=$1 AND id=ANY($2::text[]) FOR UPDATE",
+              [uid, ids],
+            );
+            const foundIds = rows.map((row) => row.id);
+            await client.query(
+              "DELETE FROM questions WHERE user_id=$1 AND id=ANY($2::text[])",
+              [uid, foundIds],
+            );
+            const audioIds = new Set();
+            rows.forEach((row) => {
+              const audioId = /^\/audio\/([0-9a-f-]{36})$/i.exec(
+                row.data?.audioUrl || "",
+              )?.[1];
+              if (audioId) audioIds.add(audioId);
+            });
+            for (const audioId of audioIds)
+              await client.query(
+                "DELETE FROM audio_assets a WHERE a.id=$1 AND a.user_id=$2 AND NOT EXISTS (SELECT 1 FROM questions WHERE user_id=$2 AND data->>'audioUrl'=$3)",
+                [audioId, uid, `/audio/${audioId}`],
+              );
+            deleted = foundIds.length;
+            await client.query("COMMIT");
+          } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+          } finally {
+            client.release();
+          }
+          pushAll(uid);
+          return json(res, { ok: 1, deleted });
+        }
         if (u.startsWith("/api/questions/") && req.method === "DELETE") {
           const id = decodeURIComponent(u.split("/").pop());
           const previous = (

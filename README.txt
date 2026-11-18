@@ -116,6 +116,8 @@ https://v6d6pe1dzn5k-production-gy2jymah.europe-west1.suga.run
 - في «الأسئلة والإعدادات» يمكن البحث في نص السؤال والإجابة والاختيارات، والتصفية
   حسب الصعوبة والنوع والتصنيف، وعرض الأسئلة المكررة فقط. يكتشف التكرار من نص
   السؤال بعد تجاهل المسافات وعلامات الترقيم واختلافات الكتابة العربية.
+- يمكن تحديد أسئلة متعددة وحذفها دفعة واحدة؛ «تحديد المعروض» يقتصر على نتائج
+  التصنيف والفلاتر الحالية.
 - تتضمن لوحة التابلت تبويب «التواصل» لإرسال ملاحظات أو بلاغات عبر تطبيق البريد
   إلى `abdo267895@gmail.com`، مع رابط الموقع الشخصي.
 - الفيديو التعريفي مضمّن داخل الصفحة الرئيسية وفي تبويب مستقل بالتابلت؛ يمكن
@@ -204,7 +206,8 @@ HttpOnly وSameSite=Lax. واجهة الشاشة تعتمد على معرّف ا
 - `POST /api/register`, `POST /api/login`, `GET /api/logout`
 - `GET /api/me`, `GET /api/ping`
 - `POST /api/game`
-- `POST /api/questions`, `DELETE /api/questions/:id`
+- `POST /api/questions`, `DELETE /api/questions/:id`, و
+  `DELETE /api/questions/bulk-delete` للحذف الجماعي.
 - `GET /api/questions/export?format=json|txt|xlsx|docx`
 - `POST /api/questions/import` لنسخة JSON الكاملة.
 - `POST /api/questions/import-file` لاستيراد TXT/XLSX/DOCX.

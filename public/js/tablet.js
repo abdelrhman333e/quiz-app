@@ -27,9 +27,15 @@
       let questionSearch = "",
         questionDifficulty = "all",
         questionKind = "all",
-        duplicateQuestionsOnly = false;
+        duplicateQuestionsOnly = false,
+        selectedQuestionIds = new Set(),
+        visibleManageQuestionIds = [];
       function render() {
         if (!G) return;
+        const availableQuestionIds = new Set(Qs.map((question) => question.id));
+        selectedQuestionIds.forEach((id) => {
+          if (!availableQuestionIds.has(id)) selectedQuestionIds.delete(id);
+        });
         const searchHasFocus = $("questionSearch") === document.activeElement,
           searchCursor = searchHasFocus ? $("questionSearch").selectionStart : null;
         // صحّح العدادات القديمة/غير المكتملة قبل إنشاء HTML، حتى لا تظهر
@@ -283,7 +289,7 @@
           list
             .map(
               (x) =>
-                `<div class="qi ${x.id === cu.id ? "sel" : ""} ${G.used?.includes(x.id) ? "used" : ""}" onclick="tabSel='play';sel('${x.id}')"><span class="qt">${esc(x.x)}</span>${duplicates.has(x.id) ? '<span class="bdg duplicate" title="يتكرر نص السؤال">مكرر</span>' : ""}<span class="bdg ${x.kind === "reverse" ? "rev" : x.d === "h" ? "hard" : "easy"}">${x.kind === "reverse" ? "معكوسة" : x.kind === "career" ? "مسيرة لاعب" : x.d === "h" ? "صعب" : "سهل"}</span>${withActions ? `<button class="icon" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation();openForm('${x.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف" aria-label="حذف السؤال" onclick="event.stopPropagation();del('${x.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button>` : ""}</div>`,
+                `<div class="qi ${x.id === cu.id ? "sel" : ""} ${selectedQuestionIds.has(x.id) ? "bulk-selected" : ""} ${G.used?.includes(x.id) ? "used" : ""}" onclick="tabSel='play';sel('${x.id}')">${withActions ? `<input class="question-selection" type="checkbox" aria-label="تحديد السؤال للحذف" ${selectedQuestionIds.has(x.id) ? "checked" : ""} onclick="event.stopPropagation()" onchange="toggleQuestionSelection('${x.id}',this.checked)">` : ""}<span class="qt">${esc(x.x)}</span>${duplicates.has(x.id) ? '<span class="bdg duplicate" title="يتكرر نص السؤال">مكرر</span>' : ""}<span class="bdg ${x.kind === "reverse" ? "rev" : x.d === "h" ? "hard" : "easy"}">${x.kind === "reverse" ? "معكوسة" : x.kind === "career" ? "مسيرة لاعب" : x.d === "h" ? "صعب" : "سهل"}</span>${withActions ? `<button class="icon" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation();openForm('${x.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف" aria-label="حذف السؤال" onclick="event.stopPropagation();del('${x.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button>` : ""}</div>`,
             )
             .join("") || `<small>${emptyText}</small>`
         }</div>`;
@@ -313,6 +319,67 @@
         return new Set(
           [...groups.values()].filter((ids) => ids.length > 1).flat(),
         );
+      }
+      function toggleQuestionSelection(id, checked) {
+        if (checked) selectedQuestionIds.add(id);
+        else selectedQuestionIds.delete(id);
+        render();
+      }
+      function toggleVisibleQuestionSelection() {
+        const select = !visibleManageQuestionIds.every((id) =>
+          selectedQuestionIds.has(id),
+        );
+        visibleManageQuestionIds.forEach((id) => {
+          if (select) selectedQuestionIds.add(id);
+          else selectedQuestionIds.delete(id);
+        });
+        render();
+      }
+      function clearQuestionSelection() {
+        selectedQuestionIds.clear();
+        render();
+      }
+      async function deleteSelectedQuestions() {
+        const ids = [...selectedQuestionIds];
+        if (!ids.length) return;
+        if (
+          !(await askConfirm(
+            `سيتم حذف ${ids.length} سؤالًا نهائيًا. هل تريد المتابعة؟`,
+            "حذف الأسئلة المحددة",
+            "حذف الأسئلة",
+          ))
+        )
+          return;
+        try {
+          const result = await api("/api/questions/bulk-delete", "DELETE", {
+            ids,
+          });
+          if (!result.deleted) {
+            selectedQuestionIds.clear();
+            render();
+            return toast("لم يتم العثور على الأسئلة المحددة", 1);
+          }
+          const deletedIds = new Set(ids);
+          selectedQuestionIds.clear();
+          G.used = (G.used || []).filter((id) => !deletedIds.has(id));
+          if (deletedIds.has(G.cur.id))
+            G.cur = {
+              id: null,
+              q: 0,
+              o: 0,
+              a: 0,
+              buz: null,
+              res: null,
+            };
+          save();
+          toast(
+            result.deleted === ids.length
+              ? `تم حذف ${result.deleted} سؤال`
+              : `تم حذف ${result.deleted} من ${ids.length} سؤال`,
+          );
+        } catch (error) {
+          toast(error.message, 1);
+        }
       }
       function filteredManageQuestions(list, duplicates) {
         const query = normalizedQuestionText(questionSearch);
@@ -559,6 +626,11 @@
       function manageHTML(c) {
         const { T, list, cu, duplicates } = c,
           filtered = filteredManageQuestions(list, duplicates),
+          allVisibleSelected =
+            filtered.length > 0 &&
+            filtered.every((question) =>
+              selectedQuestionIds.has(question.id),
+            ),
           kindLabels = {
             normal: "عادي",
             audio: "صوتي",
@@ -568,7 +640,8 @@
             visual: "بصري",
             career: "مسيرة لاعب",
           };
-        return `<div class="mg"><div class="card"><h3>الأسئلة · ${Qs.length} <small>· ${duplicates.size} سؤال مكرر</small></h3><div class="row"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد أسئلة</button><button onclick="exportQuestions()">⬇ تصدير الأسئلة</button></div><div class="question-filters"><input id="questionSearch" type="search" placeholder="ابحث في السؤال والإجابة والاختيارات" value="${esc(questionSearch)}" oninput="updateQuestionSearch(this.value)"><select aria-label="تصفية حسب الصعوبة" onchange="updateQuestionFilter('difficulty',this.value)"><option value="all" ${questionDifficulty === "all" ? "selected" : ""}>كل الصعوبات</option><option value="e" ${questionDifficulty === "e" ? "selected" : ""}>سهل</option><option value="h" ${questionDifficulty === "h" ? "selected" : ""}>صعب</option></select><select aria-label="تصفية حسب النوع" onchange="updateQuestionFilter('kind',this.value)"><option value="all" ${questionKind === "all" ? "selected" : ""}>كل الأنواع</option>${Object.entries(kindLabels).map(([kind, label]) => `<option value="${kind}" ${questionKind === kind ? "selected" : ""}>${label}</option>`).join("")}</select><label class="duplicate-filter"><input type="checkbox" ${duplicateQuestionsOnly ? "checked" : ""} onchange="updateQuestionFilter('duplicates',this.checked)"> المكررة فقط</label></div><small class="filter-count">عرض ${filtered.length} من ${list.length} في التصنيف المختار</small><details class="import-hint"><summary>طريقة تجهيز ملف الاستيراد</summary><small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><div dir="rtl" class="sample">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>${T.length > 1 ? catsHTML(T) : ""}${qListHTML(filtered, cu, true, duplicates, "لا توجد أسئلة مطابقة للفلاتر")}</div><div class="card"><h3>الثيم والوضع</h3><p class="theme-description">اختار الألوان المناسبة لك. الثيم بيتحفظ على هذا الجهاز والمتصفح.</p>${themeOptionsHTML()}</div><div class="card"><h3>المؤثرات الصوتية</h3><div class="row"><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button></div></div><div class="card"><h3>الحساب</h3><div class="row"><button class="danger" onclick="logout()">🚪 خروج</button></div></div></div>`;
+        visibleManageQuestionIds = filtered.map((question) => question.id);
+        return `<div class="mg"><div class="card"><h3>الأسئلة · ${Qs.length} <small>· ${duplicates.size} سؤال مكرر</small></h3><div class="row"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد أسئلة</button><button onclick="exportQuestions()">⬇ تصدير الأسئلة</button></div><div class="question-filters"><input id="questionSearch" type="search" placeholder="ابحث في نص السؤال والإجابة والاختيارات" value="${esc(questionSearch)}" oninput="updateQuestionSearch(this.value)"><select aria-label="تصفية حسب الصعوبة" onchange="updateQuestionFilter('difficulty',this.value)"><option value="all" ${questionDifficulty === "all" ? "selected" : ""}>كل الصعوبات</option><option value="e" ${questionDifficulty === "e" ? "selected" : ""}>سهل</option><option value="h" ${questionDifficulty === "h" ? "selected" : ""}>صعب</option></select><select aria-label="تصفية حسب النوع" onchange="updateQuestionFilter('kind',this.value)"><option value="all" ${questionKind === "all" ? "selected" : ""}>كل الأنواع</option>${Object.entries(kindLabels).map(([kind, label]) => `<option value="${kind}" ${questionKind === kind ? "selected" : ""}>${label}</option>`).join("")}</select><label class="duplicate-filter"><input type="checkbox" ${duplicateQuestionsOnly ? "checked" : ""} onchange="updateQuestionFilter('duplicates',this.checked)"> المكررة فقط</label></div><div class="row question-bulk-actions"><button onclick="toggleVisibleQuestionSelection()" ${filtered.length ? "" : "disabled"}>${allVisibleSelected ? "إلغاء تحديد المعروض" : "تحديد المعروض"}</button><button class="danger" onclick="deleteSelectedQuestions()" ${selectedQuestionIds.size ? "" : "disabled"}>🗑 حذف المحدد (${selectedQuestionIds.size})</button><button onclick="clearQuestionSelection()" ${selectedQuestionIds.size ? "" : "disabled"}>إلغاء التحديد</button><small>«تحديد المعروض» يحدد نتائج الفلاتر الحالية فقط.</small></div><small class="filter-count">عرض ${filtered.length} من ${list.length} في التصنيف المختار</small><details class="import-hint"><summary>طريقة تجهيز ملف الاستيراد</summary><small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><div dir="rtl" class="sample">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>${T.length > 1 ? catsHTML(T) : ""}${qListHTML(filtered, cu, true, duplicates, "لا توجد أسئلة مطابقة للفلاتر")}</div><div class="card"><h3>الثيم والوضع</h3><p class="theme-description">اختار الألوان المناسبة لك. الثيم بيتحفظ على هذا الجهاز والمتصفح.</p>${themeOptionsHTML()}</div><div class="card"><h3>المؤثرات الصوتية</h3><div class="row"><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button></div></div><div class="card"><h3>الحساب</h3><div class="row"><button class="danger" onclick="logout()">🚪 خروج</button></div></div></div>`;
       }
       const TIMER_DURATION = 30000;
       function timerEnabled(q) {
@@ -1305,6 +1378,7 @@
           return;
         try {
           await api("/api/questions/" + id, "DELETE");
+          selectedQuestionIds.delete(id);
           G.used = (G.used || []).filter((usedId) => usedId !== id);
           if (G.cur.id === id)
             G.cur = {

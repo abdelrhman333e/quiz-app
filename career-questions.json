@@ -1,0 +1,164 @@
+{
+  "format": "quiz-app-questions",
+  "version": 1,
+  "exportedAt": "2026-11-18T11:25:54+02:00",
+  "questions": [
+    {
+      "id": "career-ronaldo",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "كريستيانو رونالدو",
+      "clubs": [
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"
+        },
+        {
+          "n": "يوفنتوس",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Juventus_FC_-_logo_black_%28Italy%2C_2020%29.svg/330px-Juventus_FC_-_logo_black_%28Italy%2C_2020%29.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg"
+        },
+        {
+          "n": "النصر",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Nassr_FC_Logo.svg/330px-Nassr_FC_Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+        }
+      ]
+    },
+    {
+      "id": "career-messi",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ليونيل ميسي",
+      "clubs": [
+        {
+          "n": "برشلونة",
+          "image": "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"
+        },
+        {
+          "n": "إنتر ميامي",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/5/5c/Inter_Miami_CF_logo.svg/330px-Inter_Miami_CF_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+        }
+      ]
+    },
+    {
+      "id": "career-mbappe",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "كيليان مبابي",
+      "clubs": [
+        {
+          "n": "موناكو",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/c/cf/LogoASMonacoFC2021.svg/330px-LogoASMonacoFC2021.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"
+        }
+      ]
+    },
+    {
+      "id": "career-salah",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "محمد صلاح",
+      "clubs": [
+        {
+          "n": "تشيلسي",
+          "image": "https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg"
+        },
+        {
+          "n": "فيورنتينا",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/ACF_Fiorentina_-_logo_%28Italy%2C_2022%29.svg/330px-ACF_Fiorentina_-_logo_%28Italy%2C_2022%29.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+        },
+        {
+          "n": "روما",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/f/f7/AS_Roma_logo_%282017%29.svg/330px-AS_Roma_logo_%282017%29.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+        },
+        {
+          "n": "ليفربول",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/0/0c/Liverpool_FC.svg/330px-Liverpool_FC.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+        }
+      ]
+    },
+    {
+      "id": "career-benzema",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "كريم بنزيما",
+      "clubs": [
+        {
+          "n": "ليون",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/1/1c/Olympique_Lyonnais_logo.svg/330px-Olympique_Lyonnais_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"
+        },
+        {
+          "n": "الاتحاد",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/8/87/Al-Ittihad_Club_%28Jeddah%29_logo.svg/330px-Al-Ittihad_Club_%28Jeddah%29_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+        }
+      ]
+    },
+    {
+      "id": "career-ronaldinho",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "رونالدينيو",
+      "clubs": [
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Logo_of_AC_Milan.svg/330px-Logo_of_AC_Milan.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+        }
+      ]
+    }
+  ],
+  "assets": {}
+}
