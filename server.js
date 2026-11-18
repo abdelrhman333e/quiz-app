@@ -928,6 +928,54 @@ http
             ? json(res, { u: r.username, room: r.room })
             : json(res, { error: "x" }, 401);
         }
+        if (u === "/api/account" && req.method === "POST") {
+          const b = await body(req),
+            name = str(b?.username, 20).toLowerCase(),
+            room = str(b?.room, 8).toLower(),
+            currentPassword =
+              typeof b?.currentPassword === "string" ? b.currentPassword : "",
+            newPassword =
+              typeof b?.newPassword === "string" ? b.newPassword : "";
+          const account = (
+            await q("SELECT username,pass,room FROM users WHERE id=$1", [uid])
+          )[0];
+          if (!account)
+            return json(res, { error: "الحساب غير موجود" }, 404);
+          if (!currentPassword || !check(currentPassword, account.pass))
+            return json(res, { error: "كلمة المرور الحالية غير صحيحة" }, 401);
+          if (!/^[\w\u0600-\u06FF.-]{3,20}$/.test(name))
+            return json(res, { error: "اسم تسجيل الدخول من 3 إلى 20 حرفًا" }, 400);
+          if (!/^[a-f0-9]{8}$/.test(room))
+            return json(res, { error: "رمز الغرفة يجب أن يكون 8 أرقام وحروف من A إلى F" }, 400);
+          if (newPassword && newPassword.length < 6)
+            return json(res, { error: "كلمة المرور الجديدة 6 أحرف على الأقل" }, 400);
+          if (
+            name !== account.username &&
+            (await q("SELECT 1 FROM users WHERE username=$1 AND id<>$2", [
+              name,
+              uid,
+            ])).length
+          )
+            return json(res, { error: "اسم تسجيل الدخول مستخدم بالفعل" }, 409);
+          if (
+            room !== account.room &&
+            (await q("SELECT 1 FROM users WHERE room=$1 AND id<>$2", [
+              room,
+              uid,
+            ])).length
+          )
+            return json(res, { error: "رمز الغرفة مستخدم بالفعل" }, 409);
+          await q(
+            "UPDATE users SET username=$1,room=$2,pass=$3 WHERE id=$4",
+            [
+              name,
+              room,
+              newPassword ? hash(newPassword) : account.pass,
+              uid,
+            ],
+          );
+          return json(res, { ok: 1, u: name, room });
+        }
         if (u === "/api/ping") {
           await q("SELECT 1");
           return json(res, { ok: 1 });
