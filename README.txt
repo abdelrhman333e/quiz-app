@@ -163,7 +163,6 @@ https://v6d6pe1dzn5k-production-gy2jymah.europe-west1.suga.run
 - `public/css/`: تنسيقات مشتركة وتنسيقات صفحة التابلت.
 - `public/assets/icons/`: الأيقونات التي تستخدمها صفحات الويب.
 - `public/assets/audio/`: ملفات الصوت والمؤثرات.
-- `public/assets/audio/tutorial.wav`: ملف قديم للصوت التوضيحي، غير مستخدم حاليًا.
 - `public/code_artifact.html`: الفيديو التعريفي المضمّن في الصفحة الرئيسية
   والتابلت، مع وضع تشغيل تلقائي عند عرضه على شاشة المسابقة.
 - `assets/brand/`: ملفات الهوية الأصلية غير المستخدمة مباشرة كمسارات واجهة.

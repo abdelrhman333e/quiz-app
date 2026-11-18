@@ -1,6 +1,3 @@
-const ExcelJS = require("exceljs");
-const { Document, Packer, Paragraph } = require("docx");
-
 const columns = [
   "التصنيف",
   "السؤال",
@@ -51,6 +48,7 @@ async function exportQuestionFile(questions, format) {
   }
 
   if (format === "xlsx") {
+    const ExcelJS = require("exceljs");
     const workbook = new ExcelJS.Workbook(),
       sheet = workbook.addWorksheet("الأسئلة");
     sheet.addRow(columns);
@@ -66,6 +64,7 @@ async function exportQuestionFile(questions, format) {
   }
 
   if (format === "docx") {
+    const { Document, Packer, Paragraph } = require("docx");
     const paragraphs = [];
     records.forEach((record, index) => {
       record.forEach((value, column) => {

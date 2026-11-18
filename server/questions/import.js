@@ -1,6 +1,3 @@
-const ExcelJS = require("exceljs");
-const mammoth = require("mammoth");
-
 // توحيد الكتابة العربية والإنجليزية يجعل مطابقة عناوين الأعمدة والإجابة
 // متسامحة مع اختلاف الهمزات والتشكيل والمسافات وعلامات الترقيم.
 const normalize = (value) =>
@@ -211,6 +208,7 @@ function buildQuestion(record) {
 async function parseQuestionFile(extension, data) {
   let records;
   if (extension === "xlsx") {
+    const ExcelJS = require("exceljs");
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(data);
     const sheet = workbook.worksheets[0];
@@ -225,6 +223,7 @@ async function parseQuestionFile(extension, data) {
     });
     records = parseTableRows(rows);
   } else if (extension === "docx") {
+    const mammoth = require("mammoth");
     const { value } = await mammoth.extractRawText({ buffer: data });
     records = parseLabeledText(value);
   } else if (extension === "txt") {
