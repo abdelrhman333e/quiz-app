@@ -1033,3 +1033,64 @@ html[data-theme="black"] .tb2 .dock {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== اختيار نوع السؤال (نافذة سؤال جديد) ===== */
+.modal .card.qform {
+  width: min(660px, 100%);
+}
+.modal .qf-label {
+  margin: 10px 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mut);
+}
+.modal .ktypes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.modal .ktype {
+  --k: #3b82f6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 0;
+  padding: 10px 12px;
+  text-align: start;
+  color: var(--t);
+  background: rgba(127, 140, 160, 0.12);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+.modal .ktype:hover {
+  transform: translateY(-2px);
+  border-color: var(--k);
+}
+.modal .ktype.on {
+  border-color: var(--k);
+  background: color-mix(in srgb, var(--k) 22%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--k) 35%, transparent);
+}
+.modal .ktype .kt-ic {
+  font-size: 24px;
+  line-height: 1.2;
+}
+.modal .ktype .kt-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+.modal .ktype .kt-desc {
+  font-size: 12px;
+  color: var(--mut);
+  line-height: 1.4;
+}
+.modal .ktype .kt-n {
+  margin-top: 4px;
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--k) 25%, transparent);
+}

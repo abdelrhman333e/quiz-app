@@ -1556,11 +1556,37 @@ const $ = (id) => document.getElementById(id);
           toast(e.message, 1);
         }
       }
+      const KIND_META = {
+        normal: { icon: "📝", name: "سؤال عادي", desc: "اختيارات أو إجابة نصية", color: "#3b82f6" },
+        audio: { icon: "🎧", name: "سؤال صوتي", desc: "مقطع صوتي من رابط أو ملف", color: "#a78bfa" },
+        top5: { icon: "🏆", name: "توب 5", desc: "٥ إجابات مرتبة", color: "#f59e0b" },
+        top10: { icon: "🥇", name: "توب 10", desc: "١٠ إجابات مرتبة", color: "#f97316" },
+        reverse: { icon: "🔄", name: "كلمات معكوسة", desc: "كلمة تظهر حرفًا بحرف", color: "#14b8a6" },
+        visual: { icon: "🖼️", name: "خمن الصورة", desc: "صورة أو إيموجي للتخمين", color: "#ec4899" },
+        career: { icon: "⚽", name: "مسيرة لاعب", desc: "شعارات أندية اللاعب", color: "#22c55e" },
+      };
+      function kindPickerHTML(current) {
+        return `<div class="ktypes" role="radiogroup" aria-label="نوع السؤال">${Object.entries(KIND_META)
+          .map(([k, m]) => {
+            const n = Qs.filter((x) => (x.kind || "normal") === k).length;
+            return `<button type="button" class="ktype ${k === current ? "on" : ""}" data-kind="${k}" role="radio" aria-checked="${k === current}" style="--k:${m.color}" onclick="pickQuestionKind('${k}')"><span class="kt-ic">${m.icon}</span><span class="kt-name">${m.name}</span><span class="kt-desc">${m.desc}</span><span class="kt-n">${n} سؤال</span></button>`;
+          })
+          .join("")}</div>`;
+      }
+      function pickQuestionKind(kind) {
+        $("fk").value = kind;
+        document.querySelectorAll("#form .ktype").forEach((b) => {
+          const on = b.dataset.kind === kind;
+          b.classList.toggle("on", on);
+          b.setAttribute("aria-checked", on);
+        });
+        toggleQuestionKind();
+      }
       function openForm(id) {
         const e = Qs.find((x) => x.id === id) || {
           o: [],
           r: [],
-          kind: "normal",
+          kind: KIND_META[questionKind] ? questionKind : "normal",
           d: "e",
           t: G.f !== "الكل" ? G.f : "",
         };
@@ -1571,11 +1597,12 @@ const $ = (id) => document.getElementById(id);
               ? [{ n: "", image: "" }, { n: "", image: "" }]
               : [];
         $("form").innerHTML =
-          `<div class="modal"><div class="card"><h3>${id ? "تعديل سؤال" : "سؤال جديد"}</h3>
- <input id="ft" placeholder="النوع (ديني، ثقافة عامة...)" list="tl" value="${esc(e.t)}"><datalist id="tl">${types()
+          `<div class="modal"><div class="card qform"><h3>${id ? "تعديل سؤال" : "سؤال جديد"}</h3>
+ <div class="qf-label">نوع السؤال</div>${kindPickerHTML(e.kind || "normal")}<div class="qf-label">التصنيف</div>
+ <input id="ft" placeholder="التصنيف (ديني، ثقافة عامة...)" list="tl" value="${esc(e.t)}"><datalist id="tl">${types()
    .map((t) => `<option value="${esc(t)}">`)
    .join("")}</datalist>
- <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option><option value="career" ${e.kind === "career" ? "selected" : ""}>مسيرة لاعب — شعارات الأندية</option></select>
+ <select id="fk" hidden onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option><option value="career" ${e.kind === "career" ? "selected" : ""}>مسيرة لاعب — شعارات الأندية</option></select>
  <div id="questionFields"><input id="fx" placeholder="نص السؤال" value="${esc(e.x)}"></div>
  <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط YouTube أو Spotify أو ملف صوتي مباشر" value="${esc(e.audioUrl || "")}" oninput="$('fauFile').value=''"><small>الصق رابط YouTube أو Spotify أو SoundCloud، أو رابطًا مباشرًا لملف صوتي. المواقع الأخرى تعمل إذا كانت توفر رابطًا مباشرًا لملف MP3 أو WAV أو OGG أو M4A أو AAC. يمكنك أيضًا رفع ملف من جهازك بحد أقصى 20 ميجابايت.</small><label for="fauFile">اختيار ملف صوتي من الجهاز</label><input id="fauFile" type="file" accept=".mp3,.wav,.ogg,.oga,.opus,.m4a,.aac"><small id="audioUploadStatus" aria-live="polite"></small></div>
  <label for="fd">صعوبة السؤال</label><select id="fd"><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>
