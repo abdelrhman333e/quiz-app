@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#101c30" />
+    <title>جرس المتسابقين</title>
+    <link rel="stylesheet" href="/css/buzzer.css?v=1" />
+    <script src="/js/buzzer.js?v=1" defer></script>
+  </head>
+  <body>
+    <main class="buzzer-shell">
+      <header class="buzzer-brand">
+        <span class="brand-icon" aria-hidden="true">🔔</span>
+        <div>
+          <h1>جرس المتسابقين</h1>
+          <p>خليك جاهز واضغط أول ما تعرف الإجابة</p>
+        </div>
+      </header>
+      <form id="roomForm" class="room-form">
+        <label for="roomCode">رمز الغرفة</label>
+        <div class="room-entry">
+          <input
+            id="roomCode"
+            name="room"
+            inputmode="text"
+            autocomplete="off"
+            autocapitalize="characters"
+            maxlength="8"
+            pattern="[A-Fa-f0-9]{8}"
+            placeholder="مثال: a1b2c3d4"
+            required
+          />
+          <button type="submit" class="primary">دخول الغرفة</button>
+        </div>
+      </form>
+      <section id="buzzerPanel" class="buzzer-panel" hidden>
+        <div class="room-badge">الغرفة <b id="joinedRoom"></b></div>
+        <p id="connectionStatus" class="connection-status" role="status">
+          جاري الاتصال...
+        </p>
+        <div class="contestant-heading">
+          <h2>اختار اسمك</h2>
+          <small>اختيارك يُحفظ على هذا الجهاز</small>
+        </div>
+        <div id="contestants" class="contestants"></div>
+        <p id="questionStatus" class="question-status" role="status">
+          استنى مقدم المسابقة يعرض السؤال
+        </p>
+        <button id="buzzButton" class="buzz-button" type="button" disabled>
+          <span aria-hidden="true">🔔</span>
+          <b>اضغط الجرس</b>
+        </button>
+      </section>
+      <p class="buzzer-help">
+        لازم يكون اسمك مضافًا في قائمة المتسابقين عند مقدم المسابقة.
+      </p>
+    </main>
+  </body>
+</html>

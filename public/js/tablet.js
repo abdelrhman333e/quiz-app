@@ -236,7 +236,7 @@ const $ = (id) => document.getElementById(id);
         );
       }
       function hdrHTML() {
-        return `<div class="hdr"><div class="tabs" role="tablist"><button role="tab" aria-selected="${tabSel === "play"}" class="${tabSel === "play" ? "act" : ""}" onclick="setTab('play')">اللعب</button><button role="tab" aria-selected="${tabSel === "manage"}" class="${tabSel === "manage" ? "act" : ""}" onclick="setTab('manage')">الأسئلة والإعدادات</button><button role="tab" aria-selected="${tabSel === "intro"}" class="${tabSel === "intro" ? "act" : ""}" onclick="setTab('intro')">الفيديو التعريفي</button><button role="tab" aria-selected="${tabSel === "contact"}" class="${tabSel === "contact" ? "act" : ""}" onclick="setTab('contact')">التواصل</button></div><div class="hdr-acts"><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="showStats()">📊 الإحصائيات</button><button onclick="undoPointChange()" ${G.pointUndo ? "" : "disabled"}>↶ تراجع عن النقاط</button></div></div>`;
+        return `<div class="hdr"><div class="tabs" role="tablist"><button role="tab" aria-selected="${tabSel === "play"}" class="${tabSel === "play" ? "act" : ""}" onclick="setTab('play')">اللعب</button><button role="tab" aria-selected="${tabSel === "manage"}" class="${tabSel === "manage" ? "act" : ""}" onclick="setTab('manage')">الأسئلة والإعدادات</button><button role="tab" aria-selected="${tabSel === "intro"}" class="${tabSel === "intro" ? "act" : ""}" onclick="setTab('intro')">الفيديو التعريفي</button><button role="tab" aria-selected="${tabSel === "contact"}" class="${tabSel === "contact" ? "act" : ""}" onclick="setTab('contact')">التواصل</button></div><div class="hdr-acts"><button onclick="copyLink()">📺 نسخ رابط الشاشة</button><button onclick="copyBuzzerLink()">🔔 رابط جرس المتسابقين</button><button onclick="showStats()">📊 الإحصائيات</button><button onclick="undoPointChange()" ${G.pointUndo ? "" : "disabled"}>↶ تراجع عن النقاط</button></div></div>`;
       }
       function catsHTML(T) {
         return `<div class="cats" aria-label="التصنيف">${T.map((t, i) => `<button class="${G.f === t ? "on" : ""}" onclick="setF(${i})">${esc(t)}<span class="cnt">${t === "الكل" ? Qs.length : Qs.filter((x) => x.t === t).length}</span></button>`).join("")}</div>`;
@@ -2041,6 +2041,16 @@ const $ = (id) => document.getElementById(id);
         )
           .then(() => toast("اتنسخ الرابط"))
           .catch(() => prompt("انسخ الرابط:", l));
+      }
+      function copyBuzzerLink() {
+        const link =
+          location.origin + "/buzzer?room=" + encodeURIComponent(ME.room);
+        (navigator.clipboard
+          ? navigator.clipboard.writeText(link)
+          : Promise.reject()
+        )
+          .then(() => toast("اتنسخ رابط جرس المتسابقين"))
+          .catch(() => prompt("انسخ رابط جرس المتسابقين:", link));
       }
       async function logout() {
         await api("/api/logout", "POST");

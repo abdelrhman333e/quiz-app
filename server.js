@@ -125,6 +125,47 @@ const getQs = async (u) =>
 const getGame = async (u) =>
   (await q("SELECT data FROM games WHERE user_id=$1", [u]))[0]?.data ||
   NEWGAME();
+function gamePlayers(g) {
+  if (g?.mode !== "rounds") return Array.isArray(g?.cs) ? g.cs : [];
+  const round = Array.isArray(g.rounds)
+    ? g.rounds.find((item) => item.id === g.activeRoundId)
+    : null;
+  return round && Array.isArray(round.players)
+    ? round.players
+    : [];
+}
+function buzzerView(g) {
+  const activeRound =
+      g?.mode === "rounds" && Array.isArray(g.rounds)
+        ? g.rounds.find((item) => item.id === g.activeRoundId)
+        : null,
+    players = gamePlayers(g).map((player) => ({
+      id: str(player.id, 80),
+      n: str(player.n, 40),
+    })),
+    index = Number.isInteger(g?.cur?.buz) ? g.cur.buz : -1,
+    questionShown = !!(
+      g?.cur?.q &&
+      g.cur.displayId &&
+      !g.introVideoVisible &&
+      (g.mode !== "rounds" || activeRound)
+    ),
+    buzzed = questionShown && index >= 0 ? players[index] || null : null,
+    questionActive = !!(
+      questionShown &&
+      !g.cur.a &&
+      !g.cur.res &&
+      g.cur.timer?.phase !== "done" &&
+      (g.mode !== "rounds" ||
+        (activeRound && !activeRound.finished && players.length))
+    );
+  return {
+    displayId: questionShown ? g.cur.displayId : null,
+    players,
+    buzzed,
+    active: questionActive && !buzzed && players.length > 0,
+  };
+}
 function view(g, qs) {
   const c = g.cur,
     x = qs.find((a) => a.id === c.id),
@@ -137,8 +178,7 @@ function view(g, qs) {
     reverse = x?.kind === "reverse",
     visual = x?.kind === "visual",
     career = x?.kind === "career",
-    activePlayers =
-      g.mode === "rounds" ? activeRound?.players || [] : g.cs || [];
+    activePlayers = gamePlayers(g);
   const v = {
     revision: Number.isSafeInteger(g.v) ? g.v : 0,
     cs: activePlayers.map(
@@ -285,7 +325,8 @@ async function pushAll(u) {
   const [qs, g] = await Promise.all([getQs(u), getGame(u)]);
   // شاشة العرض تحصل على إسقاط محدود، بينما التابلت يحتاج حالة اللعبة الكاملة.
   for (const c of set) {
-    if (c.screen) send(c.res, "view", view(g, qs));
+    if (c.buzzer) send(c.res, "buzzer", buzzerView(g));
+    else if (c.screen) send(c.res, "view", view(g, qs));
     else {
       send(c.res, "q", qs);
       send(c.res, "game", g);
@@ -656,7 +697,8 @@ http
       }
       if (u === "/api/logout") return json(res, { ok: 1 }, 200, setC(0));
       if (u === "/events") {
-        const room = url.searchParams.get("room");
+        const room = url.searchParams.get("room"),
+          buzzer = url.searchParams.get("role") === "buzzer";
         let uid,
           screen = false;
         if (room) {
@@ -668,7 +710,7 @@ http
             return res.end();
           }
           uid = r[0].id;
-          screen = true;
+          screen = !buzzer;
         } else if (!(uid = authUid(req))) {
           res.writeHead(401);
           return res.end();
@@ -679,14 +721,15 @@ http
           Connection: "keep-alive",
           "X-Accel-Buffering": "no",
         });
-        const c = { res, screen };
+        const c = { res, screen, buzzer };
         // الغرفة تربط عدة شاشات/تابلتات بحساب واحد؛ إزالة الاتصال عند إغلاقه
         // تمنع الاحتفاظ باتصالات SSE المنتهية في الذاكرة.
         if (!rooms.has(uid)) rooms.set(uid, new Set());
         rooms.get(uid).add(c);
         req.on("close", () => rooms.get(uid)?.delete(c));
         const [qs, g] = await Promise.all([getQs(uid), getGame(uid)]);
-        if (screen) send(res, "view", view(g, qs));
+        if (buzzer) send(res, "buzzer", buzzerView(g));
+        else if (screen) send(res, "view", view(g, qs));
         else {
           send(res, "q", qs);
           send(res, "game", g);
@@ -734,6 +777,62 @@ http
             if (!connection.screen)
               send(connection.res, "audio", audioState);
         return json(res, { ok: 1 });
+      }
+      if (u === "/api/buzzer") {
+        if (req.method !== "POST")
+          return json(res, { error: "الطريقة غير مدعومة" }, 405);
+        const request = await body(req),
+          room = str(request?.room, 20).toLowerCase(),
+          contestantId = str(request?.contestantId, 80),
+          displayId = str(request?.displayId, 120);
+        if (!/^[a-f0-9]{8}$/.test(room) || !contestantId || !displayId)
+          return json(res, { error: "بيانات الجرس غير مكتملة" }, 400);
+        const account = (
+          await q("SELECT id FROM users WHERE room=$1", [room])
+        )[0];
+        if (!account)
+          return json(res, { error: "رمز الغرفة غير صحيح" }, 404);
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const game = await getGame(account.id),
+            buzzer = buzzerView(game);
+          if (!buzzer.displayId || buzzer.displayId !== displayId)
+            return json(res, { error: "تغير السؤال، انتظر السؤال الحالي" }, 409);
+          const index = buzzer.players.findIndex(
+            (player) => player.id === contestantId,
+          );
+          if (index < 0)
+            return json(res, { error: "المتسابق غير موجود في القائمة الحالية" }, 404);
+          if (game.cur?.buz != null)
+            return json(
+              res,
+              { error: "تم تسجيل أول ضغطة بالفعل", buzzed: buzzer.buzzed },
+              409,
+            );
+          if (!buzzer.active)
+            return json(res, { error: "الجرس غير متاح الآن" }, 409);
+          const revision = Number.isSafeInteger(game.v) ? game.v : 0,
+            nextRevision = Math.max(Date.now(), revision + 1),
+            saved = await q(
+              "UPDATE games SET data=jsonb_set(jsonb_set(data,'{cur,buz}',$3::jsonb,true),'{v}',$4::jsonb,true) WHERE user_id=$1 AND data->'cur'->>'displayId'=$2 AND COALESCE((data->>'v')::numeric,0)=$5::numeric AND COALESCE(data->'cur'->'buz','null'::jsonb)='null'::jsonb RETURNING data",
+              [
+                account.id,
+                displayId,
+                JSON.stringify(index),
+                JSON.stringify(nextRevision),
+                revision,
+              ],
+            );
+          if (!saved.length) continue;
+          pushAll(account.id);
+          return json(res, {
+            ok: 1,
+            accepted: true,
+            contestant: buzzer.players[index].n,
+          });
+        }
+        return json(res, {
+          error: "سبقك متسابق آخر أو تغيرت حالة السؤال",
+        }, 409);
       }
       if (u.startsWith("/api/")) {
         const uid = authUid(req);
@@ -1165,6 +1264,8 @@ http
       let f =
         u === "/tablet"
           ? "tablet.html"
+          : u === "/buzzer"
+            ? "buzzer.html"
           : u.startsWith("/screen")
             ? "screen.html"
             : u === "/"

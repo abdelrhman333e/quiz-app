@@ -1,0 +1,244 @@
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI", Tahoma, system-ui, sans-serif;
+  color: #fff3e5;
+  background: #101c30;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  min-width: 280px;
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: #101c30;
+}
+button,
+input {
+  font: inherit;
+}
+.buzzer-shell {
+  width: min(100%, 470px);
+  padding: clamp(20px, 6vw, 32px);
+  border: 1px solid #2b4263;
+  border-radius: 24px;
+  background: #17263d;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+}
+.buzzer-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 25px;
+}
+.brand-icon {
+  display: grid;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 1px solid rgba(251, 146, 60, 0.42);
+  border-radius: 17px;
+  background: rgba(251, 146, 60, 0.12);
+  font-size: 25px;
+}
+h1,
+h2,
+p {
+  margin: 0;
+}
+h1 {
+  font-size: 22px;
+}
+.buzzer-brand p,
+.buzzer-help,
+.contestant-heading small {
+  margin-top: 5px;
+  color: #a8bad2;
+  font-size: 13px;
+}
+.room-form label,
+.contestant-heading h2 {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.room-entry {
+  display: flex;
+  gap: 8px;
+}
+.room-entry input {
+  width: 0;
+  min-width: 0;
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #354b68;
+  border-radius: 12px;
+  outline: none;
+  background: #0e192a;
+  color: #fff3e5;
+  text-align: center;
+  letter-spacing: 0.12em;
+}
+.room-entry input:focus {
+  border-color: #fb923c;
+  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.16);
+}
+.room-entry button {
+  flex: none;
+  min-height: 46px;
+  padding: 9px 13px;
+  border: 0;
+  border-radius: 12px;
+  background: #fb923c;
+  color: #211307;
+  font-weight: 800;
+  cursor: pointer;
+}
+.buzzer-panel {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #2b3d58;
+}
+.room-badge {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid #314967;
+  border-radius: 999px;
+  color: #a8bad2;
+  font-size: 12px;
+}
+.room-badge b {
+  color: #dceaff;
+  letter-spacing: 0.08em;
+}
+.connection-status,
+.question-status {
+  margin: 13px 0;
+  color: #a8bad2;
+  font-size: 13px;
+}
+.connection-status::before {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-inline-end: 7px;
+  border-radius: 50%;
+  background: #fbbf24;
+  content: "";
+}
+.connection-status.connected::before {
+  background: #4ade80;
+}
+.connection-status.error::before {
+  background: #fb7185;
+}
+.contestant-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 18px;
+}
+.contestant-heading h2 {
+  margin: 0;
+}
+.contestant-heading small {
+  margin: 0;
+}
+.contestants {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 230px;
+  margin-top: 10px;
+  overflow: auto;
+}
+.contestant-option {
+  min-width: 0;
+  min-height: 46px;
+  padding: 9px 12px;
+  overflow: hidden;
+  border: 1px solid #354b68;
+  border-radius: 12px;
+  background: #101c30;
+  color: #dceaff;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.contestant-option.selected {
+  border-color: #60a5fa;
+  background: rgba(59, 130, 246, 0.16);
+  color: #fff;
+}
+.question-status {
+  min-height: 20px;
+  text-align: center;
+}
+.buzz-button {
+  width: 100%;
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid #fb923c;
+  border-radius: 20px;
+  background: #fb923c;
+  color: #211307;
+  font-size: 19px;
+  box-shadow: 0 8px 26px rgba(251, 146, 60, 0.2);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.buzz-button span {
+  font-size: 27px;
+}
+.buzz-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.buzz-button:disabled {
+  border-color: #475569;
+  background: #354258;
+  color: #a8bad2;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.buzzer-help {
+  margin-top: 20px;
+  text-align: center;
+  line-height: 1.6;
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 360px) {
+  body {
+    padding: 10px;
+  }
+  .room-entry {
+    flex-direction: column;
+  }
+  .room-entry input {
+    width: 100%;
+  }
+  .contestants {
+    grid-template-columns: 1fr;
+  }
+  .contestant-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
