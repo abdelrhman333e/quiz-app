@@ -231,6 +231,7 @@ const $ = (id) => document.getElementById(id);
         const keepName = $("cn") ? $("cn").value : "";
         const ctx = { T, list, duplicates, q, cu, hasO, top, reverse, visual, audioQuestion, career, clubIndex, reverseCount, reverseIndex, timer, timerActive };
         $("app").innerHTML = `<div class="tb2">${hdrHTML()}${tabSel === "manage" ? manageHTML(ctx) : tabSel === "contact" ? contactHTML() : tabSel === "intro" ? introHTML() : playHTML(ctx)}<input id="importQuestionsFile" type="file" accept="${IMPORT_ACCEPT}" hidden onchange="handleQuestionsImport(this)"></div>`;
+        if (tabSel === "manage") injectAccountSettings();
         if (searchHasFocus && $("questionSearch")) {
           $("questionSearch").focus();
           $("questionSearch").setSelectionRange(searchCursor, searchCursor);
@@ -2201,6 +2202,53 @@ const $ = (id) => document.getElementById(id);
       async function logout() {
         await api("/api/logout", "POST");
         location = "/";
+      }
+      function injectAccountSettings() {
+        if (!ME) return;
+        const headings = [...document.querySelectorAll(".mg > .card h3")];
+        const heading = headings.find((item) => item.textContent === "الحساب");
+        if (!heading) return;
+        const card = heading.closest(".card");
+        const oldRow = card.querySelector(":scope > .row");
+        if (oldRow) oldRow.remove();
+        heading.insertAdjacentHTML(
+          "afterend",
+          `<form id="accountSettingsForm" class="account-settings" onsubmit="saveAccountSettings(event)">
+            <label for="accountUsername">اسم تسجيل الدخول</label>
+            <input id="accountUsername" maxlength="20" value="${esc(ME.u)}" autocomplete="username">
+            <label for="accountRoom">رمز الغرفة</label>
+            <input id="accountRoom" maxlength="8" value="${esc(ME.room)}" autocomplete="off" inputmode="text" dir="ltr">
+            <label for="accountCurrentPassword">كلمة المرور الحالية</label>
+            <input id="accountCurrentPassword" type="password" autocomplete="current-password" placeholder="مطلوبة للحفظ">
+            <label for="accountNewPassword">كلمة المرور الجديدة</label>
+            <input id="accountNewPassword" type="password" minlength="6" autocomplete="new-password" placeholder="اتركها فارغة للإبقاء عليها">
+            <div class="account-actions"><button class="primary" type="submit">حفظ إعدادات الحساب</button><button class="danger" type="button" onclick="logout()">خروج</button></div>
+          </form>`,
+        );
+      }
+      async function saveAccountSettings(event) {
+        event.preventDefault();
+        const username = $("accountUsername").value.trim();
+        const room = $("accountRoom").value.trim().toLowerCase();
+        const currentPassword = $("accountCurrentPassword").value;
+        const newPassword = $("accountNewPassword").value;
+        if (!currentPassword)
+          return toast("أدخل كلمة المرور الحالية", 1);
+        try {
+          const result = await api("/api/account", "POST", {
+            username,
+            room,
+            currentPassword,
+            newPassword,
+          });
+          ME = { ...ME, u: result.u, room: result.room };
+          $("accountCurrentPassword").value = "";
+          $("accountNewPassword").value = "";
+          toast("تم حفظ إعدادات الحساب");
+          render();
+        } catch (error) {
+          toast(error.message || "تعذر حفظ إعدادات الحساب", 1);
+        }
       }
       api("/api/me")
         .then((m) => {

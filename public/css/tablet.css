@@ -210,6 +210,94 @@
 .tb2 .contact-links a {
   color: #93c5fd;
 }
+.tb2 .contact-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--bd);
+}
+.tb2 .contact-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--blue);
+  border-radius: 16px;
+  background: var(--blue-soft, rgba(77, 163, 255, 0.12));
+  color: var(--blue);
+  font-size: 24px;
+}
+.tb2 .contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.7fr);
+  gap: 14px;
+}
+.tb2 .contact-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tb2 .contact-link-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  background: var(--s3);
+}
+.tb2 .contact-link-card span,
+.tb2 .contact-side small {
+  color: var(--mut2);
+  font-size: 12px;
+}
+.tb2 .contact-link-card a {
+  color: var(--blue);
+  font-weight: 800;
+  word-break: break-word;
+}
+.tb2 .contact-submit {
+  align-self: stretch;
+  min-height: 48px;
+}
+.tb2 .account-settings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+.tb2 .account-settings label {
+  align-self: end;
+  color: var(--mut2);
+  font-size: 13px;
+  font-weight: 700;
+}
+.tb2 .account-settings input {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  background: var(--s3);
+  color: var(--txt);
+  direction: rtl;
+}
+.tb2 .account-settings input#accountRoom {
+  direction: ltr;
+  text-align: left;
+}
+.tb2 .account-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin-top: 6px;
+}
+.tb2 .account-actions button {
+  min-height: 46px;
+}
 .tb2 .play {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 310px;
@@ -2289,6 +2377,19 @@ html[data-theme] .stats-modal .stats-card {
   line-height: 1.7;
 }
 @media (max-width: 559px) {
+  .tb2 .contact-grid,
+  .tb2 .account-settings {
+    grid-template-columns: 1fr;
+  }
+  .tb2 .account-actions {
+    grid-column: 1;
+  }
+  .tb2 .contact-grid {
+    gap: 12px;
+  }
+  .tb2 .contact-hero {
+    align-items: flex-start;
+  }
   .stats-modal {
     padding: 10px;
   }
