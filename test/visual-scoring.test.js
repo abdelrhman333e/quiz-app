@@ -76,8 +76,7 @@ test("visual clarity reduces correct-answer points without going below zero", ()
 
 test("tablet renders a visual question using its own scoring helper", () => {
   const context = createContext();
-  context.ME = { u: "test", room: "12345678" };
-  context.G = {
+  const game = {
     cs: [],
     cur: { id: "visual-1", q: 0, o: 0, a: 0, buz: null, res: null },
     f: "الكل",
@@ -88,7 +87,7 @@ test("tablet renders a visual question using its own scoring helper", () => {
     v: 1,
     mode: "free",
   };
-  context.Qs = [
+  const questions = [
     {
       id: "visual-1",
       kind: "visual",
@@ -99,6 +98,10 @@ test("tablet renders a visual question using its own scoring helper", () => {
       t: "عام",
     },
   ];
+  vm.runInContext(
+    `ME = ${JSON.stringify({ u: "test", room: "12345678" })}; G = ${JSON.stringify(game)}; Qs = ${JSON.stringify(questions)};`,
+    context,
+  );
 
   assert.doesNotThrow(() => vm.runInContext("render()", context));
   assert.match(context.document.getElementById("app").innerHTML, /2 نقطة متبقية/);
