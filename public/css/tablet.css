@@ -298,6 +298,50 @@
 .tb2 .account-actions button {
   min-height: 46px;
 }
+.tb2 .manage-contestant-codes {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.tb2 .manage-contestant-code {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 10px;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  background: var(--s3);
+}
+.tb2 .manage-contestant-code div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tb2 .manage-contestant-code b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tb2 .manage-contestant-code small,
+.tb2 .manage-empty {
+  color: var(--mut2);
+  font-size: 12px;
+}
+.tb2 .manage-contestant-code code {
+  direction: ltr;
+  color: var(--amber);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.tb2 .manage-contestant-code button {
+  min-height: 42px;
+  padding-inline: 12px;
+}
 .tb2 .play {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 310px;
@@ -2383,6 +2427,13 @@ html[data-theme] .stats-modal .stats-card {
   }
   .tb2 .account-actions {
     grid-column: 1;
+  }
+  .tb2 .manage-contestant-code {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .tb2 .manage-contestant-code button {
+    grid-column: 1 / -1;
+    width: 100%;
   }
   .tb2 .contact-grid {
     gap: 12px;

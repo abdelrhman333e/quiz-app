@@ -911,8 +911,8 @@ http
           pushAll(account.id);
           return json(res, {
             ok: 1,
-            selected: !release,
-            claimant: !release ? contestantId : null,
+            selected: true,
+            claimant: contestantId,
           });
         }
         return json(res, { error: "تعذر تحديث الاختيار، حاول مرة أخرى" }, 409);

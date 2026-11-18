@@ -423,6 +423,20 @@ h1 {
   color: #ffaaa1;
   font-size: 12px;
 }
+.password-dialog .password-error-ok {
+  color: #8fe5bd;
+}
+.password-dialog .password-error-bad {
+  color: #ffaaa1;
+}
+.password-dialog input.password-input-error {
+  border-color: #ff9a90;
+  box-shadow: 0 0 0 3px rgba(255, 154, 144, 0.12);
+}
+.password-actions button:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
 
 .password-actions {
   display: grid;

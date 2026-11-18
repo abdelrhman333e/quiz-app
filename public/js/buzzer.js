@@ -12,6 +12,7 @@ const passwordInput = document.getElementById("contestantPassword");
 const passwordContestantName = document.getElementById("passwordContestantName");
 const passwordError = document.getElementById("passwordError");
 const cancelPasswordButton = document.getElementById("cancelContestantPassword");
+const confirmPasswordButton = document.getElementById("confirmContestantPassword");
 let room = "";
 let state = null;
 let selectedContestantId = "";
@@ -95,6 +96,11 @@ function openPasswordDialog(player) {
   passwordError.textContent = "";
   passwordInput.value = "";
   passwordModal.hidden = false;
+  passwordInput.disabled = false;
+  confirmPasswordButton.disabled = false;
+  confirmPasswordButton.textContent = "تأكيد الاسم";
+  passwordError.className = "password-error";
+  passwordInput.classList.remove("password-input-error");
   setTimeout(() => passwordInput.focus(), 0);
 }
 
@@ -111,8 +117,19 @@ async function claimContestant(contestantId, password) {
     selectionClaimInFlight === contestantId
   )
     return;
+  if (!password) {
+    passwordError.textContent = "اكتب رمز المتسابق أولًا";
+    passwordError.className = "password-error password-error-bad";
+    passwordInput.classList.add("password-input-error");
+    passwordInput.focus();
+    return;
+  }
   selectionClaimInFlight = contestantId;
   requestMessage = "";
+  passwordError.textContent = "";
+  confirmPasswordButton.disabled = true;
+  confirmPasswordButton.textContent = "جارٍ التحقق...";
+  passwordInput.disabled = true;
   try {
     const response = await fetch("/api/buzzer/claim", {
       method: "POST",
@@ -128,22 +145,28 @@ async function claimContestant(contestantId, password) {
     const result = await response.json();
     if (!response.ok) {
       requestMessage = result.error || "تعذر اختيار اسم المتسابق";
-      if (response.status === 409) {
-        passwordError.textContent =
-          result.error || "الرمز غير صحيح أو الاسم غير متاح";
-        return;
-      }
+      passwordError.textContent =
+        result.error || "تعذر تأكيد هوية المتسابق";
+      passwordError.className = "password-error password-error-bad";
+      passwordInput.classList.add("password-input-error");
+      passwordInput.select();
     } else {
       selectedContestantId = contestantId;
       claimedContestantId = contestantId;
       localStorage.setItem(`quizBuzzerSelected:${room}`, contestantId);
-      requestMessage = "";
+      requestMessage = "تم تأكيد الاسم بنجاح";
+      passwordInput.classList.remove("password-input-error");
       closePasswordDialog();
     }
   } catch {
     requestMessage = "تعذر الاتصال، تحقق من الإنترنت وحاول مجددًا";
+    passwordError.textContent = requestMessage;
+    passwordError.className = "password-error password-error-bad";
   } finally {
     selectionClaimInFlight = "";
+    confirmPasswordButton.disabled = false;
+    confirmPasswordButton.textContent = "تأكيد الاسم";
+    passwordInput.disabled = false;
     render();
   }
 }
