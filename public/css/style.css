@@ -311,6 +311,13 @@ html[data-theme="light"] .pl {
   overflow: hidden;
   background: #000;
 }
+body.intro-video-active {
+  overflow: hidden;
+}
+body.intro-video-active .site-footer,
+body.intro-video-active #themeToggle {
+  display: none;
+}
 .intro-screen .stage {
   display: block;
   width: 100%;

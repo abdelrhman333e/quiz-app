@@ -194,7 +194,7 @@
       }
       function setIntroVideoOnScreen(visible) {
         G.introVideoVisible = visible;
-        save();
+        save(true);
         toast(
           visible
             ? "تم عرض الفيديو على شاشة المسابقة"

@@ -507,6 +507,7 @@
       }
       function render() {
         if (!V) return;
+        document.body.classList.toggle("intro-video-active", V.mode === "intro");
         if (
           V.mode === "intro" &&
           document.getElementById("introVideoScreenFrame")?.dataset.source ===
