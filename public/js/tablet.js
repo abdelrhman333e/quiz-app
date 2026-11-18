@@ -24,6 +24,35 @@ const $ = (id) => document.getElementById(id);
       function contestantScore(contestant) {
         return G?.mode === "rounds" ? contestant.score || 0 : contestant.s;
       }
+      let pendingGameSave = null,
+        gameSavePromise = null;
+      function advanceGameVersion() {
+        G.v = Math.max(Date.now(), (Number.isSafeInteger(G.v) ? G.v : 0) + 1);
+      }
+      function startGameSaveQueue() {
+        if (gameSavePromise) return;
+        gameSavePromise = (async () => {
+          while (pendingGameSave) {
+            const pending = pendingGameSave;
+            pendingGameSave = null;
+            try {
+              await api("/api/game", "POST", pending.state);
+            } catch {
+              toast(pending.errorMessage, 1);
+            }
+          }
+        })().finally(() => {
+          gameSavePromise = null;
+          if (pendingGameSave) startGameSaveQueue();
+        });
+      }
+      function persistGame(errorMessage) {
+        pendingGameSave = {
+          state: JSON.parse(JSON.stringify(G)),
+          errorMessage,
+        };
+        startGameSaveQueue();
+      }
       let openFilterMenu = null,
         questionSearch = "",
         questionDifficulty = "all",
@@ -130,16 +159,14 @@ const $ = (id) => document.getElementById(id);
             0,
           );
         else G.stats.deductedPoints = Math.max(0, G.stats.deductedPoints);
-        if (gameNeedsSave)
-          api("/api/game", "POST", G).catch(() =>
-            toast("تعذر حفظ تحديث بيانات اللعبة", 1),
-          );
+        if (gameNeedsSave) {
+          advanceGameVersion();
+          persistGame("تعذر حفظ تحديث بيانات اللعبة");
+        }
         if (G.cur.q && !G.cur.timer && timerEnabled(cq())) {
           startQuestionTimer(cq());
-          G.v = Date.now();
-          api("/api/game", "POST", G).catch(() =>
-            toast("تعذر الاتصال بالسيرفر", 1),
-          );
+          advanceGameVersion();
+          persistGame("تعذر الاتصال بالسيرفر");
         }
         if (tabSel === "intro" && $("tabletIntroVideoFrame")) {
           const introControls = document.querySelectorAll(
@@ -906,11 +933,9 @@ const $ = (id) => document.getElementById(id);
       }
       function save(preservePointUndo = false) {
         if (!preservePointUndo) delete G.pointUndo;
-        G.v = Date.now();
+        advanceGameVersion();
         render();
-        api("/api/game", "POST", G).catch(() =>
-          toast("تعذر الاتصال بالسيرفر", 1),
-        );
+        persistGame("تعذر الاتصال بالسيرفر");
       }
       function setQuestionAudio(action, volume = null) {
         const current = G?.cur?.audioControl || {

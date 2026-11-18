@@ -140,6 +140,7 @@ function view(g, qs) {
     activePlayers =
       g.mode === "rounds" ? activeRound?.players || [] : g.cs || [];
   const v = {
+    revision: Number.isSafeInteger(g.v) ? g.v : 0,
     cs: activePlayers.map(
       ({ n, s, score, correct, wrong, deductedPoints }) => ({
         n,
@@ -1031,12 +1032,13 @@ http
           const b = await body(req);
           if (!b || !Array.isArray(b.cs) || !b.cur)
             return json(res, { error: "بيانات غير صالحة" }, 400);
-          await q(
-            "INSERT INTO games(user_id,data) VALUES($1,$2) ON CONFLICT (user_id) DO UPDATE SET data=EXCLUDED.data",
+          if (!Number.isSafeInteger(b.v) || b.v < 0) b.v = Date.now();
+          const saved = await q(
+            "INSERT INTO games(user_id,data) VALUES($1,$2) ON CONFLICT (user_id) DO UPDATE SET data=EXCLUDED.data WHERE COALESCE((games.data->>'v')::numeric,0) < (EXCLUDED.data->>'v')::numeric RETURNING user_id",
             [uid, JSON.stringify(b)],
           );
           pushAll(uid);
-          return json(res, { ok: 1 });
+          return json(res, { ok: 1, stale: saved.length === 0 });
         }
         if (u === "/api/questions" && req.method === "POST") {
           const questionBody = await readJsonBody(

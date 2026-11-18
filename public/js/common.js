@@ -27,7 +27,14 @@ function connect(cb, audioCb) {
     cb();
   });
   es.addEventListener("game", (e) => {
-    G = JSON.parse(e.data);
+    const incoming = JSON.parse(e.data);
+    if (
+      Number.isSafeInteger(G?.v) &&
+      Number.isSafeInteger(incoming?.v) &&
+      incoming.v < G.v
+    )
+      return;
+    G = incoming;
     cb();
   });
   if (audioCb)
@@ -54,7 +61,14 @@ let V = null;
 function connectView(room, cb) {
   const es = new EventSource("/events?room=" + encodeURIComponent(room));
   es.addEventListener("view", (e) => {
-    V = JSON.parse(e.data);
+    const incoming = JSON.parse(e.data);
+    if (
+      Number.isSafeInteger(V?.revision) &&
+      Number.isSafeInteger(incoming?.revision) &&
+      incoming.revision < V.revision
+    )
+      return;
+    V = incoming;
     cb();
   });
 }
