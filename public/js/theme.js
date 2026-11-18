@@ -1,18 +1,16 @@
 const THEME_KEY = "quizTheme";
 const THEMES = [
-  { id: "dark", label: "ليلي أزرق", icon: "🌙" },
   { id: "light", label: "نهاري", icon: "☀️" },
   { id: "green", label: "أخضر", icon: "🌿" },
-  { id: "black", label: "أسود", icon: "⬛" },
 ];
-let currentTheme = "dark";
+let currentTheme = "light";
 
 try {
   const savedTheme = localStorage.getItem(THEME_KEY);
   if (THEMES.some((theme) => theme.id === savedTheme))
     currentTheme = savedTheme;
 } catch (error) {
-  console.warn("تعذر قراءة الوضع المحفوظ؛ سيتم استخدام الوضع الليلي.", error);
+  console.warn("تعذر قراءة الوضع المحفوظ؛ سيتم استخدام الوضع النهاري.", error);
 }
 
 function updateThemeControls() {
