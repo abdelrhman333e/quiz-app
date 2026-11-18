@@ -50,28 +50,13 @@ body {
   margin: 0;
   min-height: 100%;
 }
-html[data-theme="green"] body {
-  background: radial-gradient(circle at 80% 0, #245943 0, var(--bg1) 42%, var(--bg2) 100%) fixed;
-}
-html[data-theme="black"] body {
-  background: radial-gradient(circle at 80% 0, #202024 0, var(--bg1) 42%, var(--bg2) 100%) fixed;
-}
-html[data-theme="light"] body {
-  background: radial-gradient(circle at 80% 0, #fff 0, var(--bg1) 48%, var(--bg2) 100%) fixed;
-}
 body {
   font-family: "Segoe UI", Tahoma, system-ui, sans-serif;
   color: var(--t);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(
-      circle at 80% 0,
-      #1d3859 0,
-      var(--bg1) 40%,
-      var(--bg2) 100%
-    )
-    fixed;
+  background: var(--bg2) fixed;
   -webkit-tap-highlight-color: transparent;
 }
 button,
