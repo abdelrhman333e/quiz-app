@@ -1,12 +1,12 @@
 {
   "format": "quiz-app-questions",
   "version": 1,
-  "exportedAt": "2026-11-18T11:25:54+02:00",
+  "exportedAt": "2026-11-18T11:48:20+02:00",
   "questions": [
     {
-      "id": "career-ronaldo",
+      "id": "career-player-001",
       "t": "مسيرة لاعبين",
-      "d": "e",
+      "d": "h",
       "x": "مين اللاعب؟",
       "kind": "career",
       "o": [],
@@ -14,29 +14,33 @@
       "a": "كريستيانو رونالدو",
       "clubs": [
         {
+          "n": "سبورتينغ لشبونة",
+          "image": "https://crests.football-data.org/498.png"
+        },
+        {
           "n": "مانشستر يونايتد",
-          "image": "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg"
+          "image": "https://crests.football-data.org/66.png"
         },
         {
           "n": "ريال مدريد",
-          "image": "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"
+          "image": "https://crests.football-data.org/86.png"
         },
         {
           "n": "يوفنتوس",
-          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Juventus_FC_-_logo_black_%28Italy%2C_2020%29.svg/330px-Juventus_FC_-_logo_black_%28Italy%2C_2020%29.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          "image": "https://crests.football-data.org/109.png"
         },
         {
           "n": "مانشستر يونايتد",
-          "image": "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg"
+          "image": "https://crests.football-data.org/66.png"
         },
         {
-          "n": "النصر",
-          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Nassr_FC_Logo.svg/330px-Nassr_FC_Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          "n": "النصر السعودي",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Nassr_FC_Logo.svg/330px-Nassr_FC_Logo.svg.png"
         }
       ]
     },
     {
-      "id": "career-messi",
+      "id": "career-player-002",
       "t": "مسيرة لاعبين",
       "d": "e",
       "x": "مين اللاعب؟",
@@ -47,20 +51,52 @@
       "clubs": [
         {
           "n": "برشلونة",
-          "image": "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg"
+          "image": "https://crests.football-data.org/81.png"
         },
         {
           "n": "باريس سان جيرمان",
-          "image": "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"
+          "image": "https://crests.football-data.org/524.png"
         },
         {
           "n": "إنتر ميامي",
-          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/5/5c/Inter_Miami_CF_logo.svg/330px-Inter_Miami_CF_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/5/5c/Inter_Miami_CF_logo.svg/330px-Inter_Miami_CF_logo.svg.png"
         }
       ]
     },
     {
-      "id": "career-mbappe",
+      "id": "career-player-003",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "نيمار",
+      "clubs": [
+        {
+          "n": "سانتوس",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Santos_Futebol_Clube_logo_%28with_two_stars_and_a_golden_crown%29.svg/330px-Santos_Futebol_Clube_logo_%28with_two_stars_and_a_golden_crown%29.svg.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://crests.football-data.org/524.png"
+        },
+        {
+          "n": "الهلال السعودي",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Al_Hilal_SFC_Logo.svg/330px-Al_Hilal_SFC_Logo.svg.png"
+        },
+        {
+          "n": "سانتوس",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Santos_Futebol_Clube_logo_%28with_two_stars_and_a_golden_crown%29.svg/330px-Santos_Futebol_Clube_logo_%28with_two_stars_and_a_golden_crown%29.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-004",
       "t": "مسيرة لاعبين",
       "d": "e",
       "x": "مين اللاعب؟",
@@ -71,20 +107,20 @@
       "clubs": [
         {
           "n": "موناكو",
-          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/c/cf/LogoASMonacoFC2021.svg/330px-LogoASMonacoFC2021.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          "image": "https://crests.football-data.org/548.png"
         },
         {
           "n": "باريس سان جيرمان",
-          "image": "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"
+          "image": "https://crests.football-data.org/524.png"
         },
         {
           "n": "ريال مدريد",
-          "image": "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"
+          "image": "https://crests.football-data.org/86.png"
         }
       ]
     },
     {
-      "id": "career-salah",
+      "id": "career-player-005",
       "t": "مسيرة لاعبين",
       "d": "h",
       "x": "مين اللاعب؟",
@@ -94,27 +130,31 @@
       "a": "محمد صلاح",
       "clubs": [
         {
+          "n": "بازل",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/FC_Basel_crest.svg/330px-FC_Basel_crest.svg.png"
+        },
+        {
           "n": "تشيلسي",
-          "image": "https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg"
+          "image": "https://crests.football-data.org/61.png"
         },
         {
           "n": "فيورنتينا",
-          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/ACF_Fiorentina_-_logo_%28Italy%2C_2022%29.svg/330px-ACF_Fiorentina_-_logo_%28Italy%2C_2022%29.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          "image": "https://crests.football-data.org/99.png"
         },
         {
           "n": "روما",
-          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/f/f7/AS_Roma_logo_%282017%29.svg/330px-AS_Roma_logo_%282017%29.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          "image": "https://crests.football-data.org/100.png"
         },
         {
           "n": "ليفربول",
-          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/0/0c/Liverpool_FC.svg/330px-Liverpool_FC.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          "image": "https://crests.football-data.org/64.png"
         }
       ]
     },
     {
-      "id": "career-benzema",
+      "id": "career-player-006",
       "t": "مسيرة لاعبين",
-      "d": "h",
+      "d": "e",
       "x": "مين اللاعب؟",
       "kind": "career",
       "o": [],
@@ -123,22 +163,22 @@
       "clubs": [
         {
           "n": "ليون",
-          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/1/1c/Olympique_Lyonnais_logo.svg/330px-Olympique_Lyonnais_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          "image": "https://crests.football-data.org/523.png"
         },
         {
           "n": "ريال مدريد",
-          "image": "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"
+          "image": "https://crests.football-data.org/86.png"
         },
         {
-          "n": "الاتحاد",
-          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/8/87/Al-Ittihad_Club_%28Jeddah%29_logo.svg/330px-Al-Ittihad_Club_%28Jeddah%29_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          "n": "الاتحاد السعودي",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/8/87/Al-Ittihad_Club_%28Jeddah%29_logo.svg/330px-Al-Ittihad_Club_%28Jeddah%29_logo.svg.png"
         }
       ]
     },
     {
-      "id": "career-ronaldinho",
+      "id": "career-player-007",
       "t": "مسيرة لاعبين",
-      "d": "h",
+      "d": "e",
       "x": "مين اللاعب؟",
       "kind": "career",
       "o": [],
@@ -147,15 +187,2151 @@
       "clubs": [
         {
           "n": "باريس سان جيرمان",
-          "image": "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"
+          "image": "https://crests.football-data.org/524.png"
         },
         {
           "n": "برشلونة",
-          "image": "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg"
+          "image": "https://crests.football-data.org/81.png"
         },
         {
           "n": "ميلان",
-          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Logo_of_AC_Milan.svg/330px-Logo_of_AC_Milan.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          "image": "https://crests.football-data.org/98.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-008",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "زين الدين زيدان",
+      "clubs": [
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-009",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ديفيد بيكهام",
+      "clubs": [
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "لوس أنجلوس غالاكسي",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/70/Los_Angeles_Galaxy_logo.svg/330px-Los_Angeles_Galaxy_logo.svg.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://crests.football-data.org/524.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-010",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "لويس سواريز",
+      "clubs": [
+        {
+          "n": "أياكس",
+          "image": "https://crests.football-data.org/678.png"
+        },
+        {
+          "n": "ليفربول",
+          "image": "https://crests.football-data.org/64.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        },
+        {
+          "n": "إنتر ميامي",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/5/5c/Inter_Miami_CF_logo.svg/330px-Inter_Miami_CF_logo.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-011",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "زلاتان إبراهيموفيتش",
+      "clubs": [
+        {
+          "n": "أياكس",
+          "image": "https://crests.football-data.org/678.png"
+        },
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://crests.football-data.org/524.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "لوس أنجلوس غالاكسي",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/70/Los_Angeles_Galaxy_logo.svg/330px-Los_Angeles_Galaxy_logo.svg.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-012",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "أندريس إنييستا",
+      "clubs": [
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "فيسيل كوبي",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Vissel_Kobe_logo.svg/330px-Vissel_Kobe_logo.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-013",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "تشافي هيرنانديز",
+      "clubs": [
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "السد القطري",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/c/c1/Al_Sadd_SC_logo.svg/330px-Al_Sadd_SC_logo.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-014",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "لويس فيغو",
+      "clubs": [
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-015",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "كاكا",
+      "clubs": [
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-016",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "تييري هنري",
+      "clubs": [
+        {
+          "n": "أرسنال",
+          "image": "https://crests.football-data.org/57.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-017",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "صامويل إيتو",
+      "clubs": [
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-018",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ديدييه دروغبا",
+      "clubs": [
+        {
+          "n": "مارسيليا",
+          "image": "https://crests.football-data.org/516.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-019",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "واين روني",
+      "clubs": [
+        {
+          "n": "إيفرتون",
+          "image": "https://crests.football-data.org/62.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "إيفرتون",
+          "image": "https://crests.football-data.org/62.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-020",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "رونالدو نازاريو",
+      "clubs": [
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-021",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ريفالدو",
+      "clubs": [
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-022",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "جيرارد بيكيه",
+      "clubs": [
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-023",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "سيرخيو راموس",
+      "clubs": [
+        {
+          "n": "إشبيلية",
+          "image": "https://crests.football-data.org/559.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://crests.football-data.org/524.png"
+        },
+        {
+          "n": "إشبيلية",
+          "image": "https://crests.football-data.org/559.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-024",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "لوكا مودريتش",
+      "clubs": [
+        {
+          "n": "توتنهام",
+          "image": "https://crests.football-data.org/73.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-025",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "توني كروس",
+      "clubs": [
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-026",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "جاريث بيل",
+      "clubs": [
+        {
+          "n": "توتنهام",
+          "image": "https://crests.football-data.org/73.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "توتنهام",
+          "image": "https://crests.football-data.org/73.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-027",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "مارسيلو",
+      "clubs": [
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "فلومينينسي",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/Fluminense_Football_Club.svg/330px-Fluminense_Football_Club.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-028",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "إيكر كاسياس",
+      "clubs": [
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "بورتو",
+          "image": "https://crests.football-data.org/503.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-029",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "جيانلويجي بوفون",
+      "clubs": [
+        {
+          "n": "بارما",
+          "image": "https://crests.football-data.org/112.png"
+        },
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://crests.football-data.org/524.png"
+        },
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        },
+        {
+          "n": "بارما",
+          "image": "https://crests.football-data.org/112.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-030",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "أندريا بيرلو",
+      "clubs": [
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        },
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-031",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "أليساندرو ديل بييرو",
+      "clubs": [
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        },
+        {
+          "n": "سيدني إف سي",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/e/e0/Sydney_FC_Logo.svg/330px-Sydney_FC_Logo.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-032",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "محمد النني",
+      "clubs": [
+        {
+          "n": "بازل",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/FC_Basel_crest.svg/330px-FC_Basel_crest.svg.png"
+        },
+        {
+          "n": "أرسنال",
+          "image": "https://crests.football-data.org/57.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-033",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "أندريه شيفتشينكو",
+      "clubs": [
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-034",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "رود فان نيستلروي",
+      "clubs": [
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-035",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "آرين روبن",
+      "clubs": [
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-036",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "فرانك ريبيري",
+      "clubs": [
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        },
+        {
+          "n": "فيورنتينا",
+          "image": "https://crests.football-data.org/99.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-037",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "باستيان شفاينشتايغر",
+      "clubs": [
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-038",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "روبرت ليفاندوفسكي",
+      "clubs": [
+        {
+          "n": "بوروسيا دورتموند",
+          "image": "https://crests.football-data.org/4.png"
+        },
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-039",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "إيرلينغ هالاند",
+      "clubs": [
+        {
+          "n": "بوروسيا دورتموند",
+          "image": "https://crests.football-data.org/4.png"
+        },
+        {
+          "n": "مانشستر سيتي",
+          "image": "https://crests.football-data.org/65.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-040",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "أنطوان غريزمان",
+      "clubs": [
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-041",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "إيدين هازارد",
+      "clubs": [
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-042",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "روميلو لوكاكو",
+      "clubs": [
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "روما",
+          "image": "https://crests.football-data.org/100.png"
+        },
+        {
+          "n": "نابولي",
+          "image": "https://crests.football-data.org/113.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-043",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "كيفن دي بروين",
+      "clubs": [
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "فولفسبورغ",
+          "image": "https://crests.football-data.org/11.png"
+        },
+        {
+          "n": "مانشستر سيتي",
+          "image": "https://crests.football-data.org/65.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-044",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "تيبو كورتوا",
+      "clubs": [
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-045",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "كاسيميرو",
+      "clubs": [
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-046",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "رافاييل فاران",
+      "clubs": [
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-047",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "أنخيل دي ماريا",
+      "clubs": [
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://crests.football-data.org/524.png"
+        },
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        },
+        {
+          "n": "بنفيكا",
+          "image": "https://crests.football-data.org/1903.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-048",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "إدينسون كافاني",
+      "clubs": [
+        {
+          "n": "نابولي",
+          "image": "https://crests.football-data.org/113.png"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://crests.football-data.org/524.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-049",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "باولو ديبالا",
+      "clubs": [
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        },
+        {
+          "n": "روما",
+          "image": "https://crests.football-data.org/100.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-050",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "كارلوس تيفيز",
+      "clubs": [
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "مانشستر سيتي",
+          "image": "https://crests.football-data.org/65.png"
+        },
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-051",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "سيرخيو أغويرو",
+      "clubs": [
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        },
+        {
+          "n": "مانشستر سيتي",
+          "image": "https://crests.football-data.org/65.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-052",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "دافيد فيا",
+      "clubs": [
+        {
+          "n": "فالنسيا",
+          "image": "https://crests.football-data.org/95.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-053",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "فرناندو توريس",
+      "clubs": [
+        {
+          "n": "ليفربول",
+          "image": "https://crests.football-data.org/64.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        },
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-054",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "تشابي ألونسو",
+      "clubs": [
+        {
+          "n": "ليفربول",
+          "image": "https://crests.football-data.org/64.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-055",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ستيفن جيرارد",
+      "clubs": [
+        {
+          "n": "ليفربول",
+          "image": "https://crests.football-data.org/64.png"
+        },
+        {
+          "n": "لوس أنجلوس غالاكسي",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/70/Los_Angeles_Galaxy_logo.svg/330px-Los_Angeles_Galaxy_logo.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-056",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "فرانك لامبارد",
+      "clubs": [
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "مانشستر سيتي",
+          "image": "https://crests.football-data.org/65.png"
+        },
+        {
+          "n": "نيويورك سيتي",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/eb/Logo_New_York_City_FC_2025.svg/330px-Logo_New_York_City_FC_2025.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-057",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "جون تيري",
+      "clubs": [
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "أستون فيلا",
+          "image": "https://crests.football-data.org/58.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-058",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "أشلي كول",
+      "clubs": [
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "روما",
+          "image": "https://crests.football-data.org/100.png"
+        },
+        {
+          "n": "لوس أنجلوس غالاكسي",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/70/Los_Angeles_Galaxy_logo.svg/330px-Los_Angeles_Galaxy_logo.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-059",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "سيسك فابريغاس",
+      "clubs": [
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "موناكو",
+          "image": "https://crests.football-data.org/548.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-060",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "أليكسيس سانشيز",
+      "clubs": [
+        {
+          "n": "أرسنال",
+          "image": "https://crests.football-data.org/57.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "مارسيليا",
+          "image": "https://crests.football-data.org/516.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-061",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "مسعود أوزيل",
+      "clubs": [
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "أرسنال",
+          "image": "https://crests.football-data.org/57.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-062",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "يايا توريه",
+      "clubs": [
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "مانشستر سيتي",
+          "image": "https://crests.football-data.org/65.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-063",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "كولو توريه",
+      "clubs": [
+        {
+          "n": "أرسنال",
+          "image": "https://crests.football-data.org/57.png"
+        },
+        {
+          "n": "مانشستر سيتي",
+          "image": "https://crests.football-data.org/65.png"
+        },
+        {
+          "n": "ليفربول",
+          "image": "https://crests.football-data.org/64.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-064",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "مايكل إيسيان",
+      "clubs": [
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-065",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "مايكل بالاك",
+      "clubs": [
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "باير ليفركوزن",
+          "image": "https://crests.football-data.org/3.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-066",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "روي كوستا",
+      "clubs": [
+        {
+          "n": "فيورنتينا",
+          "image": "https://crests.football-data.org/99.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        },
+        {
+          "n": "بنفيكا",
+          "image": "https://crests.football-data.org/1903.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-067",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ديكو",
+      "clubs": [
+        {
+          "n": "بورتو",
+          "image": "https://crests.football-data.org/503.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-068",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "فرناندو مورينتس",
+      "clubs": [
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "موناكو",
+          "image": "https://crests.football-data.org/548.png"
+        },
+        {
+          "n": "ليفربول",
+          "image": "https://crests.football-data.org/64.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-069",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "مايكل أوين",
+      "clubs": [
+        {
+          "n": "ليفربول",
+          "image": "https://crests.football-data.org/64.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-070",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "كلارنس سيدورف",
+      "clubs": [
+        {
+          "n": "أياكس",
+          "image": "https://crests.football-data.org/678.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-071",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "كافو",
+      "clubs": [
+        {
+          "n": "روما",
+          "image": "https://crests.football-data.org/100.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-072",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "روبرتو كارلوس",
+      "clubs": [
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-073",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "أشرف حكيمي",
+      "clubs": [
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://crests.football-data.org/524.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-074",
+      "t": "مسيرة لاعبين",
+      "d": "h",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "باتريك فييرا",
+      "clubs": [
+        {
+          "n": "أرسنال",
+          "image": "https://crests.football-data.org/57.png"
+        },
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "مانشستر سيتي",
+          "image": "https://crests.football-data.org/65.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-075",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "دينيس بيركامب",
+      "clubs": [
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        },
+        {
+          "n": "أرسنال",
+          "image": "https://crests.football-data.org/57.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-076",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "روبن فان بيرسي",
+      "clubs": [
+        {
+          "n": "أرسنال",
+          "image": "https://crests.football-data.org/57.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-077",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "رود خوليت",
+      "clubs": [
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-078",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ماركو فان باستن",
+      "clubs": [
+        {
+          "n": "أياكس",
+          "image": "https://crests.football-data.org/678.png"
+        },
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-079",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "فرانك ريكارد",
+      "clubs": [
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        },
+        {
+          "n": "أياكس",
+          "image": "https://crests.football-data.org/678.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-080",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "رياض محرز",
+      "clubs": [
+        {
+          "n": "ليستر سيتي",
+          "image": "https://crests.football-data.org/338.png"
+        },
+        {
+          "n": "مانشستر سيتي",
+          "image": "https://crests.football-data.org/65.png"
+        },
+        {
+          "n": "الأهلي السعودي",
+          "image": "https://thumb.wikimedia.org/wikipedia/en/thumb/4/45/Al_Ahli_Saudi_FC_logo.svg/330px-Al_Ahli_Saudi_FC_logo.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-081",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ويسلي شنايدر",
+      "clubs": [
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-082",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ديرك كويت",
+      "clubs": [
+        {
+          "n": "ليفربول",
+          "image": "https://crests.football-data.org/64.png"
+        },
+        {
+          "n": "فينورد",
+          "image": "https://crests.football-data.org/675.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-083",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "بيبي",
+      "clubs": [
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "بورتو",
+          "image": "https://crests.football-data.org/503.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-084",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ساديو ماني",
+      "clubs": [
+        {
+          "n": "ليفربول",
+          "image": "https://crests.football-data.org/64.png"
+        },
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        },
+        {
+          "n": "النصر السعودي",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Nassr_FC_Logo.svg/330px-Nassr_FC_Logo.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-085",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "فيرجيل فان دايك",
+      "clubs": [
+        {
+          "n": "ساوثهامبتون",
+          "image": "https://crests.football-data.org/340.png"
+        },
+        {
+          "n": "ليفربول",
+          "image": "https://crests.football-data.org/64.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-086",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "سون هيونغ مين",
+      "clubs": [
+        {
+          "n": "باير ليفركوزن",
+          "image": "https://crests.football-data.org/3.png"
+        },
+        {
+          "n": "توتنهام",
+          "image": "https://crests.football-data.org/73.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-087",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "هاري كين",
+      "clubs": [
+        {
+          "n": "توتنهام",
+          "image": "https://crests.football-data.org/73.png"
+        },
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-088",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "توماس مولر",
+      "clubs": [
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        },
+        {
+          "n": "فانكوفر وايتكابس",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7c/Vancouver_Whitecaps_logo.svg/330px-Vancouver_Whitecaps_logo.svg.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-089",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "جود بيلينغهام",
+      "clubs": [
+        {
+          "n": "بوروسيا دورتموند",
+          "image": "https://crests.football-data.org/4.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-090",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "فينيسيوس جونيور",
+      "clubs": [
+        {
+          "n": "فلامنغو",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/Clube_de_Regatas_do_Flamengo_logo.svg/330px-Clube_de_Regatas_do_Flamengo_logo.svg.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-091",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "رودريغو",
+      "clubs": [
+        {
+          "n": "سانتوس",
+          "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Santos_Futebol_Clube_logo_%28with_two_stars_and_a_golden_crown%29.svg/330px-Santos_Futebol_Clube_logo_%28with_two_stars_and_a_golden_crown%29.svg.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-092",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "جيمس رودريغيز",
+      "clubs": [
+        {
+          "n": "موناكو",
+          "image": "https://crests.football-data.org/548.png"
+        },
+        {
+          "n": "ريال مدريد",
+          "image": "https://crests.football-data.org/86.png"
+        },
+        {
+          "n": "بايرن ميونخ",
+          "image": "https://crests.football-data.org/5.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-093",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "راداميل فالكاو",
+      "clubs": [
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        },
+        {
+          "n": "موناكو",
+          "image": "https://crests.football-data.org/548.png"
+        },
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-094",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "دييغو كوستا",
+      "clubs": [
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
+        },
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-095",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "دييغو فورلان",
+      "clubs": [
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-096",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "نيمانيا فيديتش",
+      "clubs": [
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "إنتر ميلان",
+          "image": "https://crests.football-data.org/108.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-097",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "باتريس إيفرا",
+      "clubs": [
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "يوفنتوس",
+          "image": "https://crests.football-data.org/109.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-098",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ناني",
+      "clubs": [
+        {
+          "n": "مانشستر يونايتد",
+          "image": "https://crests.football-data.org/66.png"
+        },
+        {
+          "n": "سبورتينغ لشبونة",
+          "image": "https://crests.football-data.org/498.png"
+        },
+        {
+          "n": "فالنسيا",
+          "image": "https://crests.football-data.org/95.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-099",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "ممفيس ديباي",
+      "clubs": [
+        {
+          "n": "ليون",
+          "image": "https://crests.football-data.org/523.png"
+        },
+        {
+          "n": "برشلونة",
+          "image": "https://crests.football-data.org/81.png"
+        },
+        {
+          "n": "أتلتيكو مدريد",
+          "image": "https://crests.football-data.org/78.png"
+        }
+      ]
+    },
+    {
+      "id": "career-player-100",
+      "t": "مسيرة لاعبين",
+      "d": "e",
+      "x": "مين اللاعب؟",
+      "kind": "career",
+      "o": [],
+      "c": -1,
+      "a": "تياغو سيلفا",
+      "clubs": [
+        {
+          "n": "ميلان",
+          "image": "https://crests.football-data.org/98.png"
+        },
+        {
+          "n": "باريس سان جيرمان",
+          "image": "https://crests.football-data.org/524.png"
+        },
+        {
+          "n": "تشيلسي",
+          "image": "https://crests.football-data.org/61.png"
         }
       ]
     }
