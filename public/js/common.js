@@ -1,12 +1,5 @@
 const LB = ["أ", "ب", "ج", "د"],
   PT = { e: 1, h: 2 };
-const visualQuestionPoints = (difficulty, claritySteps = 0) => {
-  const points = PT[difficulty] || 0,
-    penalty = Number.isSafeInteger(claritySteps)
-      ? Math.min(points, Math.max(0, claritySteps))
-      : 0;
-  return Math.max(0, points - penalty);
-};
 const esc = (s) =>
   String(s ?? "").replace(
     /[&<>"]/g,

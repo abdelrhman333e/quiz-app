@@ -1,6 +1,13 @@
 const $ = (id) => document.getElementById(id);
       const pts = (q) => PT[q.d];
       const MAX_VISUAL_CLARITY = 5;
+function visualQuestionPoints(difficulty, claritySteps = 0) {
+  const points = PT[difficulty] || 0,
+    penalty = Number.isSafeInteger(claritySteps)
+      ? Math.min(points, Math.max(0, claritySteps))
+      : 0;
+  return Math.max(0, points - penalty);
+}
       function visualClarityLevel(cu = G?.cur) {
         return Number.isSafeInteger(cu?.visualClarity)
           ? Math.max(0, Math.min(MAX_VISUAL_CLARITY, cu.visualClarity))
