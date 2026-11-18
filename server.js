@@ -932,8 +932,6 @@ http
           const b = await body(req),
             name = str(b?.username, 20).toLowerCase(),
             room = str(b?.room, 8).toLower(),
-            currentPassword =
-              typeof b?.currentPassword === "string" ? b.currentPassword : "",
             newPassword =
               typeof b?.newPassword === "string" ? b.newPassword : "";
           const account = (
@@ -941,8 +939,6 @@ http
           )[0];
           if (!account)
             return json(res, { error: "الحساب غير موجود" }, 404);
-          if (!currentPassword || !check(currentPassword, account.pass))
-            return json(res, { error: "كلمة المرور الحالية غير صحيحة" }, 401);
           if (!/^[\w\u0600-\u06FF.-]{3,20}$/.test(name))
             return json(res, { error: "اسم تسجيل الدخول من 3 إلى 20 حرفًا" }, 400);
           if (!/^[a-f0-9]{8}$/.test(room))

@@ -2216,8 +2216,6 @@ const $ = (id) => document.getElementById(id);
             <input id="accountUsername" maxlength="20" value="${esc(ME.u)}" autocomplete="username">
             <label for="accountRoom">رمز الغرفة</label>
             <input id="accountRoom" maxlength="8" value="${esc(ME.room)}" autocomplete="off" inputmode="text" dir="ltr">
-            <label for="accountCurrentPassword">كلمة المرور الحالية</label>
-            <input id="accountCurrentPassword" type="password" autocomplete="current-password" placeholder="مطلوبة للحفظ">
             <label for="accountNewPassword">كلمة المرور الجديدة</label>
             <input id="accountNewPassword" type="password" minlength="6" autocomplete="new-password" placeholder="اتركها فارغة للإبقاء عليها">
             <div class="account-actions"><button class="primary" type="submit">حفظ إعدادات الحساب</button><button class="danger" type="button" onclick="logout()">خروج</button></div>
@@ -2229,18 +2227,11 @@ const $ = (id) => document.getElementById(id);
         event.preventDefault();
         const username = $("accountUsername").value.trim();
         const room = $("accountRoom").value.trim().toLowerCase();
-        const currentPassword = $("accountCurrentPassword").value.trim();
         const newPassword = $("accountNewPassword").value;
         const status = $("accountSettingsStatus");
         const submitButton = event.submitter;
         status.className = "account-settings-status";
         status.textContent = "";
-        if (!currentPassword) {
-          status.className = "account-settings-status account-settings-error";
-          status.textContent = "أدخل كلمة المرور الحالية.";
-          $("accountCurrentPassword").focus();
-          return;
-        }
         if (newPassword && newPassword.length < 6) {
           status.className = "account-settings-status account-settings-error";
           status.textContent = "كلمة المرور الجديدة يجب ألا تقل عن 6 أحرف.";
@@ -2253,11 +2244,9 @@ const $ = (id) => document.getElementById(id);
           const result = await api("/api/account", "POST", {
             username,
             room,
-            currentPassword,
             newPassword,
           });
           ME = { ...ME, u: result.u, room: result.room };
-          $("accountCurrentPassword").value = "";
           $("accountNewPassword").value = "";
           status.className = "account-settings-status account-settings-success";
           status.textContent = "تم حفظ إعدادات الحساب بنجاح.";
