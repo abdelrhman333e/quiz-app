@@ -298,6 +298,20 @@
 .tb2 .account-actions button {
   min-height: 46px;
 }
+.tb2 .account-settings-status {
+  grid-column: 1 / -1;
+  min-height: 22px;
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.tb2 .account-settings-success {
+  color: var(--green);
+}
+.tb2 .account-settings-error {
+  color: var(--red);
+}
 .tb2 .manage-contestant-codes {
   display: grid;
   gap: 8px;

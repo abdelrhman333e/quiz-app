@@ -2208,6 +2208,7 @@ const $ = (id) => document.getElementById(id);
         const card = heading.closest(".card");
         const oldRow = card.querySelector(":scope > .row");
         if (oldRow) oldRow.remove();
+        card.querySelector("#accountSettingsForm")?.remove();
         heading.insertAdjacentHTML(
           "afterend",
           `<form id="accountSettingsForm" class="account-settings" onsubmit="saveAccountSettings(event)">
@@ -2220,6 +2221,7 @@ const $ = (id) => document.getElementById(id);
             <label for="accountNewPassword">كلمة المرور الجديدة</label>
             <input id="accountNewPassword" type="password" minlength="6" autocomplete="new-password" placeholder="اتركها فارغة للإبقاء عليها">
             <div class="account-actions"><button class="primary" type="submit">حفظ إعدادات الحساب</button><button class="danger" type="button" onclick="logout()">خروج</button></div>
+            <p id="accountSettingsStatus" class="account-settings-status" role="status"></p>
           </form>`,
         );
       }
@@ -2227,10 +2229,26 @@ const $ = (id) => document.getElementById(id);
         event.preventDefault();
         const username = $("accountUsername").value.trim();
         const room = $("accountRoom").value.trim().toLowerCase();
-        const currentPassword = $("accountCurrentPassword").value;
+        const currentPassword = $("accountCurrentPassword").value.trim();
         const newPassword = $("accountNewPassword").value;
-        if (!currentPassword)
-          return toast("أدخل كلمة المرور الحالية", 1);
+        const status = $("accountSettingsStatus");
+        const submitButton = event.submitter;
+        status.className = "account-settings-status";
+        status.textContent = "";
+        if (!currentPassword) {
+          status.className = "account-settings-status account-settings-error";
+          status.textContent = "أدخل كلمة المرور الحالية.";
+          $("accountCurrentPassword").focus();
+          return;
+        }
+        if (newPassword && newPassword.length < 6) {
+          status.className = "account-settings-status account-settings-error";
+          status.textContent = "كلمة المرور الجديدة يجب ألا تقل عن 6 أحرف.";
+          $("accountNewPassword").focus();
+          return;
+        }
+        submitButton.disabled = true;
+        submitButton.textContent = "جارٍ الحفظ...";
         try {
           const result = await api("/api/account", "POST", {
             username,
@@ -2241,10 +2259,14 @@ const $ = (id) => document.getElementById(id);
           ME = { ...ME, u: result.u, room: result.room };
           $("accountCurrentPassword").value = "";
           $("accountNewPassword").value = "";
-          toast("تم حفظ إعدادات الحساب");
-          render();
+          status.className = "account-settings-status account-settings-success";
+          status.textContent = "تم حفظ إعدادات الحساب بنجاح.";
         } catch (error) {
-          toast(error.message || "تعذر حفظ إعدادات الحساب", 1);
+          status.className = "account-settings-status account-settings-error";
+          status.textContent = error.message || "تعذر حفظ إعدادات الحساب.";
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = "حفظ إعدادات الحساب";
         }
       }
       function injectContestantCodeSettings() {
