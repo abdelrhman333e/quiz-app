@@ -144,12 +144,14 @@
           reverse = q?.kind === "reverse",
           visual = q?.kind === "visual",
           audioQuestion = q?.kind === "audio",
+          career = q?.kind === "career",
+          clubIndex = Number.isInteger(cu.clubIndex) ? cu.clubIndex : -1,
           reverseCount = reverse ? Array.from(q.a || "").length : 0,
           reverseIndex = cu.rev?.index || 0,
           timer = cu.timer,
           timerActive = timer && timer.phase !== "done";
         const keepName = $("cn") ? $("cn").value : "";
-        const ctx = { T, list, duplicates, q, cu, hasO, top, reverse, visual, audioQuestion, reverseCount, reverseIndex, timer, timerActive };
+        const ctx = { T, list, duplicates, q, cu, hasO, top, reverse, visual, audioQuestion, career, clubIndex, reverseCount, reverseIndex, timer, timerActive };
         $("app").innerHTML = `<div class="tb2">${hdrHTML()}${tabSel === "manage" ? manageHTML(ctx) : tabSel === "contact" ? contactHTML() : playHTML(ctx)}<input id="importQuestionsFile" type="file" accept="${IMPORT_ACCEPT}" hidden onchange="handleQuestionsImport(this)"></div>`;
         if (searchHasFocus && $("questionSearch")) {
           $("questionSearch").focus();
@@ -219,7 +221,9 @@
         return "";
       }
       function previewHTML(c) {
-        const { q, cu, hasO, top, reverse, visual, audioQuestion } = c;
+        const { q, cu, hasO, top, reverse, visual, audioQuestion, career } = c;
+        if (career)
+          return `<div class="career-preview">${(q.clubs || []).map((club, i) => `<div><img src="${esc(club.image)}" alt=""><span>${esc(club.n || `النادي ${i + 1}`)}</span></div>`).join("")}</div><div class="tbans">اللاعب: ${esc(q.a)}</div>`;
         if (visual)
           return `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div class="tbans">الإجابة: ${esc(q.a)}</div></div>`;
         if (audioQuestion)
@@ -242,7 +246,7 @@
           list
             .map(
               (x) =>
-                `<div class="qi ${x.id === cu.id ? "sel" : ""} ${G.used?.includes(x.id) ? "used" : ""}" onclick="tabSel='play';sel('${x.id}')"><span class="qt">${esc(x.x)}</span>${duplicates.has(x.id) ? '<span class="bdg duplicate" title="يتكرر نص السؤال">مكرر</span>' : ""}<span class="bdg ${x.kind === "reverse" ? "rev" : x.d === "h" ? "hard" : "easy"}">${x.kind === "reverse" ? "معكوسة" : x.d === "h" ? "صعب" : "سهل"}</span>${withActions ? `<button class="icon" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation();openForm('${x.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف" aria-label="حذف السؤال" onclick="event.stopPropagation();del('${x.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button>` : ""}</div>`,
+                `<div class="qi ${x.id === cu.id ? "sel" : ""} ${G.used?.includes(x.id) ? "used" : ""}" onclick="tabSel='play';sel('${x.id}')"><span class="qt">${esc(x.x)}</span>${duplicates.has(x.id) ? '<span class="bdg duplicate" title="يتكرر نص السؤال">مكرر</span>' : ""}<span class="bdg ${x.kind === "reverse" ? "rev" : x.d === "h" ? "hard" : "easy"}">${x.kind === "reverse" ? "معكوسة" : x.kind === "career" ? "مسيرة لاعب" : x.d === "h" ? "صعب" : "سهل"}</span>${withActions ? `<button class="icon" title="تعديل" aria-label="تعديل" onclick="event.stopPropagation();openForm('${x.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف" aria-label="حذف السؤال" onclick="event.stopPropagation();del('${x.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button>` : ""}</div>`,
             )
             .join("") || `<small>${emptyText}</small>`
         }</div>`;
@@ -262,7 +266,8 @@
           const key = normalizedQuestionText(question.x);
           if (
             !key ||
-            (question.kind === "visual" && key === "خمنالصورة")
+            (question.kind === "visual" && key === "خمنالصورة") ||
+            (question.kind === "career" && key === "ميناللاعب")
           )
             return;
           if (!groups.has(key)) groups.set(key, []);
@@ -282,6 +287,7 @@
               question.t,
               ...(question.o || []),
               ...(question.r || []),
+              ...(question.clubs || []).map((club) => club.n),
             ].join(" "),
           );
           return (
@@ -310,12 +316,12 @@
         return `<div class="card empty"><div class="big">اختر سؤالًا للبدء</div><p>اضغط «السؤال التالي» أو «عشوائي» من الشريط السفلي، أو اختر سؤالًا بعينه من القائمة.</p></div>`;
       }
       function questionCardHTML(c) {
-        const { q, cu, top, reverse } = c;
+        const { q, cu, top, reverse, career, clubIndex } = c;
         if (!q) return emptyHTML();
         const reveal = top
           ? `<div class="reveal">${q.r.map((a, i) => `<button class="${cu.revealed?.includes(i) ? "on" : ""}" onclick="revealRank(${i})">${cu.revealed?.includes(i) ? "تم كشف" : "كشف"} رقم ${i + 1}</button>`).join("")}</div>`
           : "";
-        return `<div class="card qcard"><div class="qhead"><span class="bdg">${esc(q.t)}</span><span class="mut">${pts(q)} نقطة</span>${reverse ? '<span class="bdg rev">كلمة معكوسة</span>' : ""}<span class="sp"></span><span class="mut note">معاينة · لا تظهر على الشاشة</span><button class="icon" title="تعديل السؤال" aria-label="تعديل السؤال" onclick="openForm('${q.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف السؤال" aria-label="حذف السؤال" onclick="del('${q.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div><div class="qtext">${esc(q.x)}</div>${previewHTML(c)}${reveal}</div>`;
+        return `<div class="card qcard"><div class="qhead"><span class="bdg">${esc(q.t)}</span><span class="mut">${pts(q)} نقطة</span>${reverse ? '<span class="bdg rev">كلمة معكوسة</span>' : ""}${career ? '<span class="bdg">مسيرة لاعب</span>' : ""}<span class="sp"></span><span class="mut note">معاينة · لا تظهر على الشاشة</span><button class="icon" title="تعديل السؤال" aria-label="تعديل السؤال" onclick="openForm('${q.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف السؤال" aria-label="حذف السؤال" onclick="del('${q.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div><div class="qtext">${esc(q.x)}</div>${previewHTML(c)}${reveal}</div>`;
       }
       function timerHTML(c) {
         const { timer, timerActive } = c;
@@ -397,10 +403,12 @@
         return `<div class="card who"><h3>من جاوب؟</h3><div class="chips">${chips}</div>${G.mode === "rounds" && !eligiblePlayers.length ? "<small>اختر أو أنشئ جولة وحدد المشاركين أولًا.</small>" : ""}${grade}</div>`;
       }
       function dockHTML(c) {
-        const { q, cu, hasO, top, reverse, reverseCount, reverseIndex } = c;
+        const { q, cu, hasO, top, reverse, career, reverseCount, reverseIndex } = c;
         const nav = `<div class="dock-nav"><button class="primary" onclick="nextQ()">السؤال التالي ‹</button><button onclick="rndQ()"><img class="action-icon" src="/assets/icons/random.svg" alt=""> عشوائي</button></div>`;
         if (!q || !Qs.length) return `<div class="dock">${nav}</div>`;
-        const show = reverse
+        const show = career
+          ? `<button class="big2 ${cu.q ? "on" : ""}" onclick="tg('q')">${cu.q ? "إخفاء المسيرة" : "عرض مسيرة الأندية"}</button>${cu.q ? `<button class="big2 on" onclick="nextCareerClub()" ${cu.clubIndex >= q.clubs.length - 1 ? "disabled" : ""}>${cu.clubIndex >= q.clubs.length - 1 ? "اكتملت الأندية" : `إظهار النادي التالي (${cu.clubIndex + 2}/${q.clubs.length})`}</button><button class="big2 ${cu.a ? "on" : ""}" onclick="tg('a')">${cu.a ? "إخفاء الإجابة" : "كشف اللاعب"}</button>` : ""}`
+          : reverse
           ? `<button class="big2 on" onclick="nextReverseLetter()" ${reverseIndex >= reverseCount ? "disabled" : ""}>${reverseIndex >= reverseCount ? "اكتملت الحروف" : `إظهار الحرف التالي (${reverseIndex + 1}/${reverseCount})`}</button><button class="big2" onclick="resetReverse()">ابدأ من جديد</button>`
           : `<button class="big2 ${cu.q ? "on" : ""}" onclick="tg('q')">${cu.q ? "إخفاء" : "عرض"} السؤال</button>${hasO ? `<button class="big2 ${cu.o ? "on" : ""}" onclick="tg('o')">${cu.o ? "إخفاء" : "عرض"} الاختيارات</button>` : ""}${top ? "" : `<button class="big2 ${cu.a ? "on" : ""}" onclick="tg('a')">${cu.a ? "إخفاء" : "عرض"} الإجابة</button>`}`;
         return `<div class="dock">${nav}<div class="dock-show">${show}</div></div>`;
@@ -521,12 +529,13 @@
             top10: "توب 10",
             reverse: "معكوسة",
             visual: "بصري",
+            career: "مسيرة لاعب",
           };
         return `<div class="mg"><div class="card"><h3>الأسئلة · ${Qs.length} <small>· ${duplicates.size} سؤال مكرر</small></h3><div class="row"><button class="primary" onclick="openForm()">＋ سؤال جديد</button><button onclick="$('importQuestionsFile').click()">⬆ استيراد أسئلة</button><button onclick="exportQuestions()">⬇ تصدير الأسئلة</button></div><div class="question-filters"><input id="questionSearch" type="search" placeholder="ابحث في السؤال والإجابة والاختيارات" value="${esc(questionSearch)}" oninput="updateQuestionSearch(this.value)"><select aria-label="تصفية حسب الصعوبة" onchange="updateQuestionFilter('difficulty',this.value)"><option value="all" ${questionDifficulty === "all" ? "selected" : ""}>كل الصعوبات</option><option value="e" ${questionDifficulty === "e" ? "selected" : ""}>سهل</option><option value="h" ${questionDifficulty === "h" ? "selected" : ""}>صعب</option></select><select aria-label="تصفية حسب النوع" onchange="updateQuestionFilter('kind',this.value)"><option value="all" ${questionKind === "all" ? "selected" : ""}>كل الأنواع</option>${Object.entries(kindLabels).map(([kind, label]) => `<option value="${kind}" ${questionKind === kind ? "selected" : ""}>${label}</option>`).join("")}</select><label class="duplicate-filter"><input type="checkbox" ${duplicateQuestionsOnly ? "checked" : ""} onchange="updateQuestionFilter('duplicates',this.checked)"> المكررة فقط</label></div><small class="filter-count">عرض ${filtered.length} من ${list.length} في التصنيف المختار</small><details class="import-hint"><summary>طريقة تجهيز ملف الاستيراد</summary><small class="import-hint">استيراد: نسخة JSON، أو TXT/Word (DOCX) بأسطر معنونة، أو Excel (XLSX) بصف عناوين: التصنيف، السؤال، الصعوبة، الاختيار أ، الاختيار ب، الاختيار ج، الاختيار د، الإجابة.</small><div dir="rtl" class="sample">التصنيف: ثقافة عامة<br>السؤال: ما عاصمة مصر؟<br>الصعوبة: سهل<br>الاختيار أ: القاهرة<br>الاختيار ب: الإسكندرية<br>الاختيار ج: الجيزة<br>الاختيار د: الأقصر<br>الإجابة: أ</div><small>افصل كل سؤال عن التالي بسطر فارغ. يمكن ترك الاختيارات والصعوبة فارغة؛ والإجابة تكون نصًا إن لم توجد اختيارات.</small></details>${T.length > 1 ? catsHTML(T) : ""}${qListHTML(filtered, cu, true, duplicates, "لا توجد أسئلة مطابقة للفلاتر")}</div><div class="card"><h3>الثيم والوضع</h3><p class="theme-description">اختار الألوان المناسبة لك. الثيم بيتحفظ على هذا الجهاز والمتصفح.</p>${themeOptionsHTML()}</div><div class="card"><h3>المؤثرات الصوتية</h3><div class="row"><button id="tabletSfxToggle" class="tablet-sfx-toggle ${sfxEnabled ? "on" : ""}" aria-pressed="${sfxEnabled}" onclick="toggleSfx('tabletSfxToggle')">${sfxEnabled ? "🔊 كتم المؤثرات" : "🔇 تفعيل المؤثرات"}</button></div></div><div class="card"><h3>الحساب</h3><div class="row"><button class="danger" onclick="logout()">🚪 خروج</button></div></div></div>`;
       }
       const TIMER_DURATION = 30000;
       function timerEnabled(q) {
-        return q && ["normal", "visual", "audio", "top5", "top10"].includes(q.kind);
+        return q && ["normal", "visual", "audio", "top5", "top10", "career"].includes(q.kind);
       }
       function timerPhaseLabel(phase) {
         return phase === "question"
@@ -793,14 +802,24 @@
           frames.push({
             at: offset,
             t: question.t,
-            x: question.kind === "reverse" ? "كلمة معكوسة" : question.x,
+            x:
+              question.kind === "reverse"
+                ? "كلمة معكوسة"
+                : question.kind === "career"
+                  ? "مسيرة لاعب ⚽"
+                  : question.x,
           });
           offset += 55 + i * 22;
         }
         frames.push({
           at: offset,
           t: chosen.t,
-          x: chosen.kind === "reverse" ? "كلمة معكوسة" : chosen.x,
+          x:
+            chosen.kind === "reverse"
+              ? "كلمة معكوسة"
+              : chosen.kind === "career"
+                ? "مسيرة لاعب ⚽"
+                : chosen.x,
         });
         sel(chosen.id, true, {
           started: Date.now(),
@@ -837,6 +856,7 @@
           revealed: [],
           rank: null,
           awards: [],
+          clubIndex: show ? 0 : -1,
           rev: { index: 0, letter: "", started: 0 },
         };
         if (!G.used.includes(id)) G.used.push(id);
@@ -866,13 +886,24 @@
         G.cur.rev = { index: 0, letter: "", started: 0 };
         save();
       }
+      function nextCareerClub() {
+        const q = cq();
+        if (!q || q.kind !== "career" || !G.cur.q) return;
+        const index = Number.isInteger(G.cur.clubIndex) ? G.cur.clubIndex : -1;
+        if (index >= q.clubs.length - 1)
+          return toast("تم كشف كل الأندية", 1);
+        G.cur.clubIndex = index + 1;
+        save();
+      }
       function tg(k) {
         G.cur[k] = +!G.cur[k];
         if (k === "q" && !G.cur.q) {
           G.cur.o = G.cur.a = 0;
           G.cur.roulette = null;
           G.cur.timer = null;
+          G.cur.clubIndex = -1;
         } else if (k === "q") {
+          if (cq()?.kind === "career") G.cur.clubIndex = 0;
           startQuestionTimer(cq());
           playSfx("question");
         } else if (k === "o" && G.cur.o) {
@@ -1361,12 +1392,18 @@
           d: "e",
           t: G.f !== "الكل" ? G.f : "",
         };
+        questionClubs =
+          e.kind === "career" && Array.isArray(e.clubs) && e.clubs.length
+            ? e.clubs.map((club) => ({ n: club.n || "", image: club.image || "" }))
+            : e.kind === "career"
+              ? [{ n: "", image: "" }, { n: "", image: "" }]
+              : [];
         $("form").innerHTML =
           `<div class="modal"><div class="card"><h3>${id ? "تعديل سؤال" : "سؤال جديد"}</h3>
  <input id="ft" placeholder="النوع (ديني، ثقافة عامة...)" list="tl" value="${esc(e.t)}"><datalist id="tl">${types()
    .map((t) => `<option value="${esc(t)}">`)
    .join("")}</datalist>
- <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option></select>
+ <select id="fk" onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option><option value="career" ${e.kind === "career" ? "selected" : ""}>مسيرة لاعب — شعارات الأندية</option></select>
  <div id="questionFields"><input id="fx" placeholder="نص السؤال" value="${esc(e.x)}"></div>
  <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط YouTube أو Spotify أو ملف صوتي مباشر" value="${esc(e.audioUrl || "")}" oninput="$('fauFile').value=''"><small>الصق رابط YouTube أو Spotify أو SoundCloud، أو رابطًا مباشرًا لملف صوتي. المواقع الأخرى تعمل إذا كانت توفر رابطًا مباشرًا لملف MP3 أو WAV أو OGG أو M4A أو AAC. يمكنك أيضًا رفع ملف من جهازك بحد أقصى 20 ميجابايت.</small><label for="fauFile">اختيار ملف صوتي من الجهاز</label><input id="fauFile" type="file" accept=".mp3,.wav,.ogg,.oga,.opus,.m4a,.aac"><small id="audioUploadStatus" aria-live="polite"></small></div>
  <label for="fd">صعوبة السؤال</label><select id="fd"><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>
@@ -1376,12 +1413,42 @@
  <select id="fc">${LB.map((l, i) => `<option value="${i}" ${e.c === i ? "selected" : ""}>الصحيح: ${l}</option>`).join("")}</select>
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
  </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fvp" maxlength="500" placeholder="اكتب سؤالًا يميز الصورة (مثال: من صاحب هذا الشعار؟)" value="${esc(e.x === "خمن الصورة" ? "" : e.x || "")}"><input id="fva" placeholder="الإجابة أو الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>اكتب سؤالًا خاصًا بهذه الصورة، ثم أضف رابط صورة أو إيموجي، أو الاثنين معًا.</small></div>
+ <div id="careerFields" hidden><label>شعارات الأندية بالترتيب من الأقدم إلى الأحدث (2–10)</label><div id="careerClubList"></div><button type="button" class="big2" onclick="addCareerClub()">＋ إضافة نادي</button><input id="fca" maxlength="300" placeholder="اسم اللاعب (الإجابة)" value="${esc(e.kind === "career" ? e.a || "" : "")}"><small>أضف رابط صورة مباشر لكل شعار، واكتب اسم النادي اختياريًا. سيظهر شعار واحد في كل مرة، ويتحكم الهوست في الانتقال بينها.</small></div>
  <div class="row"><button id="saveQuestionBtn" class="on big2" onclick="saveQ('${id || ""}')">💾 حفظ</button><button class="big2" onclick="$('form').innerHTML=''">إلغاء</button></div></div></div>`;
         toggleQuestionKind();
       }
+      let questionClubs = [];
+      function syncCareerClubFields() {
+        questionClubs = questionClubs.map((club, i) => ({
+          n: $(`careerClubName${i}`)?.value.trim() || "",
+          image: $(`careerClubImage${i}`)?.value.trim() || "",
+        }));
+      }
+      function renderCareerClubFields() {
+        $("careerClubList").innerHTML = questionClubs
+          .map(
+            (club, i) =>
+              `<div class="career-club-form-row"><b>النادي ${i + 1}</b><input id="careerClubName${i}" maxlength="80" placeholder="اسم النادي (اختياري)" value="${esc(club.n)}"><input id="careerClubImage${i}" type="url" dir="ltr" placeholder="رابط صورة الشعار" value="${esc(club.image)}"><button type="button" class="danger" onclick="removeCareerClub(${i})">حذف</button></div>`,
+          )
+          .join("");
+      }
+      function addCareerClub() {
+        syncCareerClubFields();
+        if (questionClubs.length >= 10)
+          return toast("الحد الأقصى 10 أندية", 1);
+        questionClubs.push({ n: "", image: "" });
+        renderCareerClubFields();
+      }
+      function removeCareerClub(index) {
+        syncCareerClubFields();
+        if (questionClubs.length <= 2)
+          return toast("أضف ناديين على الأقل", 1);
+        questionClubs.splice(index, 1);
+        renderCareerClubFields();
+      }
       function toggleQuestionKind() {
         const kind = $("fk").value;
-        $("questionFields").hidden = ["reverse", "visual", "audio"].includes(kind);
+        $("questionFields").hidden = ["reverse", "visual", "audio", "career"].includes(kind);
         $("normalFields").hidden = kind !== "normal" && kind !== "audio";
         $("audioFields").hidden = kind !== "audio";
         $("topFields").hidden = kind !== "top5" && kind !== "top10";
@@ -1393,6 +1460,8 @@
           .forEach((input, i) => (input.hidden = i >= 5 && kind !== "top10"));
         $("reverseFields").hidden = kind !== "reverse";
         $("visualFields").hidden = kind !== "visual";
+        $("careerFields").hidden = kind !== "career";
+        if (kind === "career") renderCareerClubFields();
       }
       async function saveQ(id) {
         const g = (k) => $(k).value.trim(),
@@ -1409,6 +1478,14 @@
                 )
               : [],
           word = kind === "reverse" ? g("frw") : "";
+        if (kind === "career") syncCareerClubFields();
+        const clubs =
+          kind === "career"
+            ? questionClubs.map((club) => ({
+                n: club.n.slice(0, 80),
+                image: club.image.slice(0, 1000),
+              }))
+            : [];
         const image = kind === "visual" ? g("fi") : "",
           emoji = kind === "visual" ? g("fe") : "",
           audioFile = kind === "audio" ? $("fauFile").files[0] : null;
@@ -1445,6 +1522,19 @@
             ? !word
             : kind === "visual"
               ? !g("fvp") || !g("fva") || (!image && !emoji)
+              : kind === "career"
+                ? !g("fca") ||
+                  clubs.length < 2 ||
+                  clubs.length > 10 ||
+                  clubs.some((club) => {
+                    try {
+                      return !["http:", "https:"].includes(
+                        new URL(club.image).protocol,
+                      );
+                    } catch {
+                      return true;
+                    }
+                  })
               : kind === "audio"
                 ? !audioUrl && !audioFile
                 : !g("fx"))
@@ -1452,6 +1542,8 @@
           return toast(
             kind === "visual"
               ? "اكتب نص السؤال والإجابة وأضف صورة أو إيموجي"
+              : kind === "career"
+                ? "اكتب اسم اللاعب وأضف رابط شعار صحيح لكل نادٍ (ناديان على الأقل)"
               : kind === "reverse"
                 ? "اكتب النوع والكلمة"
                 : kind === "audio"
@@ -1462,7 +1554,7 @@
         if (
           kind === "top5" || kind === "top10"
             ? r.some((a) => !a)
-            : kind === "reverse" || kind === "visual"
+            : kind === "reverse" || kind === "visual" || kind === "career"
               ? false
               : o.length
                 ? o.length < 4
@@ -1500,6 +1592,8 @@
             x:
               kind === "visual"
                 ? g("fvp")
+                : kind === "career"
+                  ? "مين اللاعب؟"
                 : kind === "audio"
                   ? "استمع إلى الصوت"
                 : kind === "reverse"
@@ -1514,10 +1608,13 @@
                 ? word
                 : kind === "visual"
                   ? g("fva")
+                  : kind === "career"
+                    ? g("fca")
                   : g("fa"),
             image,
             emoji,
             audioUrl,
+            clubs,
           });
           $("form").innerHTML = "";
           toast("✔ اتحفظ في قاعدة البيانات");

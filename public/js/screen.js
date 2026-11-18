@@ -8,7 +8,8 @@
       let scoreNoticeTimer;
       let lastResultKey = "",
         lastBuzzKey = "",
-        lastReverseLetter = "";
+        lastReverseLetter = "",
+        lastCareerClubIndex = null;
       let lastQuestionKey = "",
         lastOptionsKey = "",
         lastAnswerKey = "",
@@ -358,6 +359,25 @@
         if (!V.shown) return '<div class="wait">هنا هيظهر السؤال ...</div>';
         return `<div class="tag">${esc(V.t)}</div>${V.x && V.x !== "خمن الصورة" ? `<div class="card qbox ${animateQuestion ? "animate-in" : ""}">${esc(V.x)}</div>` : ""}<div class="visual-clues ${animateQuestion ? "animate-options" : ""}">${V.image ? `<img class="visual-clue" src="${esc(V.image)}" alt="قرينة بصرية">` : ""}${V.emoji ? `<div class="visual-emoji">${esc(V.emoji)}</div>` : ""}</div>${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`;
       }
+      function careerStage(animateQuestion, animateCareerArrow, animateAnswer) {
+        if (!V.shown) return '<div class="wait">هنا هيظهر السؤال ...</div>';
+        const clubs = Array.isArray(V.clubs) ? V.clubs : [],
+          clubIndex = Math.max(-1, Math.min(V.clubIndex ?? -1, clubs.length - 1)),
+          path = clubs
+            .map((club, i) => {
+              const revealed = i <= clubIndex,
+                entering =
+                  revealed &&
+                  i === clubIndex &&
+                  (animateQuestion || animateCareerArrow),
+                node = `<div class="career-node ${revealed ? "revealed" : "hidden"} ${i === clubIndex ? "current" : ""} ${entering ? "animate-in" : ""}" role="img" aria-label="${revealed ? `شعار النادي ${i + 1}` : `النادي ${i + 1} لم يُكشف بعد`}">${revealed ? `<img src="${esc(club.image)}" alt="شعار النادي ${i + 1}">` : '<span aria-hidden="true">؟</span>'}</div>`;
+              if (i === clubs.length - 1) return node;
+              const activeArrow = animateCareerArrow && clubIndex === i + 1;
+              return `${node}<span class="career-arrow ${activeArrow ? "active" : ""}" aria-hidden="true">←</span>`;
+            })
+            .join("");
+        return `<div class="tag">${esc(V.t)} · مسيرة لاعب</div><div class="card qbox ${animateQuestion ? "animate-in" : ""}">${esc(V.x || "مين اللاعب؟")}</div><div class="career-path" aria-label="مسيرة الأندية">${path}</div><div class="career-hint">${clubIndex >= clubs.length - 1 ? "تم كشف كل الأندية" : "اضغط «إظهار النادي التالي» من التابلت لمتابعة المسيرة"}</div>${V.ans ? `<div class="ans ${animateAnswer ? "animate-in" : ""}">✔ ${esc(V.ans)}</div>` : ""}`;
+      }
       function statisticsStage() {
         const correct = V.stats?.correct || 0,
           wrong = V.stats?.wrong || 0,
@@ -511,17 +531,23 @@
         const questionContent =
             V.mode === "visual"
               ? `${V.image || ""}|${V.emoji || ""}`
+              : V.mode === "career"
+                ? (V.clubs || []).map((club) => club.image).join("|")
               : V.mode === "audio"
                 ? `${V.audioUrl || ""}|${V.x || ""}`
               : V.x || "",
           questionKey = V.shown
             ? V.mode === "reverse" && V.displayId
               ? `reverse|${V.displayId}`
-              : V.mode === "quiz" || V.mode === "visual" || V.mode === "audio"
+              : V.mode === "quiz" || V.mode === "visual" || V.mode === "audio" || V.mode === "career"
                 ? `${V.mode}|${V.t}|${questionContent}|${V.displayId || ""}`
                 : ""
             : "",
-          animateQuestion = !!questionKey && questionKey !== lastQuestionKey;
+          animateQuestion = !!questionKey && questionKey !== lastQuestionKey,
+          animateCareerArrow =
+            V.mode === "career" &&
+            lastCareerClubIndex !== null &&
+            V.clubIndex > lastCareerClubIndex;
         const optionsKey = V.o ? `${questionKey}|${V.o.join("|")}` : "",
           animateOptions = !!optionsKey && optionsKey !== lastOptionsKey,
           answerKey = V.ans ? `${questionKey}|${V.ans}` : "",
@@ -578,6 +604,8 @@ ${
       ? rouletteHtml
       : V.mode === "reverse"
         ? reverseStage(animateQuestion)
+        : V.mode === "career"
+          ? careerStage(animateQuestion, animateCareerArrow, animateAnswer)
         : V.mode === "visual"
           ? visualStage(animateQuestion, animateAnswer)
           : V.shown
@@ -689,6 +717,8 @@ ${
         lastResultKey = resultKey;
         lastBuzzKey = buzzKey;
         lastReverseLetter = reverseLetter;
+        lastCareerClubIndex =
+          V.mode === "career" ? V.clubIndex ?? -1 : null;
       }
       setInterval(updateTimerDisplay, 200);
       if (room) connectView(room, render);

@@ -135,6 +135,7 @@ function view(g, qs) {
     top = x?.kind === "top5" || x?.kind === "top10",
     reverse = x?.kind === "reverse",
     visual = x?.kind === "visual",
+    career = x?.kind === "career",
     activePlayers =
       g.mode === "rounds" ? activeRound?.players || [] : g.cs || [];
   const v = {
@@ -194,7 +195,15 @@ function view(g, qs) {
     timer: sh ? c.timer || null : null,
     buz: c.buz,
     res: c.res,
-    mode: reverse ? "reverse" : visual ? "visual" : x?.kind === "audio" ? "audio" : "quiz",
+    mode: reverse
+      ? "reverse"
+      : visual
+        ? "visual"
+        : career
+          ? "career"
+          : x?.kind === "audio"
+            ? "audio"
+            : "quiz",
   };
   // هذه هي واجهة الجمهور، وليست نسخة من حالة المشرف: لا نضيف نص الإجابة
   // أو الاختيارات الصحيحة إلا بعد تغيّر أعلام الكشف في حالة الجولة.
@@ -206,6 +215,19 @@ function view(g, qs) {
   if (visual)
     return sh
       ? { ...v, t: x.t, image: x.image, emoji: x.emoji, ans: c.a ? x.a : null }
+      : v;
+  if (career)
+    return sh
+      ? {
+          ...v,
+          t: x.t,
+          x: x.x,
+          clubs: x.clubs,
+          clubIndex: Number.isInteger(c.clubIndex)
+            ? Math.max(-1, Math.min(c.clubIndex, x.clubs.length - 1))
+            : 0,
+          ans: c.a ? x.a : null,
+        }
       : v;
   if (sh) {
     Object.assign(v, {
@@ -408,7 +430,7 @@ function validAudio(data, extension) {
   }
 }
 function cleanQ(b) {
-  const kind = ["top5", "top10", "reverse", "visual", "audio"].includes(b.kind)
+  const kind = ["top5", "top10", "reverse", "visual", "audio", "career"].includes(b.kind)
       ? b.kind
       : "normal",
     r =
@@ -422,12 +444,26 @@ function cleanQ(b) {
             .filter(Boolean)
             .slice(0, 4)
         : [];
+  const clubs =
+    kind === "career" && Array.isArray(b.clubs)
+      ? b.clubs
+          .slice(0, 10)
+          .map((club) => ({
+            n: str(club?.n, 80),
+            image: cleanImage(club?.image),
+          }))
+      : [];
   const a = str(b.a, 300),
     x = {
       id: str(b.id, 40) || "q" + Date.now(),
       t: str(b.t, 40),
       d: b.d === "h" ? "h" : "e",
-      x: kind === "reverse" ? a : str(b.x, 500),
+      x:
+        kind === "reverse"
+          ? a
+          : kind === "career"
+            ? "مين اللاعب؟"
+            : str(b.x, 500),
       kind,
       r,
       o,
@@ -436,6 +472,7 @@ function cleanQ(b) {
       image: kind === "visual" ? cleanImage(b.image) : "",
       emoji: kind === "visual" ? str(b.emoji, 20) : "",
       audioUrl: kind === "audio" ? cleanAudio(b.audioUrl) : "",
+      clubs,
     };
   return x.t &&
     x.x &&
@@ -445,6 +482,10 @@ function cleanQ(b) {
         ? !!a && !!(x.image || x.emoji)
         : kind === "top5" || kind === "top10"
           ? r.length === (kind === "top10" ? 10 : 5) && r.every(Boolean)
+          : kind === "career"
+            ? !!a &&
+              clubs.length >= 2 &&
+              clubs.every((club) => !!club.image)
           : kind === "audio"
             ? !!x.audioUrl && (o.length === 4 || (!o.length && x.a))
             : o.length === 4 || (!o.length && x.a))

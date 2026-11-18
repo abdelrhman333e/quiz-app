@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فيديو موشن جرافيك - موقع المسابقات</title>
+    <!-- تحميل Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- تحميل خط Cairo العربي الاحترافي -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        * {
+            font-family: 'Cairo', sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* تأثيرات التوهج النيون (Neon Glow) */
+        .glow-cyan {
+            text-shadow: 0 0 12px rgba(34, 211, 238, 0.8), 0 0 28px rgba(34, 211, 238, 0.5), 0 0 50px rgba(34, 211, 238, 0.3);
+        }
+        .glow-purple {
+            text-shadow: 0 0 12px rgba(192, 132, 252, 0.8), 0 0 28px rgba(192, 132, 252, 0.5), 0 0 50px rgba(192, 132, 252, 0.3);
+        }
+        .glow-amber {
+            text-shadow: 0 0 12px rgba(251, 191, 36, 0.85), 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.45), inset 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+        .glow-rose {
+            box-shadow: 0 0 25px rgba(244, 63, 94, 0.45), inset 0 0 15px rgba(244, 63, 94, 0.2);
+        }
+        .glow-slate {
+            box-shadow: 0 0 25px rgba(148, 163, 184, 0.35), inset 0 0 15px rgba(148, 163, 184, 0.15);
+        }
+        .box-glow-cyan {
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.35), inset 0 0 12px rgba(34, 211, 238, 0.15);
+        }
+        .box-glow-purple {
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+
+        /* خلفية شبكية خفيفة للمشهد */
+        .stage-grid {
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.35) 0%, rgba(5, 5, 8, 0.98) 85%),
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+        }
+
+        /* حركات مخصصة */
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.06); filter: brightness(1.3); }
+        }
+        .animate-pulse-glow {
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-float {
+            animation: floatSlow 3s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.7) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.3) rotate(25deg); }
+        }
+
+        /* منظور ثلاثي الأبعاد لقلب الكروت (Rotation Y) */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+        }
+
+        /* شريط التقدم (Timeline Scrubber) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #22d3ee;
+            box-shadow: 0 0 12px #22d3ee;
+            margin-top: -5px;
+            transition: transform 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* وضع التسجيل النظيف (إخفاء الواجهة المحيطة) */
+        body.clean-mode header,
+        body.clean-mode #controlPanel,
+        body.clean-mode #teleprompterBar {
+            display: none !important;
+        }
+        body.clean-mode main {
+            padding: 0 !important;
+            max-width: 100vw !important;
+            height: 100vh !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+        body.clean-mode #stageWrapper {
+            width: 100vw !important;
+            max-width: 177.78vh !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+
+    <!-- الهيدر العلوي -->
+    <header class="w-full border-b border-white/10 bg-slate-950/80 backdrop-blur-md py-3 px-4 sm:px-8 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <i class="fa-solid fa-film text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-base sm:text-lg font-extrabold text-white tracking-wide">استوديو الفيديو التعريفي للمسابقات</h1>
+                <p class="text-xs text-slate-400">موشن جرافيك تفاعلي (58 ثانية) متزامن مع الصوت</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button id="cleanModeBtn" title="وضع التسجيل النظيف (لعمل Screen Record للفيديو فقط)" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs sm:text-sm font-semibold text-cyan-300 flex items-center gap-2 transition">
+                <i class="fa-solid fa-expand"></i>
+                <span>وضع التصوير النظيف</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="w-full max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 flex flex-col items-center justify-center gap-4">
+
+        <!-- مسرح الفيديو بنسبة 16:9 -->
+        <div id="stageWrapper" class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/15 shadow-2xl shadow-cyan-950/40 select-none">
+            
+            <!-- طبقة الخلفية والجزيئات -->
+            <div id="stageBg" class="absolute inset-0 bg-black transition-colors duration-1000"></div>
+            <div id="particlesContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+            <!-- زر الخروج من وضع التصوير النظيف (يظهر فقط عند تفعيله وعند تحريك الماوس) -->
+            <button id="exitCleanModeBtn" class="hidden fixed top-4 left-4 z-50 px-4 py-2 rounded-xl bg-black/70 hover:bg-black text-white/80 hover:text-white border border-white/20 text-xs backdrop-blur-md transition">
+                <i class="fa-solid fa-compress ml-1"></i> إنهاء وضع التصوير (ESC)
+            </button>
+
+            <!-- ========================================================= -->
+            <!-- المشهد 1 (0:00 - 0:08): جاهزين للتحدي؟ -> اسم اللعبة/الموقع -->
+            <!-- ========================================================= -->
+            <div id="scene1" class="scene-layer absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 px-4 text-center">
+                <!-- كلمة "جاهزين للتحدي؟" -->
+                <div id="s1_challenge" class="absolute text-4xl sm:text-6xl md:text-7xl font-black text-white glow-cyan tracking-wide transition-all duration-300">
+                    جاهزين للتحدي؟
+                </div>
+                <!-- اسم الموقع / اللعبة -->
+                <div id="s1_contest" class="absolute flex flex-col items-center gap-3 opacity-0">
+                    <span class="px-4 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-xs sm:text-sm font-bold tracking-wider">
+                        قواعد اللعبة في دقيقة
+                    </span>
+                    <div id="s1_brandTitle" class="text-5xl sm:text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 glow-purple animate-pulse-glow py-2">
+                        تحدي المسابقات
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- المشهد 2 (0:08 - 0:23): التابلت (يمين) -> السهم -> الشاشة الكبيرة (يسار) -->
+            <!-- ========================================================= -->
+            <div id="scene2" class="scene-layer absolute inset-0 flex items-center justify-center px-6 sm:px-14 pointer-events-none opacity-0">
+                <div class="relative w-full h-full flex items-center justify-between gap-4 sm:gap-8">
+                    
+                    <!-- اليمين: التابلت (الهوست / المقدم) -->
+                    <div id="s2_tablet" class="w-[34%] sm:w-[30%] h-[58%] sm:h-[64%] rounded-3xl bg-slate-900/90 border-2 border-cyan-400/60 box-glow-cyan p-3 sm:p-5 flex flex-col justify-between relative z-10 transition-all duration-700">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                            <span class="text-[10px] sm:text-xs text-cyan-300 font-bold"><i class="fa-solid fa-tablet-screen-button ml-1"></i> تابلت الهوست (أنا)</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        </div>
+                        <div class="flex-1 flex flex-col items-center justify-center gap-2">
+                            <div class="px-4 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-400/40 text-cyan-200 font-black text-base sm:text-xl">
+                                سؤال
+                            </div>
+                            <span class="text-[11px] sm:text-xs text-slate-400 font-semibold">بكتب السؤال هنا...</span>
+                        </div>
+                        <div class="h-1.5 w-12 mx-auto rounded-full bg-slate-700"></div>
+                    </div>
+
+                    <!-- الوسط: السهم المتحرك -->
+                    <div id="s2_arrow" class="flex-1 flex flex-col items-center justify-center gap-2 z-10 transition-all duration-500">
+                        <div class="w-full flex items-center justify-center relative">
+                            <div class="h-1 sm:h-1.5 w-full bg-gradient-to-l from-cyan-400 via-purple-400 to-amber-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.8)]"></div>
+                            <i class="fa-solid fa-chevron-left text-amber-300 text-xl sm:text-3xl -mr-2 glow-amber animate-pulse"></i>
+                        </div>
+                        <span class="text-[10px] sm:text-xs font-bold text-cyan-200/80 tracking-wider">بيظهر عندكم فوراً</span>
+                    </div>
+
+                    <!-- الشمال: الشاشة الكبيرة -->
+                    <div id="s2_screen" class="w-[46%] sm:w-[48%] h-[68%] sm:h-[74%] rounded-3xl bg-slate-950/95 border-2 border-purple-400/60 box-glow-purple p-4 sm:p-6 flex flex-col justify-between relative z-10 transition-all duration-700">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                            <span class="text-[10px] sm:text-xs text-purple-300 font-bold"><i class="fa-solid fa-tv ml-1"></i> الشاشة الكبيرة (عندكم)</span>
+                            <div class="flex gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/70"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/70"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/70"></span>
+                            </div>
+                        </div>
+                        <div id="s2_screenPlaceholder" class="flex-1 flex flex-col items-center justify-center border border-dashed border-white/15 rounded-2xl m-2 text-slate-500">
+                            <span class="text-xs sm:text-sm">في انتظار السؤال...</span>
+                        </div>
+                    </div>
+
+                    <!-- العنصر المتحرك: كلمة "سؤال" التي تنتقل من التابلت إلى الشاشة الكبيرة -->
+                    <div id="s2_flyingWord" class="absolute z-30 px-6 sm:px-10 py-3 sm:py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-black text-2xl sm:text-4xl md:text-5xl shadow-[0_0_35px_rgba(34,211,238,0.85)] border border-white/40 flex items-center gap-3"
+                         style="right: 15%; top: 50%; transform: translate(50%, -50%) scale(0.8); opacity: 0;">
+                        <i class="fa-solid fa-circle-question text-amber-300"></i>
+                        <span>سؤال</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- المشهد 3 (0:23 - 0:38): نظام النقاط (+1 سهل، +2 صعب، -1 X) -->
+            <!-- ========================================================= -->
+            <div id="scene3" class="scene-layer absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 pointer-events-none opacity-0">
+                <h2 id="s3_title" class="text-lg sm:text-2xl font-extrabold text-slate-300 mb-6 sm:mb-10 tracking-wide">
+                    نظام النقاط والتحدي
+                </h2>
+                <div class="grid grid-cols-3 gap-3 sm:gap-6 w-full max-w-4xl">
+                    
+                    <!-- المربع الأخضر: +1 سهل -->
+                    <div id="s3_boxEasy" class="rounded-3xl bg-emerald-950/70 border-2 border-emerald-400 glow-emerald p-4 sm:p-7 flex flex-col items-center justify-center gap-2 sm:gap-4 transform scale-0 opacity-0">
+                        <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-300 text-xl sm:text-2xl">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div id="s3_numEasy" class="text-4xl sm:text-6xl md:text-7xl font-black text-emerald-300 drop-shadow-[0_0_15px_rgba(52,211,153,0.8)]" dir="ltr">
+                            +1
+                        </div>
+                        <div class="px-4 py-1 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-100 font-extrabold text-base sm:text-2xl">
+                            سهل
+                        </div>
+                    </div>
+
+                    <!-- المربع الأحمر: +2 صعب -->
+                    <div id="s3_boxHard" class="rounded-3xl bg-rose-950/70 border-2 border-rose-500 glow-rose p-4 sm:p-7 flex flex-col items-center justify-center gap-2 sm:gap-4 transform scale-0 opacity-0">
+                        <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl bg-rose-500/20 flex items-center justify-center text-rose-300 text-xl sm:text-2xl">
+                            <i class="fa-solid fa-fire"></i>
+                        </div>
+                        <div id="s3_numHard" class="text-4xl sm:text-6xl md:text-7xl font-black text-rose-400 drop-shadow-[0_0_15px_rgba(251,113,133,0.8)]" dir="ltr">
+                            +2
+                        </div>
+                        <div class="px-4 py-1 rounded-xl bg-rose-500/20 border border-rose-400/30 text-rose-100 font-extrabold text-base sm:text-2xl">
+                            صعب
+                        </div>
+                    </div>
+
+                    <!-- المربع الرمادي: -1 غلط X -->
+                    <div id="s3_boxWrong" class="rounded-3xl bg-slate-900/85 border-2 border-slate-400 glow-slate p-4 sm:p-7 flex flex-col items-center justify-center gap-2 sm:gap-4 transform scale-0 opacity-0">
+                        <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl bg-slate-500/20 flex items-center justify-center text-slate-300 text-xl sm:text-2xl">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div id="s3_numWrong" class="text-4xl sm:text-6xl md:text-7xl font-black text-slate-200 drop-shadow-[0_0_15px_rgba(203,213,225,0.6)]" dir="ltr">
+                            -1
+                        </div>
+                        <div class="px-4 py-1 rounded-xl bg-slate-500/25 border border-slate-400/40 text-rose-400 font-black text-base sm:text-2xl">
+                            غلط X
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- المشهد 4 (0:38 - 0:48): أنواع الأسئلة + مسيرة اللاعب -->
+            <!-- ========================================================= -->
+            <div id="scene4" class="scene-layer absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-12 pointer-events-none opacity-0">
+                <div class="grid grid-cols-3 gap-4 sm:gap-7 w-full max-w-4xl perspective-1000 mb-6 sm:mb-8">
+                    
+                    <!-- كارت 1: سؤال عادي -->
+                    <div id="s4_card1" class="card-3d rounded-3xl bg-gradient-to-b from-slate-800/90 to-slate-950/95 border-2 border-cyan-400/70 box-glow-cyan p-5 sm:p-8 flex flex-col items-center justify-center gap-3 text-center"
+                         style="opacity: 0; transform: rotateY(90deg) scale(0.8);">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 text-2xl sm:text-3xl">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-2xl md:text-3xl font-black text-white glow-cyan">سؤال عادي</h3>
+                        <p class="text-[11px] sm:text-xs text-cyan-200/70">سرعة بديهة ومعلومات عامة</p>
+                    </div>
+
+                    <!-- كارت 2: Top 5 -->
+                    <div id="s4_card2" class="card-3d rounded-3xl bg-gradient-to-b from-slate-800/90 to-slate-950/95 border-2 border-purple-400/70 box-glow-purple p-5 sm:p-8 flex flex-col items-center justify-center gap-3 text-center"
+                         style="opacity: 0; transform: rotateY(90deg) scale(0.8);">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-purple-300 text-2xl sm:text-3xl">
+                            <i class="fa-solid fa-list-ol"></i>
+                        </div>
+                        <h3 class="text-xl sm:text-3xl md:text-4xl font-black text-white glow-purple" dir="ltr">Top 5</h3>
+                        <p class="text-[11px] sm:text-xs text-purple-200/70">خمن أفضل 5 إجابات</p>
+                    </div>
+
+                    <!-- كارت 3: Top 10 -->
+                    <div id="s4_card3" class="card-3d rounded-3xl bg-gradient-to-b from-slate-800/90 to-slate-950/95 border-2 border-amber-400/70 shadow-[0_0_25px_rgba(251,191,36,0.35)] p-5 sm:p-8 flex flex-col items-center justify-center gap-3 text-center"
+                         style="opacity: 0; transform: rotateY(90deg) scale(0.8);">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-2xl sm:text-3xl">
+                            <i class="fa-solid fa-ranking-star"></i>
+                        </div>
+                        <h3 class="text-xl sm:text-3xl md:text-4xl font-black text-white glow-amber" dir="ltr">Top 10</h3>
+                        <p class="text-[11px] sm:text-xs text-amber-200/70">التحدي الأكبر للعباقرة</p>
+                    </div>
+
+                </div>
+
+                <!-- أيقونات الوسائط (صورة وصوت) -->
+                <div id="s4_mediaBadges" class="flex items-center gap-4 sm:gap-6 opacity-0 transition-all duration-500 transform translate-y-4">
+                    <div class="flex items-center gap-2.5 px-4 sm:px-6 py-2.5 rounded-2xl bg-cyan-500/15 border border-cyan-400/50 text-cyan-200 shadow-[0_0_20px_rgba(34,211,238,0.3)]">
+                        <i class="fa-solid fa-image text-lg sm:text-2xl text-cyan-300 animate-bounce"></i>
+                        <span class="font-bold text-xs sm:text-base">إضافة صور</span>
+                    </div>
+                    <div class="flex items-center gap-2.5 px-4 sm:px-6 py-2.5 rounded-2xl bg-purple-500/15 border border-purple-400/50 text-purple-200 shadow-[0_0_20px_rgba(192,132,252,0.3)]">
+                        <i class="fa-solid fa-volume-high text-lg sm:text-2xl text-purple-300 animate-pulse"></i>
+                        <span class="font-bold text-xs sm:text-base">مقاطع صوتية</span>
+                    </div>
+                </div>
+
+                <div id="s4_career" class="flex items-center gap-3 sm:gap-5 mt-3 px-4 py-2 rounded-2xl bg-slate-950/80 border border-emerald-400/40 opacity-0">
+                    <span class="text-xs sm:text-base font-black text-emerald-200 whitespace-nowrap">مسيرة اللاعب</span>
+                    <div class="flex items-center gap-2 sm:gap-4">
+                        <div id="s4_club1" class="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-cyan-500/20 border border-cyan-300/60 flex items-center justify-center text-cyan-200 text-xl sm:text-2xl opacity-0">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <span id="s4_arrow1" class="text-amber-300 text-xl sm:text-3xl opacity-0">←</span>
+                        <div id="s4_club2" class="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-purple-500/20 border border-purple-300/60 flex items-center justify-center text-purple-200 text-xl sm:text-2xl opacity-0">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <span id="s4_arrow2" class="text-amber-300 text-xl sm:text-3xl opacity-0">←</span>
+                        <div id="s4_club3" class="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-emerald-500/20 border border-emerald-300/60 flex items-center justify-center text-emerald-200 text-xl sm:text-2xl opacity-0">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- المشهد 5 (0:48 - 0:58): الشعار + النجوم + سجل دلوقتي + Fade Out -->
+            <!-- ========================================================= -->
+            <div id="scene5" class="scene-layer absolute inset-0 flex flex-col items-center justify-center px-6 pointer-events-none opacity-0">
+                <!-- حاوية النجوم المتلألئة حول الشعار -->
+                <div id="s5_starsContainer" class="relative flex flex-col items-center justify-center">
+                    
+                    <!-- نجوم متوهجة موزعة حول الشعار -->
+                    <i class="fa-solid fa-star text-amber-300 text-lg sm:text-2xl absolute -top-8 -right-10 glow-amber" style="animation: twinkle 1.6s infinite ease-in-out;"></i>
+                    <i class="fa-solid fa-sparkles text-cyan-300 text-xl sm:text-3xl absolute -top-10 -left-12 glow-cyan" style="animation: twinkle 2.1s infinite ease-in-out 0.4s;"></i>
+                    <i class="fa-solid fa-star text-purple-300 text-base sm:text-xl absolute top-1/2 -right-16 glow-purple" style="animation: twinkle 1.8s infinite ease-in-out 0.8s;"></i>
+                    <i class="fa-solid fa-star text-amber-300 text-base sm:text-xl absolute top-1/2 -left-16 glow-amber" style="animation: twinkle 2.3s infinite ease-in-out 0.2s;"></i>
+                    <i class="fa-solid fa-star text-cyan-300 text-sm sm:text-lg absolute -bottom-4 -right-8 glow-cyan" style="animation: twinkle 1.5s infinite ease-in-out 0.6s;"></i>
+
+                    <!-- شعار الموقع -->
+                    <div id="s5_logoCard" class="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-tr from-cyan-500 via-purple-600 to-amber-500 p-1 shadow-[0_0_50px_rgba(168,85,247,0.65)] mb-4 animate-float">
+                        <div class="w-full h-full rounded-[22px] bg-slate-950 flex items-center justify-center">
+                            <i class="fa-solid fa-trophy text-4xl sm:text-6xl text-transparent bg-clip-text bg-gradient-to-tr from-amber-300 to-cyan-300"></i>
+                        </div>
+                    </div>
+
+                    <h2 id="s5_brandTitle" class="text-3xl sm:text-5xl md:text-6xl font-black text-white glow-cyan mb-6 text-center">
+                        تحدي المسابقات
+                    </h2>
+
+                    <!-- زر / شارة "يلا بينا نبدأ!" -->
+                    <div id="s5_ctaBadge" class="px-8 sm:px-12 py-3 sm:py-4 rounded-full bg-gradient-to-r from-cyan-400 via-purple-500 to-amber-400 text-slate-950 font-black text-xl sm:text-3xl shadow-[0_0_40px_rgba(34,211,238,0.85)] transform scale-75 opacity-0 transition-all duration-500">
+                        يلا بينا نبدأ! <i class="fa-solid fa-rocket mr-2"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- شريط الوقت العلوي الصغير داخل المسرح (يختفي في وضع التصوير النظيف) -->
+            <div id="stageHud" class="absolute top-3 right-3 left-3 flex items-center justify-between pointer-events-none z-40">
+                <span id="sceneBadge" class="px-3 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-[11px] sm:text-xs font-bold text-cyan-300">
+                    المشهد 1: المقدمة
+                </span>
+                <span id="timeDisplay" class="px-3 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-[11px] sm:text-xs font-mono font-bold text-white" dir="ltr">
+                    00:00.0 / 00:58.0
+                </span>
+            </div>
+
+            <!-- طبقة النقر للتشغيل السريع عند التوقف -->
+            <div id="playOverlay" class="absolute inset-0 z-30 bg-black/40 backdrop-blur-[2px] flex items-center justify-center cursor-pointer transition-opacity duration-300">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-cyan-500/90 hover:bg-cyan-400 text-slate-950 flex items-center justify-center text-2xl sm:text-3xl shadow-[0_0_40px_rgba(34,211,238,0.8)] transition transform hover:scale-110">
+                    <i class="fa-solid fa-play ml-1"></i>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- شريط التلقين الصوتي (Teleprompter) لمساعدتك في التسجيل أو متابعة التزامن -->
+        <div id="teleprompterBar" class="w-full rounded-2xl bg-slate-900/90 border border-white/10 p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3 w-full">
+                <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
+                    <i class="fa-solid fa-microphone-lines"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="text-[11px] text-amber-300/90 font-bold mb-0.5">نص التعليق الصوتي الحالي (Voiceover Cue):</div>
+                    <p id="teleprompterText" class="text-sm sm:text-base font-bold text-white leading-relaxed">
+                        "يا شباب، عملت لكم موقع مسابقة رايق عشان نتحدى بعض فيه.. تعالوا أفهمكم اللعبة في دقيقة."
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- لوحة التحكم والصوتيات -->
+        <div id="controlPanel" class="w-full rounded-2xl bg-slate-900/80 border border-white/10 p-4 sm:p-5 flex flex-col gap-4">
+            
+            <!-- الصف الأول: أزرار التشغيل وشريط التقدم (Timeline) -->
+            <div class="flex items-center gap-3 sm:gap-4">
+                <button id="playPauseBtn" class="w-11 h-11 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold flex items-center justify-center text-lg shadow-lg shadow-cyan-500/25 transition shrink-0">
+                    <i class="fa-solid fa-play"></i>
+                </button>
+                <button id="restartBtn" title="إعادة من البداية" class="w-11 h-11 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 flex items-center justify-center text-base transition shrink-0">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+
+                <!-- شريط التقدم مع علامات المشاهد -->
+                <div class="flex-1 flex flex-col gap-1.5">
+                    <input id="timelineSlider" type="range" min="0" max="58" step="0.05" value="0" class="w-full" dir="ltr">
+                    <div class="flex justify-between text-[10px] sm:text-xs text-slate-400 px-1 font-semibold">
+                        <button class="hover:text-cyan-300 transition" onclick="seekTo(0)">0:00 المقدمة</button>
+                        <button class="hover:text-cyan-300 transition" onclick="seekTo(8)">0:08 التابلت</button>
+                        <button class="hover:text-cyan-300 transition" onclick="seekTo(23)">0:23 النقاط</button>
+                        <button class="hover:text-cyan-300 transition" onclick="seekTo(38)">0:38 الكروت</button>
+                        <button class="hover:text-cyan-300 transition" onclick="seekTo(48)">0:48 الشعار</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-px w-full bg-white/10"></div>
+
+            <!-- الصف الثاني: رفع ملف الصوت + اسم الموقع + المؤثرات الصوتية -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <!-- 1. رفع ملف التعليق الصوتي (Voiceover Upload) -->
+                <div class="rounded-xl bg-black/40 border border-white/10 p-3 flex flex-col justify-between gap-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-audio"></i> ملف التعليق الصوتي (Voiceover)
+                        </span>
+                        <button id="removeAudioBtn" class="hidden text-[11px] text-rose-400 hover:text-rose-300">إزالة</button>
+                    </div>
+                    <label class="cursor-pointer flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-dashed border-cyan-400/50 text-xs font-bold text-cyan-200 transition">
+                        <i class="fa-solid fa-upload"></i>
+                        <span id="audioFileName" class="truncate">اختر ملف صوتي (MP3 / WAV / M4A)</span>
+                        <input id="audioUploadInput" type="file" accept="audio/*" class="hidden">
+                    </label>
+                    <audio id="voiceoverAudio" class="hidden"></audio>
+                </div>
+
+                <!-- 2. تخصيص اسم موقعك -->
+                <div class="rounded-xl bg-black/40 border border-white/10 p-3 flex flex-col justify-between gap-2">
+                    <label for="brandNameInput" class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-signature"></i> اسم اللعبة / الموقع (في البداية والنهاية)
+                    </label>
+                    <input id="brandNameInput" type="text" value="تحدي المسابقات" placeholder="اكتب اسم اللعبة أو الموقع..."
+                           class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-white/15 focus:border-purple-400 focus:outline-none text-xs sm:text-sm font-bold text-white">
+                </div>
+
+                <!-- 3. المؤثرات الصوتية المدمجة (SFX Synthesizer) -->
+                <div class="rounded-xl bg-black/40 border border-white/10 p-3 flex flex-col justify-between gap-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> مؤثرات الحركة (SFX)
+                        </span>
+                        <button id="sfxToggleBtn" class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-bold">
+                            مفعّلة
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-slate-400 leading-snug">
+                        تُصدر أصوات (Whoosh, Ding, Buzz, Flip) تلقائياً مع الحركة. يمكنك إيقافها إذا كان ملفك الصوتي يحتوي على المؤثرات.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // =========================================================================
+        // 1. إعداد المتغيرات والعناصر الأساسية
+        // =========================================================================
+        const TOTAL_DURATION = 58.0; // المدة الكلية 58 ثانية حسب السكريبت
+        let currentTime = 0;
+        let isPlaying = false;
+        let lastFrameTime = null;
+        let sfxEnabled = true;
+
+        // تتبع المؤثرات الصوتية التي تم تشغيلها لمنع تكرارها في نفس الثانية
+        const triggeredSfx = new Set();
+
+        // عناصر الواجهة
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const playOverlay = document.getElementById('playOverlay');
+        const timelineSlider = document.getElementById('timelineSlider');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const sceneBadge = document.getElementById('sceneBadge');
+        const teleprompterText = document.getElementById('teleprompterText');
+        const brandNameInput = document.getElementById('brandNameInput');
+        const s1BrandTitle = document.getElementById('s1_brandTitle');
+        const s5BrandTitle = document.getElementById('s5_brandTitle');
+        const cleanModeBtn = document.getElementById('cleanModeBtn');
+        const exitCleanModeBtn = document.getElementById('exitCleanModeBtn');
+        const stageHud = document.getElementById('stageHud');
+
+        // عناصر الصوت
+        const audioUploadInput = document.getElementById('audioUploadInput');
+        const audioFileName = document.getElementById('audioFileName');
+        const removeAudioBtn = document.getElementById('removeAudioBtn');
+        const voiceoverAudio = document.getElementById('voiceoverAudio');
+        const sfxToggleBtn = document.getElementById('sfxToggleBtn');
+
+        // =========================================================================
+        // 2. محرك المؤثرات الصوتية المدمجة (Web Audio API SFX Synthesizer)
+        // =========================================================================
+        let audioCtx = null;
+
+        function initAudioCtx() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSfx(type) {
+            if (!sfxEnabled) return;
+            initAudioCtx();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'whoosh') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(140, now);
+                osc.frequency.exponentialRampToValueAtTime(520, now + 0.18);
+                osc.frequency.exponentialRampToValueAtTime(110, now + 0.35);
+                gain.gain.setValueAtTime(0.01, now);
+                gain.gain.linearRampToValueAtTime(0.18, now + 0.12);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+                osc.start(now);
+                osc.stop(now + 0.37);
+            } else if (type === 'ding') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.exponentialRampToValueAtTime(1318.5, now + 0.08);
+                gain.gain.setValueAtTime(0.22, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+                osc.start(now);
+                osc.stop(now + 0.56);
+            } else if (type === 'buzz') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(145, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.35);
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+                osc.start(now);
+                osc.stop(now + 0.39);
+            } else if (type === 'flip') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(320, now);
+                osc.frequency.exponentialRampToValueAtTime(640, now + 0.14);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+                osc.start(now);
+                osc.stop(now + 0.17);
+            } else if (type === 'victory') {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.type = 'triangle';
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    const startT = now + idx * 0.12;
+                    o.frequency.setValueAtTime(freq, startT);
+                    g.gain.setValueAtTime(0.18, startT);
+                    g.gain.exponentialRampToValueAtTime(0.001, startT + 0.65);
+                    o.start(startT);
+                    o.stop(startT + 0.66);
+                });
+            }
+        }
+
+        function triggerSfxOnce(id, type) {
+            if (!isPlaying) return;
+            if (!triggeredSfx.has(id)) {
+                triggeredSfx.add(id);
+                playSfx(type);
+            }
+        }
+
+        // =========================================================================
+        // 3. دوال الحركة والرياضيات (Easing & Math Helpers)
+        // =========================================================================
+        function clamp(val, min, max) {
+            return Math.min(Math.max(val, min), max);
+        }
+
+        function easeOutBack(x) {
+            const c1 = 1.70158;
+            const c3 = c1 + 1;
+            return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+        }
+
+        function easeInOutCubic(x) {
+            return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+        }
+
+        // =========================================================================
+        // 4. محرك الرسم الرئيسي (Render Frame)
+        // =========================================================================
+        function renderFrame(t) {
+            const brand = brandNameInput.value.trim() || 'تحدي المسابقات';
+            s1BrandTitle.textContent = brand;
+            s5BrandTitle.textContent = brand;
+
+            // تحديث العداد وشريط التقدم
+            timelineSlider.value = t;
+            const mins = Math.floor(t / 60).toString().padStart(2, '0');
+            const secs = (t % 60).toFixed(1).padStart(4, '0');
+            timeDisplay.textContent = `${mins}:${secs} / 00:58.0`;
+
+            // إخفاء جميع المشاهد مبدئياً
+            const scenes = ['scene1', 'scene2', 'scene3', 'scene4', 'scene5'];
+            scenes.forEach(id => {
+                document.getElementById(id).style.opacity = '0';
+            });
+
+            const stageBg = document.getElementById('stageBg');
+
+            // -----------------------------------------------------------------
+            // المشهد 1: (0.0s -> 8.0s)
+            // شاشة سودة -> "جاهزين للتحدي؟" تكبر وتتحرك وتختفي -> اسم اللعبة يظهر وينور
+            // -----------------------------------------------------------------
+            if (t >= 0 && t < 8.0) {
+                stageBg.className = 'absolute inset-0 bg-black transition-colors duration-700';
+                sceneBadge.textContent = 'المشهد 1 (0:00 - 0:08): الترحيب بالأصحاب';
+                teleprompterText.textContent = `"يا شباب، عملت لكم موقع مسابقة رايق عشان نتحدى بعض فيه.. تعالوا أفهمكم اللعبة في دقيقة."`;
+
+                const s1 = document.getElementById('scene1');
+                const challengeEl = document.getElementById('s1_challenge');
+                const contestEl = document.getElementById('s1_contest');
+                s1.style.opacity = '1';
+
+                if (t < 3.6) {
+                    // ظهور وتكبير "جاهزين للتحدي؟"
+                    triggerSfxOnce('s1_whoosh', 'whoosh');
+                    const p = clamp(t / 1.2, 0, 1);
+                    const scale = 0.6 + easeOutBack(p) * 0.55;
+                    const moveY = Math.sin(t * 3) * 8;
+                    const fadeOut = t > 2.8 ? 1 - clamp((t - 2.8) / 0.7, 0, 1) : 1;
+
+                    challengeEl.style.opacity = (p * fadeOut).toString();
+                    challengeEl.style.transform = `scale(${scale}) translateY(${moveY}px)`;
+                    contestEl.style.opacity = '0';
+                } else {
+                    // اختفاء "جاهزين للتحدي؟" وظهور اسم اللعبة مع توهج
+                    triggerSfxOnce('s1_ding', 'ding');
+                    challengeEl.style.opacity = '0';
+                    const p = clamp((t - 3.6) / 0.8, 0, 1);
+                    const scale = 0.75 + easeOutBack(p) * 0.25;
+                    const fadeEnd = t > 7.3 ? 1 - clamp((t - 7.3) / 0.7, 0, 1) : 1;
+
+                    contestEl.style.opacity = (p * fadeEnd).toString();
+                    contestEl.style.transform = `scale(${scale})`;
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // المشهد 2: (8.0s -> 23.0s)
+            // التابلت على اليمين، الشاشة الكبيرة على الشمال، انتقال كلمة "سؤال"
+            // -----------------------------------------------------------------
+            else if (t >= 8.0 && t < 23.0) {
+                stageBg.className = 'absolute inset-0 stage-grid transition-colors duration-700';
+                sceneBadge.textContent = 'المشهد 2 (0:08 - 0:23): طريقة اللعب';
+                teleprompterText.textContent = `"الفكرة بسيطة: أنا هكتب السؤال عندي، والسؤال هيظهر قدامكم على طول.. كل اللي عليكم إنكم تجاوبوا."`;
+
+                const s2 = document.getElementById('scene2');
+                const localT = t - 8.0; // من 0 إلى 15
+                const fadeIn = clamp(localT / 0.6, 0, 1);
+                const fadeOut = localT > 14.2 ? 1 - clamp((localT - 14.2) / 0.8, 0, 1) : 1;
+                s2.style.opacity = (fadeIn * fadeOut).toString();
+
+                const flyingWord = document.getElementById('s2_flyingWord');
+                const placeholder = document.getElementById('s2_screenPlaceholder');
+
+                // ظهور كلمة "سؤال" داخل التابلت (1.5s -> 4.0s)
+                if (localT < 1.5) {
+                    flyingWord.style.opacity = '0';
+                    placeholder.style.opacity = '1';
+                } else if (localT >= 1.5 && localT < 4.5) {
+                    const p = clamp((localT - 1.5) / 0.7, 0, 1);
+                    flyingWord.style.opacity = p.toString();
+                    flyingWord.style.right = '18%';
+                    flyingWord.style.top = '52%';
+                    flyingWord.style.transform = `translate(50%, -50%) scale(${0.7 + p * 0.15})`;
+                    placeholder.style.opacity = '1';
+                } else {
+                    // انتقال سريع لكلمة "سؤال" من التابلت (يمين) إلى الشاشة الكبيرة (شمال)
+                    triggerSfxOnce('s2_swoosh', 'whoosh');
+                    const moveP = easeInOutCubic(clamp((localT - 4.5) / 1.1, 0, 1));
+                    // في RTL: right: 18% هي جهة التابلت على اليمين، right: 73% هي وسط الشاشة الكبيرة على الشمال
+                    const currentRight = 18 + moveP * 55;
+                    const currentScale = 0.85 + moveP * 0.45;
+                    const arcY = Math.sin(moveP * Math.PI) * -35; // قوس حركة جميل للأعلى أثناء الانتقال
+
+                    flyingWord.style.opacity = '1';
+                    flyingWord.style.right = `${currentRight}%`;
+                    flyingWord.style.top = `calc(52% + ${arcY}px)`;
+                    flyingWord.style.transform = `translate(50%, -50%) scale(${currentScale})`;
+                    placeholder.style.opacity = (1 - moveP).toString();
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // المشهد 3: (23.0s -> 38.0s)
+            // مربعات النقاط: +1 سهل (أخضر)، +2 صعب (أحمر)، -1 غلط X (رمادي)
+            // -----------------------------------------------------------------
+            else if (t >= 23.0 && t < 38.0) {
+                stageBg.className = 'absolute inset-0 stage-grid transition-colors duration-700';
+                sceneBadge.textContent = 'المشهد 3 (0:23 - 0:38): نظام النقاط';
+                teleprompterText.textContent = `"السؤال السهل بنقطة، والصعب بنقطتين.. بس ركزوا، لو جاوبت غلط هتخسر نقطة!"`;
+
+                const s3 = document.getElementById('scene3');
+                const localT = t - 23.0; // من 0 إلى 15
+                const fadeOut = localT > 14.2 ? 1 - clamp((localT - 14.2) / 0.8, 0, 1) : 1;
+                s3.style.opacity = fadeOut.toString();
+
+                const boxEasy = document.getElementById('s3_boxEasy');
+                const boxHard = document.getElementById('s3_boxHard');
+                const boxWrong = document.getElementById('s3_boxWrong');
+                const numEasy = document.getElementById('s3_numEasy');
+                const numHard = document.getElementById('s3_numHard');
+                const numWrong = document.getElementById('s3_numWrong');
+
+                // 1) المربع الأخضر (+1 سهل) يظهر عند localT = 0.4s
+                if (localT >= 0.4) {
+                    triggerSfxOnce('s3_ding1', 'ding');
+                    const p1 = clamp((localT - 0.4) / 0.65, 0, 1);
+                    const sc1 = easeOutBack(p1);
+                    boxEasy.style.opacity = p1.toString();
+                    boxEasy.style.transform = `scale(${sc1})`;
+                    // نبض الرقم
+                    const pulse1 = 1 + Math.sin(clamp((localT - 0.4) * 5, 0, Math.PI)) * 0.25;
+                    numEasy.style.transform = `scale(${pulse1})`;
+                } else {
+                    boxEasy.style.opacity = '0';
+                    boxEasy.style.transform = 'scale(0)';
+                }
+
+                // 2) المربع الأحمر (+2 صعب) يظهر عند localT = 3.2s
+                if (localT >= 3.2) {
+                    triggerSfxOnce('s3_ding2', 'ding');
+                    const p2 = clamp((localT - 3.2) / 0.65, 0, 1);
+                    const sc2 = easeOutBack(p2);
+                    boxHard.style.opacity = p2.toString();
+                    boxHard.style.transform = `scale(${sc2})`;
+                    const pulse2 = 1 + Math.sin(clamp((localT - 3.2) * 5, 0, Math.PI)) * 0.25;
+                    numHard.style.transform = `scale(${pulse2})`;
+                } else {
+                    boxHard.style.opacity = '0';
+                    boxHard.style.transform = 'scale(0)';
+                }
+
+                // 3) المربع الرمادي (-1 X) يظهر عند localT = 6.8s
+                if (localT >= 6.8) {
+                    triggerSfxOnce('s3_buzz', 'buzz');
+                    const p3 = clamp((localT - 6.8) / 0.65, 0, 1);
+                    const sc3 = easeOutBack(p3);
+                    boxWrong.style.opacity = p3.toString();
+                    boxWrong.style.transform = `scale(${sc3})`;
+                    const pulse3 = 1 + Math.sin(clamp((localT - 6.8) * 5, 0, Math.PI)) * 0.25;
+                    numWrong.style.transform = `scale(${pulse3})`;
+                } else {
+                    boxWrong.style.opacity = '0';
+                    boxWrong.style.transform = 'scale(0)';
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // المشهد 4: (38.0s -> 48.0s)
+            // 3 كروت بـ Rotation Y + أيقونات صورة وصوت
+            // -----------------------------------------------------------------
+            else if (t >= 38.0 && t < 48.0) {
+                stageBg.className = 'absolute inset-0 stage-grid transition-colors duration-700';
+                sceneBadge.textContent = 'المشهد 4 (0:38 - 0:48): تنوع الأسئلة';
+                teleprompterText.textContent = `"في أسئلة عادية وتوب 5 و10، وصور وأصوات. وفي مسيرة اللاعب، الشعارات بتظهر واحدة واحدة والسهم ينقلك للنادي اللي بعده."`;
+
+                const s4 = document.getElementById('scene4');
+                const localT = t - 38.0; // من 0 إلى 10
+                const fadeOut = localT > 9.2 ? 1 - clamp((localT - 9.2) / 0.8, 0, 1) : 1;
+                s4.style.opacity = fadeOut.toString();
+
+                const cards = [
+                    { el: document.getElementById('s4_card1'), start: 0.3, sfx: 's4_flip1' },
+                    { el: document.getElementById('s4_card2'), start: 1.8, sfx: 's4_flip2' },
+                    { el: document.getElementById('s4_card3'), start: 3.2, sfx: 's4_flip3' }
+                ];
+
+                cards.forEach(c => {
+                    if (localT >= c.start) {
+                        triggerSfxOnce(c.sfx, 'flip');
+                        const p = clamp((localT - c.start) / 0.7, 0, 1);
+                        const rotY = 90 * (1 - easeOutBack(p));
+                        const sc = 0.8 + 0.2 * easeOutBack(p);
+                        c.el.style.opacity = p.toString();
+                        c.el.style.transform = `rotateY(${rotY}deg) scale(${sc})`;
+                    } else {
+                        c.el.style.opacity = '0';
+                        c.el.style.transform = 'rotateY(90deg) scale(0.8)';
+                    }
+                });
+
+                // ظهور أيقونات الصور والأصوات عند localT = 5.0s
+                const mediaBadges = document.getElementById('s4_mediaBadges');
+                if (localT >= 5.0) {
+                    triggerSfxOnce('s4_mediaDing', 'ding');
+                    const mp = clamp((localT - 5.0) / 0.6, 0, 1);
+                    mediaBadges.style.opacity = mp.toString();
+                    mediaBadges.style.transform = `translateY(${(1 - mp) * 16}px)`;
+                } else {
+                    mediaBadges.style.opacity = '0';
+                    mediaBadges.style.transform = 'translateY(16px)';
+                }
+
+                const career = document.getElementById('s4_career');
+                const careerFade = clamp((localT - 5.5) / 0.5, 0, 1);
+                career.style.opacity = careerFade.toString();
+                const clubs = [
+                    { id: 's4_club1', start: 5.8 },
+                    { id: 's4_club2', start: 7.0 },
+                    { id: 's4_club3', start: 8.2 }
+                ];
+                clubs.forEach((club, index) => {
+                    const progress = clamp((localT - club.start) / 0.45, 0, 1);
+                    const element = document.getElementById(club.id);
+                    element.style.opacity = progress.toString();
+                    element.style.transform = `scale(${0.65 + progress * 0.35})`;
+                    if (index > 0) {
+                        const arrow = document.getElementById(`s4_arrow${index}`);
+                        const arrowProgress = clamp((localT - club.start + 0.45) / 0.45, 0, 1);
+                        arrow.style.opacity = arrowProgress.toString();
+                        arrow.style.transform = `translateX(${(1 - arrowProgress) * 14}px)`;
+                    }
+                });
+            }
+
+            // -----------------------------------------------------------------
+            // المشهد 5: (48.0s -> 58.0s)
+            // اسم اللعبة + النجوم + يلا بينا نبدأ! + Fade Out في النهاية
+            // -----------------------------------------------------------------
+            else if (t >= 48.0 && t <= 58.0) {
+                stageBg.className = 'absolute inset-0 bg-gradient-to-b from-slate-950 via-purple-950/30 to-black transition-colors duration-1000';
+                sceneBadge.textContent = 'المشهد 5 (0:48 - 0:58): يلا نبدأ التحدي';
+                teleprompterText.textContent = `"يلا، ادخلوا على اللينك ووروني شطارتكم!"`;
+
+                const s5 = document.getElementById('scene5');
+                const ctaBadge = document.getElementById('s5_ctaBadge');
+                const localT = t - 48.0; // من 0 إلى 10
+
+                triggerSfxOnce('s5_victory', 'victory');
+
+                const fadeIn = clamp(localT / 0.8, 0, 1);
+                // Fade Out في آخر ثانيتين (من 8.0s إلى 10.0s داخل المشهد)
+                const fadeOut = localT > 8.0 ? 1 - clamp((localT - 8.0) / 2.0, 0, 1) : 1;
+                s5.style.opacity = (fadeIn * fadeOut).toString();
+
+                // ظهور عبارة "يلا بينا نبدأ!" عند localT = 2.2s
+                if (localT >= 2.2) {
+                    const cp = clamp((localT - 2.2) / 0.6, 0, 1);
+                    const sc = 0.75 + 0.25 * easeOutBack(cp);
+                    ctaBadge.style.opacity = cp.toString();
+                    ctaBadge.style.transform = `scale(${sc})`;
+                } else {
+                    ctaBadge.style.opacity = '0';
+                    ctaBadge.style.transform = 'scale(0.75)';
+                }
+            }
+        }
+
+        // =========================================================================
+        // 5. حلقة التشغيل والمزامنة مع الصوت (Playback & Audio Sync Loop)
+        // =========================================================================
+        function animationLoop(timestamp) {
+            if (!isPlaying) return;
+
+            if (!lastFrameTime) lastFrameTime = timestamp;
+            const deltaSec = (timestamp - lastFrameTime) / 1000;
+            lastFrameTime = timestamp;
+
+            // إذا كان هناك ملف صوتي مرفوع ويعمل، نجعله هو المرجع الدقيق للوقت
+            if (voiceoverAudio.src && !voiceoverAudio.paused && !voiceoverAudio.ended) {
+                currentTime = voiceoverAudio.currentTime;
+            } else {
+                currentTime += deltaSec;
+            }
+
+            if (currentTime >= TOTAL_DURATION) {
+                currentTime = TOTAL_DURATION;
+                renderFrame(currentTime);
+                pausePlayback();
+                return;
+            }
+
+            renderFrame(currentTime);
+            requestAnimationFrame(animationLoop);
+        }
+
+        function startPlayback() {
+            if (currentTime >= TOTAL_DURATION) {
+                seekTo(0);
+            }
+            initAudioCtx();
+            isPlaying = true;
+            lastFrameTime = null;
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            playOverlay.style.opacity = '0';
+            playOverlay.style.pointerEvents = 'none';
+
+            if (voiceoverAudio.src) {
+                voiceoverAudio.currentTime = currentTime;
+                voiceoverAudio.play().catch(err => console.warn('Audio play blocked:', err));
+            }
+
+            requestAnimationFrame(animationLoop);
+        }
+
+        function pausePlayback() {
+            isPlaying = false;
+            lastFrameTime = null;
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+            playOverlay.style.opacity = '1';
+            playOverlay.style.pointerEvents = 'auto';
+
+            if (voiceoverAudio.src && !voiceoverAudio.paused) {
+                voiceoverAudio.pause();
+            }
+        }
+
+        function seekTo(newTime) {
+            currentTime = clamp(newTime, 0, TOTAL_DURATION);
+            // إعادة ضبط المؤثرات الصوتية التي تلي الوقت الجديد
+            triggeredSfx.clear();
+            if (voiceoverAudio.src) {
+                voiceoverAudio.currentTime = Math.min(currentTime, voiceoverAudio.duration || currentTime);
+            }
+            renderFrame(currentTime);
+        }
+
+        // =========================================================================
+        // 6. مستمعو الأحداث (Event Listeners)
+        // =========================================================================
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) pausePlayback();
+            else startPlayback();
+        });
+
+        playOverlay.addEventListener('click', () => {
+            startPlayback();
+        });
+
+        restartBtn.addEventListener('click', () => {
+            seekTo(0);
+            startPlayback();
+        });
+
+        timelineSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            seekTo(val);
+        });
+
+        brandNameInput.addEventListener('input', () => {
+            renderFrame(currentTime);
+        });
+
+        // رفع ملف التعليق الصوتي
+        audioUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const url = URL.createObjectURL(file);
+            voiceoverAudio.src = url;
+            audioFileName.textContent = file.name;
+            removeAudioBtn.classList.remove('hidden');
+            seekTo(0);
+        });
+
+        removeAudioBtn.addEventListener('click', () => {
+            pausePlayback();
+            voiceoverAudio.removeAttribute('src');
+            voiceoverAudio.load();
+            audioUploadInput.value = '';
+            audioFileName.textContent = 'اختر ملف صوتي (MP3 / WAV / M4A)';
+            removeAudioBtn.classList.add('hidden');
+        });
+
+        // تفعيل/إيقاف المؤثرات الصوتية المدمجة
+        sfxToggleBtn.addEventListener('click', () => {
+            sfxEnabled = !sfxEnabled;
+            if (sfxEnabled) {
+                sfxToggleBtn.textContent = 'مفعّلة';
+                sfxToggleBtn.className = 'px-2.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-bold';
+            } else {
+                sfxToggleBtn.textContent = 'مكتومة';
+                sfxToggleBtn.className = 'px-2.5 py-0.5 rounded-md bg-rose-500/20 border border-rose-400/40 text-rose-300 text-[11px] font-bold';
+            }
+        });
+
+        // وضع التصوير النظيف (Clean Recording Mode)
+        function toggleCleanMode(enable) {
+            if (enable) {
+                document.body.classList.add('clean-mode');
+                stageHud.classList.add('hidden');
+                exitCleanModeBtn.classList.remove('hidden');
+            } else {
+                document.body.classList.remove('clean-mode');
+                stageHud.classList.remove('hidden');
+                exitCleanModeBtn.classList.add('hidden');
+            }
+        }
+
+        cleanModeBtn.addEventListener('click', () => toggleCleanMode(true));
+        exitCleanModeBtn.addEventListener('click', () => toggleCleanMode(false));
+
+        // اختصارات لوحة المفاتيح (Space للتشغيل/الإيقاف، Escape للخروج من وضع التصوير)
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement === brandNameInput) return;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (isPlaying) pausePlayback();
+                else startPlayback();
+            } else if (e.code === 'Escape' && document.body.classList.contains('clean-mode')) {
+                toggleCleanMode(false);
+            }
+        });
+
+        // رسم الإطار الأول عند التحميل
+        window.onload = () => {
+            renderFrame(0);
+        };
+    </script>
+</body>
+</html>

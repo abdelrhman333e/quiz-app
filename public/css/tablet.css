@@ -22,6 +22,39 @@
   padding: 14px;
   backdrop-filter: none;
 }
+.tb2 .career-club-form-row {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) minmax(180px, 2fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+.tb2 .career-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.tb2 .career-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tb2 .career-preview > div {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.tb2 .career-preview img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+}
+@media (max-width: 600px) {
+  .tb2 .career-club-form-row {
+    grid-template-columns: 1fr;
+  }
+}
 .tb2 h3 {
   margin: 0 0 10px;
   font-size: 15px;
