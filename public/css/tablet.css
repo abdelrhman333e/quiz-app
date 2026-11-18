@@ -574,6 +574,29 @@
   background: var(--s3);
   border-color: var(--bd);
 }
+.tb2 .addrow input#cp {
+  flex: 0 1 150px;
+  max-width: 150px;
+}
+.tb2 .contestant-code {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: var(--mut2);
+  font-size: 12px;
+}
+.tb2 .contestant-code b {
+  color: var(--t);
+  direction: ltr;
+  letter-spacing: 0.08em;
+}
+.tb2 .contestant-code button {
+  min-height: 36px;
+  margin-inline-start: auto;
+  padding: 4px 8px;
+  font-size: 12px;
+}
 .tb2 .round-mode-controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
