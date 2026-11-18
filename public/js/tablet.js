@@ -1565,6 +1565,23 @@ const $ = (id) => document.getElementById(id);
         visual: { icon: "🖼️", name: "خمن الصورة", desc: "صورة أو إيموجي للتخمين", color: "#ec4899" },
         career: { icon: "⚽", name: "مسيرة لاعب", desc: "شعارات أندية اللاعب", color: "#22c55e" },
       };
+      function categoryChipsHTML(current) {
+        const counts = {};
+        Qs.forEach((q) => { if (q.t) counts[q.t] = (counts[q.t] || 0) + 1; });
+        const cats = Object.keys(counts);
+        if (!cats.length) return "";
+        return `<div class="cchips" role="group" aria-label="التصنيفات الموجودة">${cats
+          .map((t) => `<button type="button" class="cchip ${t === current ? "on" : ""}" data-cat="${esc(t)}" onclick="pickCategory(this.dataset.cat)">${esc(t)}<span>${counts[t]}</span></button>`)
+          .join("")}</div>`;
+      }
+      function syncCategoryChips() {
+        const v = $("ft").value.trim();
+        document.querySelectorAll("#form .cchip").forEach((b) => b.classList.toggle("on", b.dataset.cat === v));
+      }
+      function pickCategory(cat) {
+        $("ft").value = cat;
+        syncCategoryChips();
+      }
       function kindPickerHTML(current) {
         return `<div class="ktypes" role="radiogroup" aria-label="نوع السؤال">${Object.entries(KIND_META)
           .map(([k, m]) => {
@@ -1599,9 +1616,7 @@ const $ = (id) => document.getElementById(id);
         $("form").innerHTML =
           `<div class="modal"><div class="card qform"><h3>${id ? "تعديل سؤال" : "سؤال جديد"}</h3>
  <div class="qf-label">نوع السؤال</div>${kindPickerHTML(e.kind || "normal")}<div class="qf-label">التصنيف</div>
- <input id="ft" placeholder="التصنيف (ديني، ثقافة عامة...)" list="tl" value="${esc(e.t)}"><datalist id="tl">${types()
-   .map((t) => `<option value="${esc(t)}">`)
-   .join("")}</datalist>
+ <input id="ft" placeholder="اكتب تصنيفًا جديدًا أو اختر من الموجودة" autocomplete="off" value="${esc(e.t)}" oninput="syncCategoryChips()">${categoryChipsHTML(e.t)}
  <select id="fk" hidden onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option><option value="career" ${e.kind === "career" ? "selected" : ""}>مسيرة لاعب — شعارات الأندية</option></select>
  <div id="questionFields"><input id="fx" placeholder="نص السؤال" value="${esc(e.x)}"></div>
  <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط YouTube أو Spotify أو ملف صوتي مباشر" value="${esc(e.audioUrl || "")}" oninput="$('fauFile').value=''"><small>الصق رابط YouTube أو Spotify أو SoundCloud، أو رابطًا مباشرًا لملف صوتي. المواقع الأخرى تعمل إذا كانت توفر رابطًا مباشرًا لملف MP3 أو WAV أو OGG أو M4A أو AAC. يمكنك أيضًا رفع ملف من جهازك بحد أقصى 20 ميجابايت.</small><label for="fauFile">اختيار ملف صوتي من الجهاز</label><input id="fauFile" type="file" accept=".mp3,.wav,.ogg,.oga,.opus,.m4a,.aac"><small id="audioUploadStatus" aria-live="polite"></small></div>
