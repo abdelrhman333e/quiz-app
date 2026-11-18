@@ -481,21 +481,21 @@ const $ = (id) => document.getElementById(id);
         openFilterMenu = openFilterMenu === name ? null : name;
         render();
       }
+      function closeFilterMenu() {
+        if (!openFilterMenu) return;
+        const menuWasVisible = !!document.querySelector(".fdd.open");
+        openFilterMenu = null;
+        if (menuWasVisible) render();
+      }
       function filterDropdownHTML(name, label, options, current) {
         const open = openFilterMenu === name,
           cur = options.find((o) => o.v === current) || options[0];
         return `<div class="fdd ${open ? "open" : ""}"><button type="button" class="fdd-btn" aria-haspopup="listbox" aria-expanded="${open}" aria-label="${label}" onclick="event.stopPropagation();toggleFilterMenu('${name}')"><span>${cur.l}</span><i class="fdd-caret" aria-hidden="true"></i></button>${open ? `<div class="fdd-menu" role="listbox" aria-label="${label}">${options.map((o) => `<div class="fdd-opt ${o.v === current ? "sel" : ""}" role="option" tabindex="0" aria-selected="${o.v === current}" onclick="event.stopPropagation();updateQuestionFilter('${name}','${o.v}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();updateQuestionFilter('${name}','${o.v}')}">${o.i ? `<span class="fdd-ico" aria-hidden="true">${o.i}</span>` : ""}<span>${o.l}</span>${o.v === current ? '<b class="fdd-check" aria-hidden="true">✓</b>' : ""}</div>`).join("")}</div>` : ""}</div>`;
       }
-      document.addEventListener("click", () => {
-        if (openFilterMenu) {
-          openFilterMenu = null;
-          render();
-        }
-      });
+      document.addEventListener("click", closeFilterMenu);
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && openFilterMenu) {
-          openFilterMenu = null;
-          render();
+          closeFilterMenu();
         }
       });
       function emptyHTML() {
@@ -1625,9 +1625,14 @@ const $ = (id) => document.getElementById(id);
       }
       function kindPickerHTML(current) {
         const short = { reverse: "معكوسة", visual: "صورة" };
+        const counts = Object.create(null);
+        Qs.forEach((question) => {
+          const kind = question.kind || "normal";
+          counts[kind] = (counts[kind] || 0) + 1;
+        });
         return `<div class="ktypes" role="radiogroup" aria-label="نوع السؤال">${Object.entries(KIND_META)
           .map(([k, m]) => {
-            const n = Qs.filter((x) => (x.kind || "normal") === k).length;
+            const n = counts[k] || 0;
             return `<button type="button" class="ktype ${k === current ? "on" : ""}" data-kind="${k}" role="radio" aria-checked="${k === current}" title="${m.desc} · ${n} سؤال" style="--k:${m.color}" onclick="pickQuestionKind('${k}')"><span class="kt-ic" aria-hidden="true">${m.icon}</span><span class="kt-name">${short[k] || m.name.replace("سؤال ", "")}</span></button>`;
           })
           .join("")}</div>`;
@@ -1649,7 +1654,7 @@ const $ = (id) => document.getElementById(id);
           hard = $("fd").value === "h",
           cat = $("ft").value.trim(),
           val = (id) => ($(id)?.value || "").trim(),
-          isImg = (u) => /^(https?:\/\/|data:image\/)/i.test(u || "");
+          isImg = (u) => validClubImage(u || "");
         let title = "",
           hint = "",
           extra = "",
