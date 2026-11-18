@@ -167,6 +167,7 @@ async function submitBuzz() {
         room,
         contestantId: selectedContestantId,
         displayId: state.displayId,
+        clientId: buzzerClientId,
       }),
     });
     const result = await response.json();

@@ -804,8 +804,9 @@ http
         const request = await body(req),
           room = str(request?.room, 20).toLowerCase(),
           contestantId = str(request?.contestantId, 80),
-          displayId = str(request?.displayId, 120);
-        if (!/^[a-f0-9]{8}$/.test(room) || !contestantId || !displayId)
+          displayId = str(request?.displayId, 120),
+          clientId = str(request?.clientId, 80);
+        if (!/^[a-f0-9]{8}$/.test(room) || !contestantId || !displayId || !clientId)
           return json(res, { error: "بيانات الجرس غير مكتملة" }, 400);
         const account = (
           await q("SELECT id FROM users WHERE room=$1", [room])
@@ -822,6 +823,8 @@ http
           );
           if (index < 0)
             return json(res, { error: "المتسابق غير موجود في القائمة الحالية" }, 404);
+          if (game.cur?.buzzerClaims?.[contestantId] !== clientId)
+            return json(res, { error: "أكد هوية المتسابق برمز الدخول أولًا" }, 401);
           if (game.cur?.buz != null)
             return json(
               res,
