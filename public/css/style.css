@@ -955,6 +955,7 @@ body.intro-video-active #themeToggle {
   max-height: min(58vh, 540px);
   object-fit: contain;
   border-radius: 8px;
+  transition: filter 0.4s ease;
 }
 .visual-emoji {
   font-size: 120px;

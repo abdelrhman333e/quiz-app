@@ -550,6 +550,13 @@
 .tb2 .dock-show button {
   min-height: 52px;
 }
+.tb2 .dock-show .visual-clarity-button {
+  border-color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 14%, var(--s2));
+}
+.tb2 .visual-preview img {
+  transition: filter 0.4s ease;
+}
 .tb2 .players {
   position: sticky;
   top: 10px;

@@ -271,7 +271,16 @@ function view(g, qs) {
     };
   if (visual)
     return sh
-      ? { ...v, t: x.t, image: x.image, emoji: x.emoji, ans: c.a ? x.a : null }
+      ? {
+          ...v,
+          t: x.t,
+          image: x.image,
+          emoji: x.emoji,
+          visualClarity: Number.isSafeInteger(c.visualClarity)
+            ? Math.max(0, Math.min(5, c.visualClarity))
+            : 0,
+          ans: c.a ? x.a : null,
+        }
       : v;
   if (career)
     return sh

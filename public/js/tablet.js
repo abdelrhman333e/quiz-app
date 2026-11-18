@@ -1,5 +1,18 @@
 const $ = (id) => document.getElementById(id);
       const pts = (q) => PT[q.d];
+      const MAX_VISUAL_CLARITY = 5;
+      function visualClarityLevel(cu = G?.cur) {
+        return Number.isSafeInteger(cu?.visualClarity)
+          ? Math.max(0, Math.min(MAX_VISUAL_CLARITY, cu.visualClarity))
+          : 0;
+      }
+      function visualBlurAmount(cu = G?.cur) {
+        if (cu?.a) return 0;
+        return Math.round(
+          (24 * (MAX_VISUAL_CLARITY - visualClarityLevel(cu)) * 10) /
+            MAX_VISUAL_CLARITY,
+        ) / 10;
+      }
       let audioPlaybackState = null;
       function types() {
         return [...new Set(Qs.map((q) => q.t))];
@@ -296,7 +309,7 @@ const $ = (id) => document.getElementById(id);
         if (career)
           return `<div class="career-preview">${(q.clubs || []).map((club, i) => `<div><img src="${esc(club.image)}" alt=""><span>${esc(club.n || `النادي ${i + 1}`)}</span></div>`).join("")}</div><div class="tbans">اللاعب: ${esc(q.a)}</div>`;
         if (visual)
-          return `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div class="tbans">الإجابة: ${esc(q.a)}</div></div>`;
+          return `<div class="visual-preview">${q.image ? `<img src="${esc(q.image)}" alt="قرينة الصورة" style="filter:blur(${visualBlurAmount(cu)}px)">` : ""}${q.emoji ? `<span>${esc(q.emoji)}</span>` : ""}<div class="tbans">الإجابة: ${esc(q.a)}</div></div>`;
         if (audioQuestion)
           return `<div class="visual-preview">${embeddedAudioProvider(q.audioUrl) ? `<a href="${esc(q.audioUrl)}" target="_blank" rel="noopener noreferrer">فتح مصدر الصوت</a>` : `<audio controls preload="none" src="${esc(q.audioUrl)}"></audio>`}</div>${hasO ? optsHTML(q) : `<div class="tbans">الإجابة: ${esc(q.a)}</div>`}`;
         if (reverse) return `<div class="tbans">الكلمة: ${esc(q.a)}</div>`;
@@ -459,6 +472,7 @@ const $ = (id) => document.getElementById(id);
               a: 0,
               buz: null,
               res: null,
+              visualClarity: 0,
             };
           save();
           toast(
@@ -552,7 +566,11 @@ const $ = (id) => document.getElementById(id);
         const reveal = top
           ? `<div class="reveal">${q.r.map((a, i) => `<button class="${cu.revealed?.includes(i) ? "on" : ""}" onclick="revealRank(${i})">${cu.revealed?.includes(i) ? "تم كشف" : "كشف"} رقم ${i + 1}</button>`).join("")}</div>`
           : "";
-        return `<div class="card qcard"><div class="qhead"><span class="bdg">${esc(q.t)}</span><span class="mut">${pts(q)} نقطة</span>${reverse ? '<span class="bdg rev">كلمة معكوسة</span>' : ""}${career ? '<span class="bdg">مسيرة لاعب</span>' : ""}<span class="sp"></span><span class="mut note">معاينة · لا تظهر على الشاشة</span><button class="icon" title="تعديل السؤال" aria-label="تعديل السؤال" onclick="openForm('${q.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف السؤال" aria-label="حذف السؤال" onclick="del('${q.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div><div class="qtext">${esc(q.x)}</div>${previewHTML(c)}${reveal}</div>`;
+        const availablePoints =
+          visual && q.image
+            ? visualQuestionPoints(q.d, visualClarityLevel(cu))
+            : pts(q);
+        return `<div class="card qcard"><div class="qhead"><span class="bdg">${esc(q.t)}</span><span class="mut">${visual && q.image ? `${availablePoints} نقطة متبقية` : `${pts(q)} نقطة`}</span>${reverse ? '<span class="bdg rev">كلمة معكوسة</span>' : ""}${career ? '<span class="bdg">مسيرة لاعب</span>' : ""}<span class="sp"></span><span class="mut note">معاينة · لا تظهر على الشاشة</span><button class="icon" title="تعديل السؤال" aria-label="تعديل السؤال" onclick="openForm('${q.id}')"><img class="action-icon" src="/assets/icons/edit-svgrepo-com.svg" alt=""></button><button class="icon danger" title="حذف السؤال" aria-label="حذف السؤال" onclick="del('${q.id}')"><img class="action-icon" src="/assets/icons/icons8-trash.svg" alt=""></button></div><div class="qtext">${esc(q.x)}</div>${previewHTML(c)}${reveal}</div>`;
       }
       function timerHTML(c) {
         const { timer, timerActive } = c;
@@ -627,14 +645,19 @@ const $ = (id) => document.getElementById(id);
             )
             .join("") ||
           `<small>${G.mode === "rounds" ? "أضف مشاركين من بطاقة الجولات أولًا" : "أضف متسابقين من اللوحة الجانبية"}</small>`;
-        const grade =
+        const visualPenalty =
+            q?.kind === "visual" && q.image
+              ? pts(q) - visualQuestionPoints(q.d, visualClarityLevel(cu))
+              : 0,
+          correctPoints = Math.max(0, pts(q) - visualPenalty),
+          grade =
           cu.buz != null
-            ? `<div class="row grade">${top && cu.rank == null ? "<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>" : `<button class="big2 ok" onclick="grade(1${top ? `,${cu.rank}` : ""})">✅ صح (+${top ? cu.rank + 1 : pts(q)})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>${cu.res ? `<small class="res ${cu.res}">تم التسجيل: ${cu.res === "ok" ? "صح" : "غلط"}</small>` : ""}`
+            ? `<div class="row grade">${top && cu.rank == null ? "<small>اكشف ترتيب الإجابة لتسجيل نقاطها</small>" : `<button class="big2 ok" onclick="grade(1${top ? `,${cu.rank}` : ""})">✅ صح (+${top ? cu.rank + 1 : correctPoints})</button>`}<button class="big2 no" onclick="grade(0)">❌ غلط (−1)</button></div>${cu.res ? `<small class="res ${cu.res}">تم التسجيل: ${cu.res === "ok" ? "صح" : "غلط"}</small>` : ""}`
             : "";
         return `<div class="card who"><h3>من جاوب؟</h3><div class="chips">${chips}</div>${G.mode === "rounds" && !eligiblePlayers.length ? "<small>اختر أو أنشئ جولة وحدد المشاركين أولًا.</small>" : ""}${grade}</div>`;
       }
       function dockHTML(c) {
-        const { q, cu, hasO, top, reverse, career, reverseCount, reverseIndex } = c;
+        const { q, cu, hasO, top, reverse, visual, career, reverseCount, reverseIndex } = c;
         const nav = `<div class="dock-nav"><button class="primary" onclick="nextQ()">السؤال التالي ‹</button><button onclick="rndQ()"><img class="action-icon" src="/assets/icons/random.svg" alt=""> عشوائي</button></div>`;
         if (!q || !Qs.length) return `<div class="dock">${nav}</div>`;
         const show = career
@@ -642,7 +665,12 @@ const $ = (id) => document.getElementById(id);
           : reverse
           ? `<button class="big2 on" onclick="nextReverseLetter()" ${reverseIndex >= reverseCount ? "disabled" : ""}>${reverseIndex >= reverseCount ? "اكتملت الحروف" : `إظهار الحرف التالي (${reverseIndex + 1}/${reverseCount})`}</button><button class="big2" onclick="resetReverse()">ابدأ من جديد</button>`
           : `<button class="big2 ${cu.q ? "on" : ""}" onclick="tg('q')">${cu.q ? "إخفاء" : "عرض"} السؤال</button>${hasO ? `<button class="big2 ${cu.o ? "on" : ""}" onclick="tg('o')">${cu.o ? "إخفاء" : "عرض"} الاختيارات</button>` : ""}${top ? "" : `<button class="big2 ${cu.a ? "on" : ""}" onclick="tg('a')">${cu.a ? "إخفاء" : "عرض"} الإجابة</button>`}`;
-        return `<div class="dock">${nav}<div class="dock-show">${show}</div></div>`;
+        const clarity = visualClarityLevel(cu),
+          visualClarityButton =
+            visual && q.image && cu.q && !cu.a
+              ? `<button class="big2 visual-clarity-button" onclick="clarifyVisual()" ${clarity >= MAX_VISUAL_CLARITY ? "disabled" : ""}>${clarity >= MAX_VISUAL_CLARITY ? "الصورة واضحة بالكامل" : `وضّح أكتر · ${clarity < pts(q) ? "خصم نقطة" : "بدون خصم إضافي"} (${clarity}/${MAX_VISUAL_CLARITY})`}</button>`
+              : "";
+        return `<div class="dock">${nav}<div class="dock-show">${show}${visualClarityButton}</div></div>`;
       }
       function playersHTML(c) {
         const { cu } = c,
@@ -1176,6 +1204,20 @@ const $ = (id) => document.getElementById(id);
         G.cur.rev = { index: 0, letter: "", started: 0 };
         save();
       }
+      function clarifyVisual() {
+        const q = cq(),
+          clarity = visualClarityLevel();
+        if (!G.cur.q || G.cur.a || q?.kind !== "visual" || !q.image) return;
+        if (clarity >= MAX_VISUAL_CLARITY)
+          return toast("الصورة أصبحت واضحة بالكامل");
+        G.cur.visualClarity = clarity + 1;
+        save();
+        toast(
+          clarity < pts(q)
+            ? "تم توضيح الصورة — ستُخصم نقطة عند الإجابة الصحيحة"
+            : "تم توضيح الصورة بدون خصم إضافي",
+        );
+      }
       function nextCareerClub() {
         const q = cq();
         if (!q || q.kind !== "career" || !G.cur.q) return;
@@ -1249,13 +1291,21 @@ const $ = (id) => document.getElementById(id);
           return toast("هذا المتسابق غير مشارك في الجولة الحالية", 1);
         if (top && ok && rank == null)
           return toast("اكشف ترتيب الإجابة أولًا", 1);
-        const key = top && ok ? `${G.cur.buz}:${rank}` : null;
+        const clarityPenalty =
+            ok && q?.kind === "visual" && q.image
+              ? pts(q) - visualQuestionPoints(q.d, visualClarityLevel())
+              : 0,
+          key = top && ok ? `${G.cur.buz}:${rank}` : null;
         if (key && G.cur.awards?.includes(key))
           return toast("تم احتساب نقاط هذا الترتيب للاعب", 1);
         recordPointUndo("grade");
         playSfx(ok ? "correct" : "wrong");
         const contestant = players[G.cur.buz];
-        const delta = ok ? (top ? rank + 1 : pts(q)) : -1;
+        const delta = ok
+          ? top
+            ? rank + 1
+            : Math.max(0, pts(q) - clarityPenalty)
+          : -1;
         if (round) {
           contestant.score = roundScore(round, contestant.id) + delta;
           maybeDeclareRoundWinner(round, contestant);
@@ -1274,6 +1324,7 @@ const $ = (id) => document.getElementById(id);
           ok,
         );
         if (!ok) recordPointDeduction(contestant, 1);
+        else if (clarityPenalty) recordPointDeduction(contestant, clarityPenalty);
         if (key) {
           if (!G.cur.awards) G.cur.awards = [];
           G.cur.awards.push(key);
