@@ -931,7 +931,7 @@ http
         if (u === "/api/account" && req.method === "POST") {
           const b = await body(req),
             name = str(b?.username, 20).toLowerCase(),
-            room = str(b?.room, 8).toLower(),
+            room = str(b?.room, 8).toLowerCase(),
             newPassword =
               typeof b?.newPassword === "string" ? b.newPassword : "";
           const account = (

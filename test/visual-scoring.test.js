@@ -196,6 +196,15 @@ test("showing a manually selected question activates a fresh buzzer round", () =
   assert.equal(vm.runInContext("G.cur.timer", context), null);
 });
 
+test("account room normalization uses the supported lowercase method", () => {
+  const serverSource = fs.readFileSync(
+    path.join(__dirname, "..", "server.js"),
+    "utf8",
+  );
+  assert.doesNotMatch(serverSource, /\.toLower\(/);
+  assert.match(serverSource, /\.toLowerCase\(\)/);
+});
+
 test("tablet statistics render the requested groups and controls", () => {
   const context = createContext();
   const game = {
