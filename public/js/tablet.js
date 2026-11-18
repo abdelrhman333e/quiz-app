@@ -1565,6 +1565,19 @@ const $ = (id) => document.getElementById(id);
         visual: { icon: "🖼️", name: "خمن الصورة", desc: "صورة أو إيموجي للتخمين", color: "#ec4899" },
         career: { icon: "⚽", name: "مسيرة لاعب", desc: "شعارات أندية اللاعب", color: "#22c55e" },
       };
+      function segHTML(selectId, items, current) {
+        return `<div class="seg" role="radiogroup" data-for="${selectId}">${items
+          .map(([v, label]) => `<button type="button" class="seg-b ${v === current ? "on" : ""}" role="radio" aria-checked="${v === current}" data-v="${v}" onclick="pickSeg('${selectId}','${v}')">${label}</button>`)
+          .join("")}</div>`;
+      }
+      function pickSeg(selectId, value) {
+        $(selectId).value = value;
+        document.querySelectorAll(`#form .seg[data-for="${selectId}"] .seg-b`).forEach((b) => {
+          const on = b.dataset.v === value;
+          b.classList.toggle("on", on);
+          b.setAttribute("aria-checked", on);
+        });
+      }
       function categoryChipsHTML(current) {
         const counts = {};
         Qs.forEach((q) => { if (q.t) counts[q.t] = (counts[q.t] || 0) + 1; });
@@ -1620,11 +1633,11 @@ const $ = (id) => document.getElementById(id);
  <select id="fk" hidden onchange="toggleQuestionKind()"><option value="normal" ${e.kind === "normal" ? "selected" : ""}>سؤال عادي</option><option value="audio" ${e.kind === "audio" ? "selected" : ""}>سؤال صوتي</option><option value="top5" ${e.kind === "top5" ? "selected" : ""}>توب 5 — إجابات مرتبة</option><option value="top10" ${e.kind === "top10" ? "selected" : ""}>توب 10 — إجابات مرتبة</option><option value="reverse" ${e.kind === "reverse" ? "selected" : ""}>كلمات معكوسة</option><option value="visual" ${e.kind === "visual" ? "selected" : ""}>خمن صورة أو إيموجي</option><option value="career" ${e.kind === "career" ? "selected" : ""}>مسيرة لاعب — شعارات الأندية</option></select>
  <div id="questionFields"><input id="fx" placeholder="نص السؤال" value="${esc(e.x)}"></div>
  <div id="audioFields" hidden><input id="fau" type="url" dir="ltr" placeholder="رابط YouTube أو Spotify أو ملف صوتي مباشر" value="${esc(e.audioUrl || "")}" oninput="$('fauFile').value=''"><small>الصق رابط YouTube أو Spotify أو SoundCloud، أو رابطًا مباشرًا لملف صوتي. المواقع الأخرى تعمل إذا كانت توفر رابطًا مباشرًا لملف MP3 أو WAV أو OGG أو M4A أو AAC. يمكنك أيضًا رفع ملف من جهازك بحد أقصى 20 ميجابايت.</small><label for="fauFile">اختيار ملف صوتي من الجهاز</label><input id="fauFile" type="file" accept=".mp3,.wav,.ogg,.oga,.opus,.m4a,.aac"><small id="audioUploadStatus" aria-live="polite"></small></div>
- <label for="fd">صعوبة السؤال</label><select id="fd"><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>
+ <div class="qf-label">صعوبة السؤال</div><select id="fd" hidden><option value="e" ${e.d === "e" ? "selected" : ""}>سهل (نقطة)</option><option value="h" ${e.d === "h" ? "selected" : ""}>صعب (نقطتان)</option></select>${segHTML("fd", [["e", "🟢 سهل · نقطة"], ["h", "🔴 صعب · نقطتان"]], e.d === "h" ? "h" : "e")}
  <div id="normalFields">
  <small>الاختيارات — اتركها فارغة لو السؤال بدون اختيارات</small>
  ${[0, 1, 2, 3].map((i) => `<input id="fo${i}" placeholder="الاختيار ${LB[i]}" value="${esc(e.o?.[i])}">`).join("")}
- <select id="fc">${LB.map((l, i) => `<option value="${i}" ${e.c === i ? "selected" : ""}>الصحيح: ${l}</option>`).join("")}</select>
+ <div class="qf-label">الإجابة الصحيحة</div><select id="fc" hidden>${LB.map((l, i) => `<option value="${i}" ${e.c === i ? "selected" : ""}>الصحيح: ${l}</option>`).join("")}</select>${segHTML("fc", LB.map((l, i) => [String(i), l]), String(Number.isInteger(e.c) && e.c >= 0 && e.c < 4 ? e.c : 0))}
  <input id="fa" placeholder="الإجابة النصية (لو بدون اختيارات)" value="${esc(e.a)}">
  </div><div id="topFields" hidden><small>اكتب الإجابات بالترتيب من المركز الأول إلى ${e.kind === "top10" ? "العاشر" : "الخامس"}</small>${Array.from({ length: 10 }, (_, i) => `<input id="fr${i}" placeholder="الإجابة رقم ${i + 1}" value="${esc(e.r?.[i])}" ${i >= 5 && e.kind !== "top10" ? "hidden" : ""}>`).join("")}</div><div id="reverseFields" hidden><input id="frw" maxlength="40" dir="auto" placeholder="الكلمة الأصلية" value="${esc(e.a || "")}"></div><div id="visualFields" hidden><input id="fvp" maxlength="500" placeholder="اكتب سؤالًا يميز الصورة (مثال: من صاحب هذا الشعار؟)" value="${esc(e.x === "خمن الصورة" ? "" : e.x || "")}"><input id="fva" placeholder="الإجابة أو الكلمة المطلوب تخمينها" value="${esc(e.a || "")}"><input id="fi" type="url" dir="ltr" placeholder="رابط صورة مباشر (اختياري)" value="${esc(e.image || "")}"><input id="fe" maxlength="20" placeholder="إيموجي دالّ (اختياري)" value="${esc(e.emoji || "")}"><small>اكتب سؤالًا خاصًا بهذه الصورة، ثم أضف رابط صورة أو إيموجي، أو الاثنين معًا.</small></div>
  <div id="careerFields" hidden><label>شعارات الأندية بالترتيب من الأقدم إلى الأحدث (2–10)</label><div id="careerClubList"></div><button type="button" class="big2" onclick="addCareerClub()">＋ إضافة نادي</button><input id="fca" maxlength="300" placeholder="اسم اللاعب (الإجابة)" value="${esc(e.kind === "career" ? e.a || "" : "")}"><small>أضف رابط صورة مباشر أو صورة Base64 (PNG/JPEG/WebP/GIF، حتى 100KB لكل شعار)، واكتب اسم النادي اختياريًا. سيظهر شعار واحد في كل مرة، ويتحكم الهوست في الانتقال بينها.</small></div>

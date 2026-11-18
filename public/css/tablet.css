@@ -1132,3 +1132,31 @@ html[data-theme="black"] .tb2 .dock {
   background: color-mix(in srgb, var(--p) 25%, transparent);
   font-weight: 700;
 }
+
+/* ===== أزرار اختيار (الصحيح / الصعوبة) ===== */
+.modal .seg {
+  display: flex;
+  gap: 6px;
+  margin: 4px 0 8px;
+}
+.modal .seg-b {
+  flex: 1;
+  min-height: 44px;
+  padding: 8px 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--t);
+  background: rgba(127, 140, 160, 0.14);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+.modal .seg-b:hover {
+  border-color: var(--p);
+}
+.modal .seg-b.on {
+  border-color: var(--p);
+  background: color-mix(in srgb, var(--p) 30%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--p) 30%, transparent);
+}
